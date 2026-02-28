@@ -102,6 +102,8 @@ Big tasks automatically spawn Discord threads to keep the channel clean.
 
 - [Clawdbot Docs](https://docs.clawd.bot)
 - [Oracle Cloud Free Tier](https://www.oracle.com/cloud/free/) — free ARM server, 4 cores, 24GB RAM
+- [Chinese version (中文版 — 明朝六部)](https://github.com/wanikua/ai-court-skill)
+- [Full Tutorial (中文教程)](https://github.com/wanikua/boluobobo-ai-court-tutorial)
 
 ## License
 
