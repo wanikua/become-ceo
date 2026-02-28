@@ -13,9 +13,13 @@ One command to set up. Zero employees to manage.
 bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/become-ceo/scripts/setup.sh)
 ```
 
-Already have Clawdbot? Just clone:
+Already have Clawdbot?
 
 ```bash
+# From ClawdHub (recommended):
+clawdhub install become-ceo
+
+# Or clone directly:
 git clone https://github.com/wanikua/become-ceo.git ~/.clawdbot/skills/become-ceo
 ```
 
