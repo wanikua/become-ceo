@@ -26,10 +26,9 @@ git clone https://github.com/wanikua/become-ceo.git ~/.clawdbot/skills/become-ce
 ## What's Inside
 
 ```
+setup.sh                              # One-click server setup (repo root)
 become-ceo/
-├── SKILL.md                          # Skill definition
-├── scripts/
-│   └── setup.sh                      # One-click server setup
+├── SKILL.md                          # Skill definition (ClawdHub package)
 └── references/
     ├── clawdbot-template.json        # Full 7-agent config, ready to fill in
     ├── SOUL.md                       # How your team behaves

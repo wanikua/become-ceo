@@ -11,11 +11,15 @@ metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"insta
 
 ## Quick Start
 
-```bash
-bash scripts/setup.sh
+Install on your server (not via this skill):
+
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)
 ```
 
-Fill in API keys and Discord bot tokens in `~/.clawdbot/clawdbot.json`.
+Then fill in API keys and Discord bot tokens in `~/.clawdbot/clawdbot.json`.
+
+> The setup script is in the repo root, not bundled with this skill.
 
 ## Your Team
 
@@ -55,7 +59,7 @@ Off by default. To sandbox non-main agents:
   "workspaceAccess": "rw",
   "docker": {
     "network": "bridge",
-    "env": { "ANTHROPIC_API_KEY": "sk-..." }
+    "env": { "ANTHROPIC_API_KEY": "$ANTHROPIC_API_KEY" }
   }
 }
 ```
