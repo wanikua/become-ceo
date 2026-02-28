@@ -1,0 +1,136 @@
+{
+  "models": {
+    "providers": {
+      "anthropic": {
+        "baseUrl": "https://api.anthropic.com",
+        "apiKey": "YOUR_ANTHROPIC_API_KEY",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "claude-sonnet-4-5",
+            "name": "Claude Sonnet 4.5",
+            "input": ["text", "image"],
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "claude-opus-4-6",
+            "name": "Claude Opus 4.6",
+            "input": ["text", "image"],
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "$HOME/clawd",
+      "model": { "primary": "anthropic/claude-sonnet-4-5" },
+      "maxConcurrent": 4,
+      "subagents": { "maxConcurrent": 8 }
+    },
+    "list": [
+      {
+        "id": "main",
+        "model": { "primary": "anthropic/claude-sonnet-4-5" },
+        "identity": {
+          "name": "Dispatcher",
+          "theme": "You are the Dispatcher. Route tasks to the right specialist. Keep it short and decisive. When delegating, use the template: [Role] + [Task] + [Context] + [Requirements] + [Output format].",
+          "emoji": "⚡"
+        },
+        "subagents": {
+          "allowAgents": ["engineering", "finance", "marketing", "devops", "management", "legal"]
+        }
+      },
+      {
+        "id": "engineering",
+        "model": { "primary": "anthropic/claude-opus-4-6" },
+        "identity": {
+          "name": "Engineering",
+          "theme": "You are the Engineering lead. You handle software architecture, code reviews, and system design. Be direct, give working solutions, not lectures.",
+          "emoji": "⚔️"
+        }
+      },
+      {
+        "id": "finance",
+        "model": { "primary": "anthropic/claude-opus-4-6" },
+        "identity": {
+          "name": "Finance",
+          "theme": "You are the Finance lead. You handle budgets, cost analysis, and spend tracking. Always looking for ways to save money. Numbers first, opinions second.",
+          "emoji": "💰"
+        }
+      },
+      {
+        "id": "marketing",
+        "model": { "primary": "anthropic/claude-sonnet-4-5" },
+        "identity": {
+          "name": "Marketing",
+          "theme": "You are the Marketing lead. You handle branding, content, and social media. Creative but practical. Know your audience.",
+          "emoji": "🎭"
+        }
+      },
+      {
+        "id": "devops",
+        "model": { "primary": "anthropic/claude-sonnet-4-5" },
+        "identity": {
+          "name": "DevOps",
+          "theme": "You are the DevOps lead. You handle servers, CI/CD, infrastructure, and deployments. Hands-on, practical, automate everything.",
+          "emoji": "🔧"
+        }
+      },
+      {
+        "id": "management",
+        "model": { "primary": "anthropic/claude-sonnet-4-5" },
+        "identity": {
+          "name": "Management",
+          "theme": "You are the Management lead. You handle project coordination, hiring, and team ops. Keep things organized and moving.",
+          "emoji": "👔"
+        }
+      },
+      {
+        "id": "legal",
+        "model": { "primary": "anthropic/claude-sonnet-4-5" },
+        "identity": {
+          "name": "Legal",
+          "theme": "You are the Legal lead. You handle compliance, contracts, and IP. Precise, cite specifics, flag real risks not theoretical ones.",
+          "emoji": "⚖️"
+        }
+      }
+    ]
+  },
+  "channels": {
+    "discord": {
+      "enabled": true,
+      "groupPolicy": "open",
+      "historyLimit": 20,
+      "accounts": {
+        "main":        { "name": "Dispatcher",   "token": "YOUR_MAIN_BOT_TOKEN",        "groupPolicy": "open" },
+        "engineering": { "name": "Engineering",   "token": "YOUR_ENGINEERING_BOT_TOKEN",  "groupPolicy": "open" },
+        "finance":     { "name": "Finance",       "token": "YOUR_FINANCE_BOT_TOKEN",      "groupPolicy": "open" },
+        "marketing":   { "name": "Marketing",     "token": "YOUR_MARKETING_BOT_TOKEN",    "groupPolicy": "open" },
+        "devops":      { "name": "DevOps",        "token": "YOUR_DEVOPS_BOT_TOKEN",       "groupPolicy": "open" },
+        "management":  { "name": "Management",    "token": "YOUR_MANAGEMENT_BOT_TOKEN",   "groupPolicy": "open" },
+        "legal":       { "name": "Legal",         "token": "YOUR_LEGAL_BOT_TOKEN",        "groupPolicy": "open" }
+      },
+      "guilds": {
+        "YOUR_GUILD_ID": {
+          "requireMention": true
+        }
+      }
+    }
+  },
+  "bindings": [
+    { "agentId": "main",        "match": { "channel": "discord", "accountId": "main" } },
+    { "agentId": "engineering", "match": { "channel": "discord", "accountId": "engineering" } },
+    { "agentId": "finance",     "match": { "channel": "discord", "accountId": "finance" } },
+    { "agentId": "marketing",   "match": { "channel": "discord", "accountId": "marketing" } },
+    { "agentId": "devops",      "match": { "channel": "discord", "accountId": "devops" } },
+    { "agentId": "management",  "match": { "channel": "discord", "accountId": "management" } },
+    { "agentId": "legal",       "match": { "channel": "discord", "accountId": "legal" } }
+  ],
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  }
+}
