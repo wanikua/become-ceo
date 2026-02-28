@@ -34,7 +34,7 @@ ai-team/
 
 ## Get It Running
 
-1. Run `setup.sh` — handles Node.js, Clawdbot, workspace, everything
+1. Run `setup.sh` — handles Node.js, Chromium, Clawdbot, workspace, everything
 2. Open `~/.clawdbot/clawdbot.json`, fill in:
    - Anthropic API Key → [console.anthropic.com](https://console.anthropic.com)
    - Discord Bot Tokens (one per agent) → [discord.com/developers](https://discord.com/developers/applications)

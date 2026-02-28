@@ -62,13 +62,27 @@ else
     echo -e "  ${GREEN}✓ gh CLI installed${NC}"
 fi
 
-# ---- 6. Clawdbot ----
-echo -e "${YELLOW}[6/7] Installing Clawdbot...${NC}"
+# ---- 6. Chromium (browser skill — search, screenshots) ----
+echo -e "${YELLOW}[6/8] Installing Chromium...${NC}"
+if command -v chromium-browser &>/dev/null || snap list chromium &>/dev/null 2>&1; then
+    echo -e "  ${GREEN}✓ Chromium already installed${NC}"
+else
+    sudo snap install chromium 2>/dev/null || sudo apt-get install -y chromium-browser -qq
+    echo -e "  ${GREEN}✓ Chromium installed${NC}"
+fi
+if ! grep -q PUPPETEER_EXECUTABLE_PATH ~/.bashrc 2>/dev/null; then
+    CHROME_BIN="/snap/chromium/current/usr/lib/chromium-browser/chrome"
+    [ ! -f "$CHROME_BIN" ] && CHROME_BIN=$(which chromium-browser 2>/dev/null || echo "$CHROME_BIN")
+    echo "export PUPPETEER_EXECUTABLE_PATH=\"$CHROME_BIN\"" >> ~/.bashrc
+fi
+
+# ---- 7. Clawdbot ----
+echo -e "${YELLOW}[7/8] Installing Clawdbot...${NC}"
 sudo npm install -g clawdbot --loglevel=error
 echo -e "  ${GREEN}✓ Clawdbot $(clawdbot --version 2>/dev/null) installed${NC}"
 
-# ---- 7. Workspace ----
-echo -e "${YELLOW}[7/7] Setting up workspace...${NC}"
+# ---- 8. Workspace ----
+echo -e "${YELLOW}[8/8] Setting up workspace...${NC}"
 WORKSPACE="$HOME/clawd"
 CONFIG_DIR="$HOME/.clawdbot"
 mkdir -p "$WORKSPACE/memory"
@@ -116,6 +130,10 @@ echo ""
 echo -e "  ${YELLOW}2.${NC} Each Discord bot: enable Message Content Intent + Server Members Intent"
 echo ""
 echo -e "  ${YELLOW}3.${NC} systemctl --user start clawdbot-gateway"
+echo ""
+echo -e "  ${YELLOW}Tip:${NC} Find your Discord Guild ID:"
+echo "     Open Discord → Server Settings → Widget → Server ID"
+echo "     Or right-click server name → Copy Server ID (Developer Mode)"
 echo ""
 echo -e "  Docs: ${BLUE}https://github.com/wanikua/ai-team-skill${NC}"
 echo ""
