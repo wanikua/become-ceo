@@ -3,7 +3,7 @@
 ## Model Tiers
 | Tier | Model | Use |
 |---|---|---|
-| Dispatcher | Claude Sonnet | Quick routing, day-to-day chat |
+| Chief of Staff | Claude Sonnet | Quick routing, day-to-day chat |
 | Heavy hitters | Claude Opus | Code, deep analysis, complex reasoning |
 | Lightweight | Qwen Plus (optional) | Simple tasks, save costs |
 

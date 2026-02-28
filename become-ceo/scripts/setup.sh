@@ -5,7 +5,7 @@
 # ============================================
 set -e
 
-REPO_RAW="https://raw.githubusercontent.com/wanikua/ai-team-skill/main/ai-team/references"
+REPO_RAW="https://raw.githubusercontent.com/wanikua/become-ceo/main/become-ceo/references"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo ""
-echo -e "${BLUE}AI Team Setup${NC}"
+echo -e "${BLUE}Become CEO Setup${NC}"
 echo "================================"
 echo ""
 
@@ -135,5 +135,5 @@ echo -e "  ${YELLOW}Tip:${NC} Find your Discord Guild ID:"
 echo "     Open Discord → Server Settings → Widget → Server ID"
 echo "     Or right-click server name → Copy Server ID (Developer Mode)"
 echo ""
-echo -e "  Docs: ${BLUE}https://github.com/wanikua/ai-team-skill${NC}"
+echo -e "  Docs: ${BLUE}https://github.com/wanikua/become-ceo${NC}"
 echo ""

@@ -1,34 +1,36 @@
-# 🏛️ AI Team — Clawdbot Skill
+# 🏛️ Become CEO
 
-Run a team of AI specialists on Discord. 7 bots, each with its own role, personality, and model — talk to them by @mentioning, or @everyone to rally the whole crew.
+Your AI executive team on Discord. 7 specialists who actually do the work — you just give the orders.
 
-`@Engineering` builds your features. `@Finance` watches your spend. `@everyone` gets the whole team moving.
+`@Engineering` ships your features. `@Finance` watches your burn rate. `@Marketing` writes your content. `@everyone` gets the whole team moving.
+
+One command to set up. Zero employees to manage.
 
 ## Install
 
 ```bash
 # Fresh Ubuntu server? One line:
-bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/ai-team-skill/main/ai-team/scripts/setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/become-ceo/scripts/setup.sh)
 ```
 
 Already have Clawdbot? Just clone:
 
 ```bash
-git clone https://github.com/wanikua/ai-team-skill.git ~/.clawdbot/skills/ai-team
+git clone https://github.com/wanikua/become-ceo.git ~/.clawdbot/skills/become-ceo
 ```
 
 ## What's Inside
 
 ```
-ai-team/
+become-ceo/
 ├── SKILL.md                          # Skill definition
 ├── scripts/
 │   └── setup.sh                      # One-click server setup
 └── references/
     ├── clawdbot-template.json        # Full 7-agent config, ready to fill in
-    ├── SOUL.md                       # How agents behave
-    ├── IDENTITY.md                   # Team structure
-    ├── USER.md                       # About you (fill this in)
+    ├── SOUL.md                       # How your team behaves
+    ├── IDENTITY.md                   # Org chart
+    ├── USER.md                       # About you, the CEO
     └── AGENTS.md                     # Group chat + memory rules
 ```
 
@@ -37,15 +39,15 @@ ai-team/
 1. Run `setup.sh` — handles Node.js, Chromium, Clawdbot, workspace, everything
 2. Open `~/.clawdbot/clawdbot.json`, fill in:
    - Anthropic API Key → [console.anthropic.com](https://console.anthropic.com)
-   - Discord Bot Tokens (one per agent) → [discord.com/developers](https://discord.com/developers/applications)
+   - Discord Bot Tokens (one per role) → [discord.com/developers](https://discord.com/developers/applications)
 3. For each bot, flip on **Message Content Intent** + **Server Members Intent**
 4. `systemctl --user start clawdbot-gateway` — you're live
 
-## The Team
+## Your Team
 
-| Bot | What it does | Model |
+| Who | What they do | Brain |
 |---|---|---|
-| **Dispatcher** (main) | Routes tasks to the right specialist | Sonnet |
+| **Chief of Staff** (main) | Routes your orders to the right person | Sonnet |
 | **Engineering** | Code, architecture, system design | Opus |
 | **Finance** | Budgets, cost analysis, spend tracking | Opus |
 | **Marketing** | Content, branding, social media | Sonnet |
@@ -53,15 +55,29 @@ ai-team/
 | **Management** | Projects, hiring, team coordination | Sonnet |
 | **Legal** | Compliance, contracts, IP | Sonnet |
 
-Want more specialists? Add agents to `agents.list`, `channels.discord.accounts`, and `bindings`. The config is just JSON.
+Need a bigger team? Add more agents — the config is just JSON.
+
+## What It Looks Like
+
+```
+You:          @Engineering build me a user auth API
+Engineering:  Done. JWT-based, here's the code + tests.
+              [Auto-opens a Discord thread for the details]
+
+You:          @Finance how much did our API calls cost this month?
+Finance:      $47.23. Sonnet usage is up 30% — want me to find where?
+
+You:          @everyone Monday standup. What's everyone working on?
+All agents:   [Each one reports in with their status]
+```
 
 ## Common Gotchas
 
 **@everyone does nothing?**
-Check Discord Developer Portal — each bot needs **Message Content Intent** + **Server Members Intent** turned on. Bot role needs **View Channels** in the server.
+Each bot needs **Message Content Intent** + **Server Members Intent** turned on in Discord Developer Portal. Bot role needs **View Channels**.
 
-**Agents can't write files (sandbox)?**
-Sandbox runs agents in Docker with no filesystem access by default. Fix:
+**Agents can't write files?**
+Sandbox is off by default. If you turned it on, add this to your config:
 ```json
 "sandbox": {
   "mode": "all",
@@ -72,12 +88,9 @@ Sandbox runs agents in Docker with no filesystem access by default. Fix:
   }
 }
 ```
-- `workspaceAccess: "rw"` — lets the container read/write the workspace
-- `docker.network: "bridge"` — turns networking on (default is off, which breaks most skills)
-- `docker.env` — pass in API keys (sandbox doesn't inherit host env vars)
 
 **Messages silently disappear?**
-Every Discord account entry needs `"groupPolicy": "open"` set individually. The global setting doesn't cascade down — this trips up everyone.
+Every Discord account needs `"groupPolicy": "open"` set individually. The global one doesn't cascade — everyone hits this.
 
 ## How It Works
 
@@ -86,24 +99,25 @@ You: @Engineering build me a login API
               ↓
 Discord → Clawdbot Gateway → Engineering Agent (Claude Opus)
                                     ↓
-                             Reads workspace context (SOUL.md, IDENTITY.md)
+                             Reads company context (SOUL.md, IDENTITY.md)
                                     ↓
-                             Writes code → replies in Discord
+                             Does the work → reports back in Discord
 ```
 
-Each agent is an independent Discord bot mapped to a Clawdbot agent with its own:
-- **Model** — Opus for heavy lifting, Sonnet for quick tasks
-- **Personality** — defined in `identity.theme`
-- **Workspace** — shared project files, memory, tools
+Each team member is an independent Discord bot with its own:
+- **Brain** — Opus for heavy thinking, Sonnet for quick tasks
+- **Personality** — defined in config, customizable
+- **Memory** — learns your project over time
+- **Tools** — 60+ built-in skills (GitHub, Notion, browser, cron...)
 
-Big tasks automatically spawn Discord threads to keep the channel clean.
+Big tasks auto-spawn Discord threads. Your channels stay clean.
 
 ## Links
 
 - [Clawdbot Docs](https://docs.clawd.bot)
 - [Oracle Cloud Free Tier](https://www.oracle.com/cloud/free/) — free ARM server, 4 cores, 24GB RAM
-- [Chinese version (中文版 — 明朝六部)](https://github.com/wanikua/ai-court-skill)
-- [Full Tutorial (中文教程)](https://github.com/wanikua/boluobobo-ai-court-tutorial)
+- [中文版 — AI 朝廷（明朝六部）](https://github.com/wanikua/ai-court-skill)
+- [中文教程](https://github.com/wanikua/boluobobo-ai-court-tutorial)
 
 ## License
 

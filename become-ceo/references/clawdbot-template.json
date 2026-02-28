@@ -36,8 +36,8 @@
         "id": "main",
         "model": { "primary": "anthropic/claude-sonnet-4-5" },
         "identity": {
-          "name": "Dispatcher",
-          "theme": "You are the Dispatcher. Route tasks to the right specialist. Keep it short and decisive. When delegating, use the template: [Role] + [Task] + [Context] + [Requirements] + [Output format].",
+          "name": "Chief of Staff",
+          "theme": "You are the Chief of Staff. Route tasks to the right specialist. Keep it short and decisive. When delegating, use the template: [Role] + [Task] + [Context] + [Requirements] + [Output format].",
           "emoji": "⚡"
         },
         "subagents": {
@@ -106,7 +106,7 @@
       "groupPolicy": "open",
       "historyLimit": 20,
       "accounts": {
-        "main":        { "name": "Dispatcher",   "token": "YOUR_MAIN_BOT_TOKEN",        "groupPolicy": "open" },
+        "main":        { "name": "Chief of Staff",   "token": "YOUR_MAIN_BOT_TOKEN",        "groupPolicy": "open" },
         "engineering": { "name": "Engineering",   "token": "YOUR_ENGINEERING_BOT_TOKEN",  "groupPolicy": "open" },
         "finance":     { "name": "Finance",       "token": "YOUR_FINANCE_BOT_TOKEN",      "groupPolicy": "open" },
         "marketing":   { "name": "Marketing",     "token": "YOUR_MARKETING_BOT_TOKEN",    "groupPolicy": "open" },
