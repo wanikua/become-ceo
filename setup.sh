@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================
 # AI Team — One-click setup
-# Ubuntu 22.04/24.04 (Oracle Cloud ARM recommended)
+# Ubuntu 22.04/24.04
 # ============================================
 set -e
 
@@ -21,7 +21,7 @@ echo ""
 echo -e "${YELLOW}[1/7] Updating system...${NC}"
 sudo apt-get update -qq
 
-# ---- 2. Firewall (Oracle Cloud) ----
+# ---- 2. Firewall ----
 echo -e "${YELLOW}[2/7] Configuring firewall...${NC}"
 sudo iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
 sudo iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
@@ -125,7 +125,7 @@ echo ""
 echo "Next steps:"
 echo ""
 echo -e "  ${YELLOW}1.${NC} Edit ~/.clawdbot/clawdbot.json"
-echo "     Add your Anthropic API Key + Discord Bot Tokens"
+echo "     Add your LLM API Key + Discord Bot Tokens"
 echo ""
 echo -e "  ${YELLOW}2.${NC} Each Discord bot: enable Message Content Intent + Server Members Intent"
 echo ""

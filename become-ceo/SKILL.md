@@ -2,7 +2,7 @@
 name: become-ceo
 description: "Your AI executive team on Discord. 7 specialists (engineering, finance, marketing, devops, legal, management, chief of staff) each with its own model and personality. Use when setting up, configuring, scaling, or troubleshooting a multi-bot Discord workspace where you are the CEO and AI agents are your team."
 homepage: https://github.com/wanikua/become-ceo
-metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"credentials":["ANTHROPIC_API_KEY","DISCORD_BOT_TOKEN"],"configs":["~/.clawdbot/clawdbot.json"],"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
+metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"credentials":["LLM_API_KEY","DISCORD_BOT_TOKEN"],"configs":["~/.clawdbot/clawdbot.json"],"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
 ---
 
 # Become CEO — Your AI Executive Team
@@ -14,20 +14,20 @@ metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"crede
 1. Install Clawdbot: `npm install -g clawdbot`
 2. Install this skill: `clawdhub install become-ceo`
 3. Copy `references/clawdbot-template.json` to `~/.clawdbot/clawdbot.json`
-4. Fill in your Anthropic API key and Discord bot tokens
+4. Fill in your LLM API key, model IDs, and Discord bot tokens
 5. Start: `systemctl --user start clawdbot-gateway`
 
 For full server setup, see the [setup guide on GitHub](https://github.com/wanikua/become-ceo).
 
 ## Your Team
 
-- **Chief of Staff** (main) — routes your orders (Sonnet)
-- **Engineering** — code, architecture, system design (Opus)
-- **Finance** — budgets, cost control (Opus)
-- **Marketing** — content, branding, social (Sonnet)
-- **DevOps** — servers, CI/CD, infrastructure (Sonnet)
-- **Management** — projects, coordination (Sonnet)
-- **Legal** — compliance, contracts (Sonnet)
+- **Chief of Staff** (main) — routes your orders (fast model)
+- **Engineering** — code, architecture, system design (strong model)
+- **Finance** — budgets, cost control (strong model)
+- **Marketing** — content, branding, social (fast model)
+- **DevOps** — servers, CI/CD, infrastructure (fast model)
+- **Management** — projects, coordination (fast model)
+- **Legal** — compliance, contracts (fast model)
 
 ## Config
 
@@ -36,6 +36,7 @@ See [references/clawdbot-template.json](references/clawdbot-template.json) for t
 - Each Discord account **MUST** have `"groupPolicy": "open"` — does NOT inherit from global
 - `identity.theme` sets each team member's personality
 - `bindings` maps each agent to its Discord bot
+- Replace `$LLM_PROVIDER`, `$MODEL_FAST`, `$MODEL_STRONG` with your chosen provider and models
 
 ## Workspace Files
 
@@ -58,7 +59,7 @@ Off by default. To enable read-only sandboxed execution:
 }
 ```
 
-Agents run in isolated containers with read-only workspace access and no network. The gateway handles all API authentication externally — agents do not need direct access to keys. See [Clawdbot docs](https://github.com/wanikua/become-ceo) for advanced sandbox options.
+Agents run in isolated containers with read-only workspace access and no network. The gateway handles all API authentication externally. See [Clawdbot docs](https://github.com/wanikua/become-ceo) for advanced sandbox options.
 
 ## Troubleshooting
 

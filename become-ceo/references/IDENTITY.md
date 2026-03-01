@@ -1,11 +1,11 @@
 # IDENTITY.md - Team Structure
 
 ## Model Tiers
-| Tier | Model | Use |
+| Tier | Role | Use |
 |---|---|---|
-| Chief of Staff | Claude Sonnet | Quick routing, day-to-day chat |
-| Heavy hitters | Claude Opus | Code, deep analysis, complex reasoning |
-| Lightweight | Qwen Plus (optional) | Simple tasks, save costs |
+| Chief of Staff | Fast model | Quick routing, day-to-day chat |
+| Heavy hitters | Strong model | Code, deep analysis, complex reasoning |
+| Lightweight | Budget model (optional) | Simple tasks, save costs |
 
 ## Departments
 - Engineering: code, architecture, system design
