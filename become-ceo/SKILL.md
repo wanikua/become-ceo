@@ -2,7 +2,7 @@
 name: become-ceo
 description: "Your AI executive team on Discord. 7 specialists (engineering, finance, marketing, devops, legal, management, chief of staff) each with its own model and personality. Use when setting up, configuring, scaling, or troubleshooting a multi-bot Discord workspace where you are the CEO and AI agents are your team."
 homepage: https://github.com/wanikua/become-ceo
-metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"credentials":["ANTHROPIC_API_KEY","DISCORD_BOT_TOKEN"],"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
+metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
 ---
 
 # Become CEO — Your AI Executive Team
@@ -54,19 +54,26 @@ Off by default. To sandbox non-main agents:
 ```json
 "sandbox": {
   "mode": "all",
-  "workspaceAccess": "rw",
+  "workspaceAccess": "ro",
   "docker": {
-    "network": "bridge",
-    "env": { "ANTHROPIC_API_KEY": "$ANTHROPIC_API_KEY" }
+    "network": "none"
   }
 }
 ```
+
+The sandbox settings above use secure defaults. You can adjust them to fit your needs:
+
+| Setting | Default | Options | Notes |
+|---|---|---|---|
+| `workspaceAccess` | `"ro"` | `"ro"`, `"rw"` | `"rw"` lets agents write to the workspace (including skills). Only use if agents need to create/edit files. |
+| `docker.network` | `"none"` | `"none"`, `"bridge"` | `"bridge"` gives container network access. Only enable if agents need to call external APIs. |
+| `docker.env` | _(omitted)_ | e.g. `{"KEY": "$KEY"}` | Pass env vars into the container. The gateway already handles API auth, so this is usually unnecessary. |
 
 ## Troubleshooting
 
 **@everyone doesn't work** — each bot needs **Message Content Intent** + **Server Members Intent** in Discord Developer Portal, plus **View Channels** permission.
 
-**Can't write files** — set `sandbox.mode: "off"`, or configure `workspaceAccess`/`network`/`env` as above.
+**Can't write files** — set `sandbox.mode: "off"` for that agent, or change `workspaceAccess` to `"rw"`.
 
 **Messages silently dropped** — each Discord account needs `"groupPolicy": "open"` explicitly.
 
