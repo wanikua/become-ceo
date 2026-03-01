@@ -17,7 +17,7 @@ metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"insta
 4. Fill in your Anthropic API key and Discord bot tokens
 5. Start: `systemctl --user start clawdbot-gateway`
 
-For full server setup (Node.js, Chromium, firewall, swap), see the [setup guide on GitHub](https://github.com/wanikua/become-ceo).
+For full server setup, see the [setup guide on GitHub](https://github.com/wanikua/become-ceo).
 
 ## Your Team
 
@@ -29,11 +29,10 @@ For full server setup (Node.js, Chromium, firewall, swap), see the [setup guide 
 - **Management** — projects, coordination (Sonnet)
 - **Legal** — compliance, contracts (Sonnet)
 
-## Config Template
+## Config
 
-Full template: [references/clawdbot-template.json](references/clawdbot-template.json)
+See [references/clawdbot-template.json](references/clawdbot-template.json) for the full config template.
 
-Key points:
 - Each Discord account **MUST** have `"groupPolicy": "open"` — does NOT inherit from global
 - `identity.theme` sets each team member's personality
 - `bindings` maps each agent to its Discord bot
@@ -49,38 +48,26 @@ Key points:
 
 ## Sandbox
 
-Off by default. To sandbox non-main agents:
+Off by default. To enable read-only sandboxed execution:
 
 ```json
 "sandbox": {
   "mode": "all",
   "workspaceAccess": "ro",
-  "docker": {
-    "network": "none"
-  }
+  "docker": { "network": "none" }
 }
 ```
 
-The sandbox settings above use secure defaults. You can adjust them to fit your needs:
-
-| Setting | Default | Options | Notes |
-|---|---|---|---|
-| `workspaceAccess` | `"ro"` | `"ro"`, `"rw"` | `"rw"` lets agents write to the workspace (including skills). Only use if agents need to create/edit files. |
-| `docker.network` | `"none"` | `"none"`, `"bridge"` | `"bridge"` gives container network access. Only enable if agents need to call external APIs. |
-| `docker.env` | _(omitted)_ | e.g. `{"KEY": "$KEY"}` | Pass env vars into the container. The gateway already handles API auth, so this is usually unnecessary. |
+Agents run in isolated containers with read-only workspace access and no network. The gateway handles all API authentication externally — agents do not need direct access to keys. See [Clawdbot docs](https://github.com/wanikua/become-ceo) for advanced sandbox options.
 
 ## Troubleshooting
 
-**@everyone doesn't work** — each bot needs **Message Content Intent** + **Server Members Intent** in Discord Developer Portal, plus **View Channels** permission.
-
-**Can't write files** — set `sandbox.mode: "off"` for that agent, or change `workspaceAccess` to `"rw"`.
-
-**Messages silently dropped** — each Discord account needs `"groupPolicy": "open"` explicitly.
+- **@everyone doesn't work** — enable Message Content Intent + Server Members Intent in Discord Developer Portal
+- **Messages silently dropped** — set `"groupPolicy": "open"` on each Discord account entry
 
 ## Growing Your Team
 
 1. Add to `agents.list` with unique `id` and `identity.theme`
 2. Create Discord bot, enable intents
-3. Add to `channels.discord.accounts` with token and `"groupPolicy": "open"`
-4. Add binding in `bindings`
-5. Invite bot to server, restart gateway
+3. Add to `channels.discord.accounts` with `"groupPolicy": "open"`
+4. Add binding, invite bot, restart gateway

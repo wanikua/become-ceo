@@ -3,7 +3,7 @@
     "providers": {
       "anthropic": {
         "baseUrl": "https://api.anthropic.com",
-        "apiKey": "YOUR_ANTHROPIC_API_KEY",
+        "apiKey": "$ANTHROPIC_API_KEY",
         "api": "anthropic-messages",
         "models": [
           {
@@ -106,16 +106,16 @@
       "groupPolicy": "open",
       "historyLimit": 20,
       "accounts": {
-        "main":        { "name": "Chief of Staff",   "token": "YOUR_MAIN_BOT_TOKEN",        "groupPolicy": "open" },
-        "engineering": { "name": "Engineering",   "token": "YOUR_ENGINEERING_BOT_TOKEN",  "groupPolicy": "open" },
-        "finance":     { "name": "Finance",       "token": "YOUR_FINANCE_BOT_TOKEN",      "groupPolicy": "open" },
-        "marketing":   { "name": "Marketing",     "token": "YOUR_MARKETING_BOT_TOKEN",    "groupPolicy": "open" },
-        "devops":      { "name": "DevOps",        "token": "YOUR_DEVOPS_BOT_TOKEN",       "groupPolicy": "open" },
-        "management":  { "name": "Management",    "token": "YOUR_MANAGEMENT_BOT_TOKEN",   "groupPolicy": "open" },
-        "legal":       { "name": "Legal",         "token": "YOUR_LEGAL_BOT_TOKEN",        "groupPolicy": "open" }
+        "main":        { "name": "Chief of Staff",   "token": "$DISCORD_BOT_TOKEN",        "groupPolicy": "open" },
+        "engineering": { "name": "Engineering",   "token": "$DISCORD_BOT_TOKEN",  "groupPolicy": "open" },
+        "finance":     { "name": "Finance",       "token": "$DISCORD_BOT_TOKEN",      "groupPolicy": "open" },
+        "marketing":   { "name": "Marketing",     "token": "$DISCORD_BOT_TOKEN",    "groupPolicy": "open" },
+        "devops":      { "name": "DevOps",        "token": "$DISCORD_BOT_TOKEN",       "groupPolicy": "open" },
+        "management":  { "name": "Management",    "token": "$DISCORD_BOT_TOKEN",   "groupPolicy": "open" },
+        "legal":       { "name": "Legal",         "token": "$DISCORD_BOT_TOKEN",        "groupPolicy": "open" }
       },
       "guilds": {
-        "YOUR_GUILD_ID": {
+        "$DISCORD_GUILD_ID": {
           "requireMention": true
         }
       }
