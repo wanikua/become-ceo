@@ -122,6 +122,33 @@ Big tasks auto-spawn Discord threads. Your channels stay clean.
 - [中文版 — AI 朝廷（明朝六部）](https://github.com/wanikua/ai-court-skill)
 - [中文教程](https://github.com/wanikua/boluobobo-ai-court-tutorial)
 
+## ⚠️ Disclaimer
+
+This project is provided "as is" without any warranties.
+
+**Please note:**
+
+1. **AI-generated content is for reference only**
+   - Code, suggestions, etc. may contain errors
+   - Please review before using in production
+
+2. **Code Security**
+   - Review AI-generated code before merging
+   - Human review required for financial/sensitive operations
+
+3. **API Key Security**
+   - Keep your API keys safe
+   - Don't commit config files with keys to public repos
+
+4. **Server Costs**
+   - Free servers (Oracle Cloud, etc.) have limits
+   - Excess usage may incur charges
+
+5. **Data Backup**
+   - Regularly backup your workspace
+
+---
+
 ## License
 
 MIT
