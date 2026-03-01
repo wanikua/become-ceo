@@ -2,7 +2,7 @@
 name: become-ceo
 description: "Your AI executive team on Discord. 7 specialists (engineering, finance, marketing, devops, legal, management, chief of staff) each with its own model and personality. Use when setting up, configuring, scaling, or troubleshooting a multi-bot Discord workspace where you are the CEO and AI agents are your team."
 homepage: https://github.com/wanikua/become-ceo
-metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"],"env":["ANTHROPIC_API_KEY"]},"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
+metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"credentials":["ANTHROPIC_API_KEY","DISCORD_BOT_TOKEN"],"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
 ---
 
 # Become CEO — Your AI Executive Team
