@@ -2,7 +2,7 @@
 name: become-ceo
 description: "Your AI executive team on Discord. 7 specialists (engineering, finance, marketing, devops, legal, management, chief of staff) each with its own model and personality. Use when setting up, configuring, scaling, or troubleshooting a multi-bot Discord workspace where you are the CEO and AI agents are your team."
 homepage: https://github.com/wanikua/become-ceo
-metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
+metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"],"env":["ANTHROPIC_API_KEY"]},"install":[{"id":"node","kind":"node","package":"clawdbot","bins":["clawdbot"],"label":"Install Clawdbot"}]}}
 ---
 
 # Become CEO — Your AI Executive Team
@@ -11,15 +11,13 @@ metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot"]},"insta
 
 ## Quick Start
 
-Install on your server (not via this skill):
+1. Install Clawdbot: `npm install -g clawdbot`
+2. Install this skill: `clawdhub install become-ceo`
+3. Copy `references/clawdbot-template.json` to `~/.clawdbot/clawdbot.json`
+4. Fill in your Anthropic API key and Discord bot tokens
+5. Start: `systemctl --user start clawdbot-gateway`
 
-```
-bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)
-```
-
-Then fill in API keys and Discord bot tokens in `~/.clawdbot/clawdbot.json`.
-
-> The setup script is in the repo root, not bundled with this skill.
+For full server setup (Node.js, Chromium, firewall, swap), see the [setup guide on GitHub](https://github.com/wanikua/become-ceo).
 
 ## Your Team
 
