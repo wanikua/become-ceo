@@ -94,11 +94,60 @@ Each agent is an **independent Discord bot** bound to an independent AI identity
 
 ---
 
+## Core Capabilities
+
+### 🤖 Multi-Agent Collaboration
+Each role is its own Discord bot. `@Engineering` and Engineering answers. `@everyone` and the whole team responds. Large tasks automatically spawn Discord threads to keep your channels clean.
+
+> ⚠️ Want bots to trigger each other (e.g., chain-of-thought discussions, multi-bot brainstorms)? Add `"allowBots": true` in `clawdbot.json` under `channels.discord`. Without it, bots ignore other bots by default. Also set `"groupPolicy": "open"` on each account — otherwise group messages get silently dropped.
+
+### 🧠 Independent Memory
+Each agent has its own workspace and `memory/` directory. Project knowledge from conversations persists to files and survives across sessions. Your Engineering agent remembers your codebase conventions. Your Finance agent remembers last month's budget. They get smarter over time.
+
+### 🛠️ 60+ Built-in Skills
+These aren't chatbots — they have real tools:
+
+| Category | Skills |
+|----------|--------|
+| **Development** | GitHub (Issues/PRs/CI), Coding Agent (autonomous coding) |
+| **Documents** | Notion (databases, pages, automated reports) |
+| **Research** | Browser automation, web search, web scraping |
+| **Automation** | Cron scheduled tasks, heartbeat self-checks |
+| **Media** | TTS voice, screenshots, video frame extraction |
+| **Operations** | tmux remote control, shell command execution |
+| **Messaging** | Discord, Slack, Telegram, WhatsApp, Signal… |
+
+### ⏰ Cron Scheduling
+Built-in scheduler lets agents run tasks autonomously:
+- Daily standup reports → Discord + Notion
+- Weekly summaries with cost breakdowns
+- Health checks and code backups
+- Any custom scheduled task you can describe in plain English
+
+### 👥 Team Collaboration
+Invite teammates or co-founders to your Discord server. Everyone can `@` any agent. Conversations are isolated per user — results are visible to all. Your CTO can ask Engineering to review code while your CFO asks Finance for a spend report, simultaneously.
+
+### 🔒 Sandbox Isolation
+Agents can run inside Docker containers with configurable isolation levels:
+- **Read-only filesystem** — agents can't modify the host
+- **Network isolation** — agents can't reach the internet (or you can allow it)
+- **Environment isolation** — API keys are injected explicitly, not inherited from the host
+
+```json
+"sandbox": {
+  "mode": "all",
+  "workspaceAccess": "rw",
+  "docker": { "network": "bridge", "env": { "LLM_API_KEY": "your-key" } }
+}
+```
+
+---
+
 ## Quick Start
 
 ### Step 1: One-Click Deploy (~5 min)
 
-Grab an Ubuntu server — [Oracle Cloud free tier](https://www.oracle.com/cloud/free/) gives you ARM 4-core / 24GB RAM permanently free. SSH in and run:
+Grab an Ubuntu server — many cloud providers offer free-tier ARM instances (4-core, 24GB RAM). SSH in and run:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)
@@ -121,7 +170,7 @@ The script automatically handles:
 
 You need two things:
 
-1. **LLM API Key** — from your provider (Anthropic, OpenAI, Google, etc.)
+1. **LLM API Key** — from your LLM provider's dashboard
 2. **Discord Bot Tokens** — one per team member (7 total) from [discord.com/developers](https://discord.com/developers/applications)
 
 ```bash
@@ -204,18 +253,19 @@ Your entire team is defined in `~/.clawdbot/clawdbot.json`. Here's how it's stru
 ```json
 "models": {
   "providers": {
-    "anthropic": {
-      "apiKey": "sk-ant-...",
+    "$LLM_PROVIDER": {
+      "baseUrl": "$LLM_BASE_URL",
+      "apiKey": "$LLM_API_KEY",
       "models": [
-        { "id": "claude-sonnet-4-20250514", "name": "Fast Model" },
-        { "id": "claude-opus-4-20250514", "name": "Strong Model" }
+        { "id": "$MODEL_FAST", "name": "Fast Model" },
+        { "id": "$MODEL_STRONG", "name": "Strong Model" }
       ]
     }
   }
 }
 ```
 
-Mix providers freely — one agent on Anthropic, another on OpenAI, another on a local Ollama instance.
+Mix providers freely — one agent on Provider A, another on Provider B, another on a local Ollama instance. Any OpenAI-compatible API works.
 
 ### Agents — Define your team
 
@@ -224,7 +274,7 @@ Mix providers freely — one agent on Anthropic, another on OpenAI, another on a
   "list": [
     {
       "id": "engineering",
-      "model": { "primary": "anthropic/claude-opus-4-20250514" },
+      "model": { "primary": "$LLM_PROVIDER/$MODEL_STRONG" },
       "identity": {
         "name": "Engineering",
         "theme": "You are the Engineering lead. Direct, working solutions, not lectures.",
@@ -291,7 +341,7 @@ Want to add a new specialist? Three steps:
 ```json
 {
   "id": "data",
-  "model": { "primary": "anthropic/claude-sonnet-4-20250514" },
+  "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
   "identity": {
     "name": "Data Science",
     "theme": "You are the Data Science lead. Statistical rigor, clear visualizations, actionable insights.",
@@ -333,31 +383,41 @@ Your agents aren't just chatbots — they have tools:
 
 ---
 
-## Common Gotchas / Troubleshooting
+## FAQ
 
-### `@everyone` doesn't trigger any agents
+### Basics
 
-Each bot needs **Message Content Intent** + **Server Members Intent** enabled in the Discord Developer Portal. The bot's role in your server also needs **View Channels** permission.
+**Q: Do I need to know how to code?**
+No. The one-click script handles installation. The config file just needs a few keys filled in. All interaction is natural language on Discord.
 
-### Messages silently disappear
+**Q: Is the server really free?**
+Many cloud providers offer always-free VMs — for example, ARM instances with 4 cores and 24GB RAM. Check your provider's free tier details and usage limits.
 
-`groupPolicy: "open"` must be set on **each individual account** in the config. The global setting doesn't cascade. [See the config section above.](#%EF%B8%8F-the-grouppolicy-gotcha)
+**Q: How is this different from just using ChatGPT?**
+ChatGPT is a single generalist that forgets everything when you close the tab. This system is a team of specialists — each agent has its own expertise, persistent memory, and tool access. They can push code to GitHub, write docs to Notion, and run tasks on a schedule while you sleep.
 
-### Gateway won't start
+**Q: Can I use other models?**
+Yes. Clawdbot supports any provider with an OpenAI-compatible API — Anthropic, OpenAI, Google, Mistral, local Ollama, and more. Set the `model` field per agent in `clawdbot.json`. Different roles can use different providers.
 
-```bash
-# Check logs
-journalctl --user -u clawdbot-gateway --since today --no-pager
+**Q: How much does the API cost per month?**
+Depends on usage intensity. Light use: $10–15/month. Moderate: $20–30/month. Cost tip: use Strong Model only for heavy work (Engineering, Finance), Fast Model for everything else (~5× cheaper). You can also add a Budget Model tier for trivial tasks.
 
-# Run diagnostic
-clawdbot doctor
+### Technical
 
-# Common causes: missing API key, invalid JSON, bad bot token
-```
+**Q: `@everyone` doesn't trigger any agents?**
+In the Discord Developer Portal, each bot needs **Message Content Intent** and **Server Members Intent** enabled. The bot's role in the server needs **View Channels** permission. Clawdbot treats `@everyone` as an explicit mention for every bot.
 
-### Sandbox mode blocks file writes
+**Q: Messages silently disappear?**
+`groupPolicy: "open"` must be set on **each individual account** in the config. The global setting does NOT cascade. [See the config section above.](#%EF%B8%8F-the-grouppolicy-gotcha) This is the #1 gotcha — everyone hits it.
 
-If you've enabled sandbox mode (`"mode": "all"`), the container defaults to read-only filesystem and no network. Fix:
+**Q: Multiple people `@` the same agent — do they conflict?**
+No. Clawdbot maintains separate sessions for each user × agent combination. Multiple people can talk to Engineering simultaneously without interference.
+
+**Q: Can agents call each other?**
+Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `sessions_send` to message another agent's session. For example, Chief of Staff can delegate a coding task to Engineering programmatically.
+
+**Q: Sandbox mode — agent says "permission denied"?**
+`sandbox.mode: "all"` runs agents in Docker containers with a read-only filesystem and no network by default. Fix it with:
 
 ```json
 "sandbox": {
@@ -370,21 +430,26 @@ If you've enabled sandbox mode (`"mode": "all"`), the container defaults to read
 }
 ```
 
-### Multiple people @-ing the same agent — do they conflict?
+- `workspaceAccess: "rw"` — lets the sandbox read/write the workspace
+- `docker.network: "bridge"` — allows network access
+- `docker.env` — pass in API keys (sandbox doesn't inherit host env vars)
 
-No. Clawdbot maintains separate sessions per user × agent combination. Multiple people can talk to Engineering simultaneously without interference.
+**Q: How do I create custom skills?**
+Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically.
 
-### Can agents call each other?
+**Q: Can I use local models (Ollama, etc.)?**
+Yes. Add an OpenAI-compatible provider in `clawdbot.json` under `models.providers` and point `baseUrl` to your Ollama endpoint. Local models = zero API costs.
 
-Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `sessions_send` to message another agent's session. For example, Chief of Staff can delegate a coding task to Engineering automatically.
+**Q: Gateway won't start — how do I debug?**
+```bash
+# Check logs
+journalctl --user -u clawdbot-gateway --since today --no-pager
 
-### Can I use local models (Ollama, etc.)?
+# Run diagnostics
+clawdbot doctor
 
-Yes. Add any OpenAI-compatible provider to `models.providers` with a `baseUrl` pointing to your local instance. Zero API cost.
-
-### How much does it cost per month?
-
-Depends on usage. Light use: $10–15/mo. Medium: $20–30/mo. Save money by using strong models only for heavy tasks (code, analysis) and fast/budget models for everything else.
+# Common causes: missing API key, invalid JSON syntax, bad bot token
+```
 
 ---
 
@@ -408,15 +473,17 @@ become-ceo/
 
 ---
 
-## Links
+## Community & Links
 
 | Resource | Link |
 |----------|------|
-| **Clawdbot** (the engine) | [github.com/clawdbot/clawdbot](https://github.com/clawdbot/clawdbot) |
-| **Clawdbot Docs** | [docs.clawd.bot](https://docs.clawd.bot) |
-| **Chinese Version** — AI Court (Ming Dynasty metaphor) | [wanikua/boluobobo-ai-court-tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) |
-| **Chinese Skill Package** — AI Court Skill | [wanikua/ai-court-skill](https://github.com/wanikua/ai-court-skill) |
-| **ClawdHub** | `clawdhub install become-ceo` |
+| 📖 **Clawdbot Docs** | [docs.clawd.bot](https://docs.clawd.bot) |
+| 💻 **Clawdbot GitHub** | [github.com/clawdbot/clawdbot](https://github.com/clawdbot/clawdbot) |
+| 🇨🇳 **Chinese Version** — AI Court (Dynasty Theme) | [wanikua/boluobobo-ai-court-tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) |
+| 🇨🇳 **Chinese Skill Package** | [wanikua/ai-court-skill](https://github.com/wanikua/ai-court-skill) |
+| 📦 **ClawdHub Install** | `clawdhub install become-ceo` |
+
+> This project is the English adaptation of [boluobobo-ai-court-tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) — the original implementation of role-based multi-agent AI collaboration (first commit 2026-02-22). The Chinese version uses an ancient dynasty metaphor; this version uses a corporate CEO theme. Same engine, different flavor.
 
 ---
 
@@ -427,7 +494,7 @@ This project is provided "as is" without any warranties.
 1. **AI-generated content is for reference only** — code, copy, and recommendations may contain errors. Review before production use.
 2. **Code security** — always review AI-generated code before merging. Human review is mandatory for financial and security-sensitive operations.
 3. **API key security** — keep your keys safe. Never commit config files with real keys to public repos.
-4. **Server costs** — Oracle Cloud free tier has usage limits. Monitor your billing to avoid unexpected charges.
+4. **Server costs** — free-tier servers have usage limits. Monitor your cloud provider's billing to avoid unexpected charges.
 5. **Data backup** — regularly back up your workspace and memory files. This project provides no data guarantees.
 
 ---
