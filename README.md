@@ -76,7 +76,7 @@ Everyone:     [Each agent reports in with their status]
 - [What It Looks Like](#what-it-looks-like) — Real usage examples
 - [Config Deep-Dive](#config-deep-dive) — Customize everything
 - [Growing Your Team](#growing-your-team) — Add new specialists
-- [Personalizing Your Workspace](#personalizing-your-workspace) — SOUL.md, AGENTS.md, USER.md, IDENTITY.md scenario templates (20 templates for 5 team styles)
+- [Personalizing Your Workspace](#personalizing-your-workspace) — 30 scenario templates across 6 files (SOUL.md, AGENTS.md, USER.md, IDENTITY.md, TOOLS.md, HEARTBEAT.md), 5 getting-started combos, growth guide
 - [FAQ](#faq) — Common questions answered
 - [Troubleshooting](#troubleshooting) — Fix common issues fast
 
@@ -4882,7 +4882,7 @@ Restart the gateway (`systemctl --user restart clawdbot-gateway`) and your new t
 
 ## Personalizing Your Workspace
 
-Every agent reads four workspace files at session start. These files shape how your team thinks and behaves — they're as important as the config itself.
+Every agent reads workspace files at session start. These files shape how your team thinks and behaves — they're as important as the config itself.
 
 | File | Purpose | Contains |
 |------|---------|----------|
@@ -4890,12 +4890,14 @@ Every agent reads four workspace files at session start. These files shape how y
 | `AGENTS.md` | Workspace behavior | Memory management, group chat rules, safety, cron guidelines |
 | `USER.md` | About you, the CEO | Name, timezone, preferences, context, key people |
 | `IDENTITY.md` | Org chart | Model tiers, department roles, delegation flow |
+| `TOOLS.md` | ⭐ Equipment manifest | Service configs, server access, model preferences, channel setup |
+| `HEARTBEAT.md` | ⭐ Periodic checks | What to monitor on each heartbeat poll, alert thresholds |
 
 ### Included Scenario Templates
 
-Each reference file includes **5 ready-to-use templates** for different team styles. Copy the template closest to your situation and customize:
+Each reference file includes **5 ready-to-use templates** for different team styles. **30 templates across 6 files** — copy the template closest to your situation and customize:
 
-**SOUL.md templates:**
+**SOUL.md templates** — Team culture:
 | Template | Best For |
 |----------|----------|
 | Startup Mode | Move fast, ship quickly, iterate |
@@ -4904,7 +4906,7 @@ Each reference file includes **5 ready-to-use templates** for different team sty
 | Solo Founder | One-person army, maximum delegation, minimal questions |
 | Technical Team | Code quality, RFCs, post-mortems, architecture-first |
 
-**AGENTS.md templates:**
+**AGENTS.md templates** — Workspace rules:
 | Template | Best For |
 |----------|----------|
 | Multi-Channel | Discord + Telegram + WhatsApp with priority routing |
@@ -4913,7 +4915,7 @@ Each reference file includes **5 ready-to-use templates** for different team sty
 | DevOps-Heavy | Infrastructure focus, incident response, rollback plans |
 | Minimal | Quick start — just the essential rules |
 
-**USER.md templates:**
+**USER.md templates** — About you:
 | Template | Best For |
 |----------|----------|
 | Solo Indie Hacker | Bootstrapped, building alone, cost-conscious |
@@ -4922,7 +4924,7 @@ Each reference file includes **5 ready-to-use templates** for different team sty
 | Content Creator / Agency | Multi-client content, social media, engagement tracking |
 | Student / Researcher | Academic, thesis, paper management, deadlines |
 
-**IDENTITY.md templates:**
+**IDENTITY.md templates** — Org chart:
 | Template | Best For |
 |----------|----------|
 | Lean Startup (3 agents) | Minimal cost, simple setup, solo/small team |
@@ -4931,7 +4933,96 @@ Each reference file includes **5 ready-to-use templates** for different team sty
 | Full Enterprise (7 agents) | The default — complex operations, all departments |
 | Research Lab (4 agents) | Academic teams, experiments, paper writing |
 
+**TOOLS.md templates** — Equipment & services:
+| Template | Best For |
+|----------|----------|
+| Solo SaaS Builder | Minimal stack, free tiers, single repo |
+| Multi-Platform Team | Discord + Telegram + Slack with channel routing rules |
+| DevOps & Infrastructure | Server inventory, SSH access, monitoring stack |
+| Content & Social Media | Platform schedules, brand guidelines, social tools |
+| Research & Academic | Paper databases, citation tools, experiment tracking |
+
+**HEARTBEAT.md templates** — Periodic monitoring:
+| Template | Best For |
+|----------|----------|
+| Solo Founder | Low-frequency: GitHub + costs + uptime, quiet at night |
+| Active Manager | High-frequency: time-of-day aware, multi-signal monitoring |
+| DevOps Focus | Infrastructure health: endpoints, CPU, disk, error rates |
+| Content & Social Media | Engagement tracking, competitor monitoring, calendar checks |
+| Minimal | One check: "anything urgent?" — ultra-lean token usage |
+
+### Getting Started Combos
+
+Don't know which templates to pick? Here are pre-tested combinations for common scenarios:
+
+**🚀 Combo 1: Solo Indie Hacker**
+| File | Template | Why |
+|------|----------|-----|
+| SOUL.md | Solo Founder | Maximum delegation, minimal questions |
+| AGENTS.md | Minimal | No overhead — just the basics |
+| USER.md | Solo Indie Hacker | Bootstrapped context, cost-conscious |
+| IDENTITY.md | Lean Startup (3 agents) | Low cost, simple setup |
+| TOOLS.md | Solo SaaS Builder | Free-tier stack |
+| HEARTBEAT.md | Solo Founder | Low-frequency, won't burn tokens |
+
+**🏗️ Combo 2: Technical Founder**
+| File | Template | Why |
+|------|----------|-----|
+| SOUL.md | Technical Team | Code quality first, architecture decisions |
+| AGENTS.md | DevOps-Heavy | Infrastructure rigor, incident response |
+| USER.md | Technical Lead / CTO | Wants diffs, not summaries |
+| IDENTITY.md | Engineering-Heavy (5 agents) | Frontend/Backend/DevOps split |
+| TOOLS.md | DevOps & Infrastructure | Server inventory, monitoring |
+| HEARTBEAT.md | DevOps Focus | Endpoint checks, error rate monitoring |
+
+**📱 Combo 3: Content Creator / Agency**
+| File | Template | Why |
+|------|----------|-----|
+| SOUL.md | Creative Agency | Brand voice matters |
+| AGENTS.md | Multi-Channel | Content flows across platforms |
+| USER.md | Content Creator / Agency | Multi-client, engagement metrics |
+| IDENTITY.md | Content & Marketing (5 agents) | Content pipeline with analytics |
+| TOOLS.md | Content & Social Media | Platform schedules, brand guides |
+| HEARTBEAT.md | Content & Social Media | Engagement tracking, calendar checks |
+
+**🏢 Combo 4: Startup with Small Team**
+| File | Template | Why |
+|------|----------|-----|
+| SOUL.md | Startup Mode | Move fast, ship first |
+| AGENTS.md | Heartbeat-Driven | Proactive monitoring, periodic check-ins |
+| USER.md | Startup Founder | Team context, runway awareness |
+| IDENTITY.md | Full Enterprise (7 agents) | Full department coverage |
+| TOOLS.md | Multi-Platform Team | Discord + Telegram for multi-channel |
+| HEARTBEAT.md | Active Manager | Time-aware, multi-signal monitoring |
+
+**🎓 Combo 5: Researcher / Student**
+| File | Template | Why |
+|------|----------|-----|
+| SOUL.md | Technical Team | Precision, citations, methodology |
+| AGENTS.md | Knowledge Worker | Research + writing focus |
+| USER.md | Student / Researcher | Thesis, deadlines, advisor meetings |
+| IDENTITY.md | Research Lab (4 agents) | PI → Researcher → Writer → Engineer |
+| TOOLS.md | Research & Academic | Paper databases, LaTeX, Jupyter |
+| HEARTBEAT.md | Minimal | Researchers don't need constant pings |
+
 > 💡 **Start small, grow later.** You don't need 7 agents from day one. Pick the Lean Startup (3 agents) template from IDENTITY.md, get comfortable, then expand. Adding agents later is just adding a JSON block + Discord bot.
+
+### Growing Your Templates
+
+As your company evolves, your templates should too. Here's when to upgrade:
+
+| Signal | What to do |
+|--------|-----------|
+| You hired your first employee | Move USER.md → "Startup Founder", add them to Important People |
+| Agents keep asking for approval | Loosen SOUL.md → more "Startup Mode", less "Enterprise Mode" |
+| Things break without you noticing | Add HEARTBEAT.md checks, enable DevOps-Heavy AGENTS.md |
+| Too many notifications | Tighten HEARTBEAT.md alert thresholds, add quiet hours |
+| Spending too much on tokens | Switch IDENTITY.md to fewer agents, HEARTBEAT.md to Minimal |
+| Content is inconsistent | Add SOUL.md "Creative Agency" sections for brand voice |
+| Need audit trail for investors | Add SOUL.md "Enterprise Mode" documentation rules |
+| Managing multiple repos | Add TOOLS.md server inventory, enable GitHub integration in agents |
+
+> **Migration is gradual.** You don't swap templates wholesale — you copy individual sections from a new template into your existing files. The templates are starting points, not final destinations.
 
 ### Quick Customization Guide
 
@@ -4941,11 +5032,15 @@ cp become-ceo/references/SOUL.md ~/clawd/SOUL.md
 cp become-ceo/references/AGENTS.md ~/clawd/AGENTS.md
 cp become-ceo/references/USER.md ~/clawd/USER.md
 cp become-ceo/references/IDENTITY.md ~/clawd/IDENTITY.md
+cp become-ceo/references/TOOLS.md ~/clawd/TOOLS.md
+cp become-ceo/references/HEARTBEAT.md ~/clawd/HEARTBEAT.md
 
 # 2. Edit each file — fill in your details, pick your templates
-nano ~/clawd/USER.md    # Your name, timezone, preferences
-nano ~/clawd/SOUL.md    # Pick a team style template
-nano ~/clawd/IDENTITY.md # Pick an org structure
+nano ~/clawd/USER.md       # Your name, timezone, preferences
+nano ~/clawd/SOUL.md       # Pick a team style template
+nano ~/clawd/IDENTITY.md   # Pick an org structure
+nano ~/clawd/TOOLS.md      # List your tools and services
+nano ~/clawd/HEARTBEAT.md  # Uncomment the checks you want
 
 # 3. Restart for changes to take effect
 systemctl --user restart clawdbot-gateway
@@ -5067,7 +5162,7 @@ Pin production-critical skills to specific versions with `clawdhub install <name
 Treat skills like npm packages — review before trusting. Check the SKILL.md for red flags (external URLs, hardcoded keys, obfuscated instructions). Install in sandbox mode (`workspaceAccess: "ro"`, `network: "none"`) until you're confident. Never put credentials directly in skill files — use environment variables. See [Skill Security](#-skill-security--trust-but-verify) for the full review checklist.
 
 **Q: Which workspace template should I start with?**
-It depends on your situation. Each reference file (SOUL.md, AGENTS.md, USER.md, IDENTITY.md) includes 5 scenario templates. For most people: start with "Solo Founder" USER.md + "Startup Mode" SOUL.md + "Lean Startup" IDENTITY.md (3 agents). This gives you a functional team at minimal cost. As you scale, switch to "Full Enterprise" (7 agents) and add more structured templates. See [Personalizing Your Workspace](#personalizing-your-workspace) for the full template matrix.
+It depends on your situation. We provide **30 templates across 6 files** plus **5 pre-tested combos** for common scenarios. For most people: pick "Combo 1: Solo Indie Hacker" — it gives you a functional team at minimal cost with 3 agents. As you scale, use the [Growing Your Templates](#growing-your-templates) guide to evolve gradually. See [Personalizing Your Workspace](#personalizing-your-workspace) for the full template matrix and combo recommendations.
 
 **Q: Do I need all 7 agents?**
 No. The "Lean Startup" template in IDENTITY.md runs just 3 agents (Chief of Staff, Engineering, Finance) — lower cost, simpler setup, less noise. You can also try "Engineering-Heavy" (5 agents) or "Content & Marketing" (5 agents) depending on your focus. Start small, split departments when you notice an agent handling too many different responsibilities.
@@ -5173,6 +5268,8 @@ become-ceo/
 │       ├── IDENTITY.md                   # Org chart and role definitions (5 org structure templates)
 │       ├── USER.md                       # About you, the CEO (5 persona templates)
 │       ├── AGENTS.md                     # Group chat + memory rules (5 workflow templates)
+│       ├── TOOLS.md                      # Equipment manifest — services, servers, models (5 stack templates)
+│       ├── HEARTBEAT.md                  # Periodic check-in tasks (5 monitoring templates)
 │       ├── notion-templates.md           # Ready-to-use Notion database schemas
 │       ├── github-workflows.md           # Ready-to-use GitHub Actions templates
 │       ├── browser-recipes.md            # Ready-to-use browser automation recipes
@@ -5219,4 +5316,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v6.1
+v6.2
