@@ -62,7 +62,7 @@ Everyone:     [Each agent reports in with their status]
 ## Table of Contents
 
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
-- [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Sub-agent delegation, permissions, supervisor patterns
+- [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -461,6 +461,198 @@ clawdbot cron add \
 
 Management becomes a **project oversight layer** — catching stuck tasks, flagging blockers, and keeping you informed without you having to ask.
 
+### Error Handling & Resilience
+
+Real work fails sometimes. Sub-agents can time out, hit API errors, or produce bad results. Here's how to handle it:
+
+**Timeouts:** Set `runTimeoutSeconds` on `sessions_spawn` to prevent runaway tasks:
+
+```
+Chief of Staff:
+  sessions_spawn(
+    agentId: "engineering",
+    task: "Refactor the payment module",
+    runTimeoutSeconds: 300    ← kills the task after 5 minutes
+  )
+```
+
+**What happens when a sub-agent fails:**
+
+| Failure | What Happens | Recovery |
+|---------|-------------|----------|
+| **Timeout** | Task is killed, spawner gets a timeout notification | Retry with simpler scope, or escalate to CEO |
+| **API error** | Clawdbot retries automatically (3×) | If persistent, the agent reports the failure back |
+| **Bad output** | Spawner receives the result and can judge quality | Re-spawn with more specific instructions |
+| **Agent unavailable** | Spawn fails immediately | Spawner falls back or reports to CEO |
+
+**Building resilient delegation chains:**
+
+```
+# Chief of Staff's approach to a complex task:
+
+1. Spawn Engineering with timeout: 300s
+2. If Engineering succeeds → spawn DevOps for deployment
+3. If Engineering fails/times out → report to CEO with error details
+4. Never silently swallow failures — always surface them
+```
+
+> 💡 **Pro tip:** Include "If you encounter errors, report them clearly rather than guessing" in your agent's `identity.theme`. This prevents agents from hallucinating success when something actually broke.
+
+### Monitoring Multi-Agent Work
+
+When you have 7 agents working, you need visibility. Clawdbot provides built-in tools to see what's happening:
+
+**List active sessions:**
+```bash
+# See all running sessions — who's working on what
+clawdbot sessions list --active
+```
+
+```
+Active Sessions:
+  engineering  │ session_abc │ "Refactoring auth module"     │ 3m 22s
+  devops       │ session_def │ "Setting up staging deploy"   │ 1m 45s
+  marketing    │ session_ghi │ "Drafting launch blog post"   │ 5m 10s
+```
+
+**Check a specific agent's work:**
+```bash
+# Pull the last 10 messages from Engineering's session
+clawdbot sessions history --session session_abc --limit 10
+```
+
+**In Discord — ask Chief of Staff to monitor:**
+```
+You:             @Chief of Staff what's everyone working on right now?
+
+Chief of Staff:  📊 Team Status:
+                 • Engineering: refactoring auth (3 min in, active)
+                 • DevOps: staging deploy (almost done)
+                 • Marketing: blog draft (needs review)
+                 • Finance, Legal, Management: idle
+```
+
+This is exactly how a real Chief of Staff works — they maintain situational awareness so you don't have to ask each person individually.
+
+### Escalation Patterns
+
+Not everything should reach the CEO. Configure your agents to **handle what they can** and **escalate what they can't**:
+
+```
+┌──────────────────────────────────────────────┐
+│              Escalation Pyramid              │
+│                                              │
+│                  👑 CEO                      │
+│              (You — Discord)                 │
+│         "Only bother me for big stuff"       │
+│                    ▲                         │
+│             escalate if:                     │
+│         - budget > $100 impact               │
+│         - production is down                 │
+│         - legal/compliance risk              │
+│         - conflicting priorities             │
+│                    │                         │
+│           ⚡ Chief of Staff                  │
+│         (Coordinator — handles most)         │
+│         - routes tasks between agents        │
+│         - resolves minor conflicts           │
+│         - consolidates status updates        │
+│                    ▲                         │
+│             escalate if:                     │
+│         - cross-team dependency              │
+│         - task blocked > 10 min              │
+│         - unclear ownership                  │
+│                    │                         │
+│    ⚔️ Eng  💰 Fin  🎭 Mktg  🔧 DevOps      │
+│         (Specialists — handle own domain)    │
+│         - do the actual work                 │
+│         - report results up                  │
+│         - flag blockers immediately          │
+└──────────────────────────────────────────────┘
+```
+
+**Encoding escalation behavior in agent themes:**
+
+```json
+{
+  "id": "engineering",
+  "identity": {
+    "theme": "You are the Engineering lead. Handle coding tasks independently. Escalate to Chief of Staff if: (1) you need input from another department, (2) a task will take more than 30 minutes, or (3) you find a security issue. Never silently fail — always report back."
+  }
+}
+```
+
+This creates a **self-managing team** where most issues resolve without your involvement. You only hear about the important stuff.
+
+### Ready-to-Use Workflow Templates
+
+Copy these patterns for common multi-agent scenarios:
+
+**🚀 Feature Launch (5 agents)**
+```
+You → Chief of Staff: "Launch user dashboard feature"
+
+Chief of Staff orchestrates:
+  1. Engineering: build the feature (spawn, strong model)
+  2. Marketing: write announcement copy (spawn, fast model)
+  3. DevOps: prepare deployment pipeline (spawn, fast model)
+  4. [waits for all 3]
+  5. DevOps: deploy to production (spawn)
+  6. Marketing: publish announcement (spawn)
+  7. Finance: log infrastructure cost change (send)
+
+Result: Feature built, deployed, and announced — one command from you.
+```
+
+**🐛 Bug Triage (3 agents)**
+```
+You → Engineering: "Users report 500 errors on /api/checkout"
+
+Engineering handles:
+  1. Investigates logs, identifies root cause
+  2. Writes fix, pushes PR
+  3. send → DevOps: "Hotfix PR #92 ready, deploy ASAP"
+  4. DevOps deploys, confirms fix
+  5. Engineering → send → Chief of Staff: "Resolved. Root cause: null pointer in payment handler."
+
+You get one update: "Fixed."
+```
+
+**📊 Monthly Report (4 agents)**
+```
+Cron triggers Chief of Staff: "Generate monthly report"
+
+Chief of Staff orchestrates:
+  1. Finance: "Pull this month's spend data and trends" (spawn)
+  2. Engineering: "List all PRs merged, features shipped" (spawn)
+  3. Marketing: "Summarize content performance metrics" (spawn)
+  4. [waits for all 3]
+  5. Chief of Staff compiles into unified report
+  6. Posts to #announcements on Discord
+
+Zero human involvement — runs automatically on the 1st of each month.
+```
+
+**🔐 Security Incident Response (4 agents, parallel + sequential)**
+```
+Alert → Chief of Staff: "Possible data breach detected"
+
+Phase 1 — Parallel (immediate):
+  spawn → Engineering: "Audit access logs for unauthorized access"
+  spawn → DevOps: "Isolate affected service, rotate credentials"
+  spawn → Legal: "Assess disclosure obligations"
+
+Phase 2 — Sequential (after Phase 1):
+  send → Engineering: "Patch the vulnerability"
+  send → DevOps: "Deploy fix and restore service"
+  spawn → Marketing: "Draft incident communication for users"
+
+Phase 3 — Cleanup:
+  Chief of Staff compiles incident report
+  Posts to #incidents channel
+  Schedules post-mortem meeting
+```
+
 ### Anti-Patterns to Avoid
 
 | ❌ Don't | ✅ Do Instead |
@@ -469,6 +661,8 @@ Management becomes a **project oversight layer** — catching stuck tasks, flagg
 | Spawn sub-agents for trivial tasks | Only delegate when the task genuinely requires another specialist |
 | Chain 5+ levels of delegation | Keep delegation to 2 levels max (CEO → Chief of Staff → Specialist) |
 | Let agents spawn themselves | This creates infinite loops — `allowAgents` should never include the agent's own ID |
+| Ignore sub-agent failures silently | Always surface errors — add "report failures clearly" to agent themes |
+| Skip timeouts on spawned tasks | Set `runTimeoutSeconds` — prevent runaway tasks from burning budget |
 
 ---
 
@@ -1025,4 +1219,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.0
+v4.1
