@@ -64,6 +64,7 @@ Everyone:     [Each agent reports in with their status]
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
+- [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, issue-to-deploy pipeline
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -1133,6 +1134,342 @@ Here's everything you need for Notion integration at a glance:
 
 ---
 
+## GitHub Integration — Your Engineering Pipeline
+
+Your AI team doesn't just talk about code — it **manages your entire GitHub workflow**. Issues, PRs, code reviews, CI/CD pipelines — all driven by natural language commands on Discord.
+
+### Why GitHub Integration Matters
+
+Discord is where you give orders. Notion is where knowledge persists. **GitHub is where the work actually ships.** With Clawdbot's built-in GitHub skill, your agents can:
+
+- 🐛 **Triage issues** — auto-label, assign, and prioritize incoming bug reports
+- 🔀 **Manage PRs** — create, review, approve, merge, and close pull requests
+- 🚀 **Trigger CI/CD** — kick off builds, check run status, re-run failed workflows
+- 📋 **Create issues** — turn Discord conversations into trackable GitHub issues
+- 🔍 **Code review** — Engineering reads diffs, spots bugs, suggests improvements
+- 📊 **Repository analytics** — PR merge times, issue velocity, contributor stats
+
+### Setting Up GitHub Access
+
+Your agents use the `gh` CLI (GitHub CLI) under the hood. Set it up once:
+
+```bash
+# On your server, authenticate with GitHub
+gh auth login
+
+# Verify it works
+gh auth status
+```
+
+> 💡 **The `gh` CLI is installed automatically** by the `setup.sh` script. If you're adding GitHub integration to an existing setup, just run `sudo apt install gh` and authenticate.
+
+**For organization-level access**, use a GitHub App or fine-grained personal access token with these permissions:
+- **Issues:** Read & Write
+- **Pull Requests:** Read & Write
+- **Actions:** Read & Write (for CI/CD)
+- **Contents:** Read & Write (for code operations)
+
+Store the token in your workspace environment — agents inherit it automatically.
+
+### Issue Management — From Bug Report to Resolution
+
+Turn your Discord channels into a **fully automated issue tracker**:
+
+```
+# A user reports a bug in Discord
+User:            @Engineering the checkout page throws a 500 error
+                 when the cart has more than 10 items
+
+Engineering:     Investigating. Creating a GitHub issue to track this.
+
+                 → Created: wanikua/myapp#142
+                   Title: "Checkout 500 error with 10+ cart items"
+                   Labels: bug, priority-high, checkout
+                   Assignee: Engineering bot
+
+                 I'll look at the code now...
+```
+
+**Auto-triage incoming issues with a cron job:**
+
+```bash
+# Every hour, Engineering checks for new untriaged issues
+clawdbot cron add \
+  --name "issue-triage" --agent engineering \
+  --cron "0 * * * *" \
+  --message "Check for new GitHub issues in wanikua/myapp without labels. For each: read the issue, add appropriate labels (bug/feature/docs/question), set priority (critical/high/medium/low), and post a comment with your initial assessment. If it's critical, notify Chief of Staff." \
+  --session isolated --token <your-token>
+```
+
+**What auto-triage looks like:**
+
+```
+Engineering (cron): 📋 Issue Triage — 3 new issues processed:
+
+  #143 "Login fails on Safari" 
+    → Labels: bug, browser-compat, priority-high
+    → Comment: "Likely a WebKit cookie handling issue. 
+       Will investigate SameSite attribute."
+
+  #144 "Add dark mode support"
+    → Labels: feature, ui, priority-medium
+    → Comment: "Feature request noted. Would require 
+       CSS variable refactor. Estimated 2-3 days."
+
+  #145 "Typo in API docs"
+    → Labels: docs, priority-low, good-first-issue
+    → Comment: "Quick fix. Opening a PR now."
+    → PR #89 created with the fix ✅
+```
+
+Notice: simple issues get **fixed immediately** without human involvement. The agent triages, creates a PR, and moves on.
+
+### Pull Request Workflows
+
+Your Engineering agent handles the full PR lifecycle:
+
+**Creating PRs from Discord:**
+
+```
+You:             @Engineering add rate limiting to the /api/search endpoint.
+                 Max 100 requests per minute per API key.
+
+Engineering:     Working on it.
+                 [reads codebase, writes implementation, writes tests]
+
+                 ✅ Done. PR created:
+                 → wanikua/myapp#90 "Add rate limiting to /api/search"
+                   • Added express-rate-limit middleware
+                   • 100 req/min per API key (configurable)
+                   • Tests: 4 new test cases, all passing
+                   • CI status: ✅ green
+
+                 Ready for your review, or I can merge it.
+```
+
+**Automated code review:**
+
+```
+You:             @Engineering review PR #91
+
+Engineering:     Reviewing wanikua/myapp#91...
+
+                 📝 Code Review — PR #91: "Refactor user authentication"
+
+                 ✅ Good:
+                 • Clean separation of auth middleware
+                 • Proper error handling on token expiry
+                 • Tests cover happy path + edge cases
+
+                 ⚠️ Suggestions:
+                 1. Line 42: `jwt.verify()` should use `algorithms: ['HS256']`
+                    to prevent algorithm switching attacks
+                 2. Line 78: Missing rate limit on /auth/refresh — could be
+                    abused for token farming
+                 3. Line 103: Consider using `httpOnly` flag on the cookie
+
+                 🔴 Blocker:
+                 • No input validation on the `redirect_uri` parameter
+                   (potential open redirect vulnerability)
+
+                 Recommend: fix the blocker, address suggestions, then merge.
+                 Want me to push fixes directly?
+```
+
+**Cross-agent PR coordination:**
+
+```
+# Engineering finishes code, needs DevOps to deploy
+Engineering:     PR #92 merged. @DevOps — ready for staging deployment.
+
+DevOps:          Deploying PR #92 to staging...
+                 → Triggered workflow: deploy-staging.yml
+                 → Build: ✅ passed (2m 14s)
+                 → Staging URL: https://staging.example.com
+                 → Running smoke tests...
+                 → All 12 smoke tests passed ✅
+
+                 Staging is live. Want me to promote to production?
+```
+
+### CI/CD Pipeline Control
+
+Your agents can trigger, monitor, and manage GitHub Actions workflows directly:
+
+**Checking CI status:**
+
+```
+You:             @DevOps what's the CI status on our main repos?
+
+DevOps:          📊 CI Status Overview:
+
+                 wanikua/myapp (main)
+                 └── Last run: ✅ passed (3m 22s) — 2 hours ago
+                     Tests: 142/142 passing
+                     Coverage: 87%
+
+                 wanikua/api-gateway (main)
+                 └── Last run: ❌ failed (1m 45s) — 6 hours ago
+                     Failure: test_rate_limiting (timeout)
+                     → This has failed 3 times this week
+
+                 wanikua/landing-page (main)
+                 └── Last run: ✅ passed (45s) — 1 day ago
+
+                 ⚠️ api-gateway needs attention — flaky test detected.
+                 Want me to investigate?
+```
+
+**Re-running failed workflows:**
+
+```
+You:             @DevOps re-run the failed CI on api-gateway
+
+DevOps:          Re-running workflow on wanikua/api-gateway...
+                 → Triggered: ci.yml (run #487)
+                 → Status: running...
+                 → ✅ Passed this time (2m 01s)
+
+                 The test_rate_limiting failure was intermittent.
+                 Recommend: add retry logic or increase timeout.
+                 Want Engineering to fix the flaky test?
+```
+
+**Automated deploy pipeline (cron-driven):**
+
+```bash
+# Auto-deploy to staging every day at midnight (if tests pass)
+clawdbot cron add \
+  --name "nightly-staging-deploy" --agent devops \
+  --cron "0 0 * * *" \
+  --message "Check if there are new merged PRs on wanikua/myapp since last deploy. If yes: trigger the deploy-staging workflow, wait for completion, run smoke tests, and report results. If anything fails, notify Engineering and Chief of Staff." \
+  --session isolated --token <your-token>
+```
+
+### Issue-to-PR Pipeline — Full Automation
+
+The ultimate workflow: an issue comes in, gets triaged, fixed, reviewed, and deployed — all automatically:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  New Issue: #150 "API returns wrong timezone for UTC users"  │
+└──────────────┬───────────────────────────────────────────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  Engineering (cron: hourly triage)   │
+│  1. Labels: bug, priority-high, api │
+│  2. Reads code, identifies the fix  │
+│  3. Creates branch: fix/issue-150   │
+│  4. Pushes code + tests             │
+│  5. Opens PR #95 linked to #150     │
+└──────────────┬───────────────────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  CI/CD (GitHub Actions)             │
+│  • Tests: ✅ 143/143 passing        │
+│  • Lint: ✅ clean                    │
+│  • Coverage: 88% (+1%)              │
+└──────────────┬───────────────────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  Engineering (self-review)          │
+│  • Reviews own PR for quality       │
+│  • Merges PR #95                    │
+│  • Issue #150 auto-closed           │
+└──────────────┬───────────────────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  DevOps (nightly deploy cron)       │
+│  • Detects merged PR                │
+│  • Deploys to staging               │
+│  • Smoke tests pass                 │
+│  • Reports to Discord               │
+└──────────────────────────────────────┘
+
+Zero human involvement. Issue → Fix → Deploy.
+```
+
+> ⚠️ **Safety note:** Fully automated merge-and-deploy is powerful but risky. For production systems, add a human review step: Engineering creates the PR and flags it for your review, then you approve and DevOps deploys. Start with staging-only automation and add production auto-deploy once you trust the pipeline.
+
+### Repository Analytics
+
+Your agents can provide insights into your development velocity:
+
+```
+You:             @Management give me the engineering metrics for this month
+
+Management:      📊 Engineering Metrics — March 2026
+
+                 ═══ Pull Requests ═══
+                 • Opened: 23 | Merged: 19 | Closed: 2 | Open: 2
+                 • Avg time to merge: 4.2 hours
+                 • Largest PR: #87 (auth refactor, +420/-180 lines)
+
+                 ═══ Issues ═══
+                 • New: 31 | Closed: 27 | Open: 18
+                 • Avg resolution time: 1.8 days
+                 • Bugs: 12 | Features: 14 | Docs: 5
+                 • Critical issues resolved: 3/3 (100%)
+
+                 ═══ CI/CD ═══
+                 • Total runs: 156 | Pass rate: 94.2%
+                 • Flaky tests identified: 2 (both fixed)
+                 • Avg build time: 2m 48s
+
+                 ═══ Code Quality ═══
+                 • Test coverage: 87% (+3% vs last month)
+                 • Lint violations: 0 (clean)
+
+                 → Full report archived to Notion: Project Archives
+```
+
+### GitHub + Notion Integration
+
+Your GitHub activity flows into Notion automatically for long-term tracking:
+
+```
+# Engineering documents a PR in both GitHub and Notion
+Engineering:     PR #95 merged. Updating records:
+
+                 GitHub:
+                 → Issue #150 closed (linked to PR #95)
+                 → Milestone "v2.1" progress: 8/10 issues done
+
+                 Notion:
+                 → Daily Report: added "Fixed timezone bug (PR #95)"
+                 → Engineering Wiki: updated API docs for timezone handling
+                 → Project Archives: "v2.1 Milestone" — 80% complete
+```
+
+### GitHub Quick-Reference Card
+
+| Step | What to Do |
+|------|-----------|
+| **1. Install gh CLI** | `sudo apt install gh` (or auto-installed by setup.sh) |
+| **2. Authenticate** | `gh auth login` — follow the prompts |
+| **3. Verify access** | `gh auth status` — check scopes |
+| **4. Test from Discord** | `@Engineering list open issues on wanikua/myapp` |
+| **5. Add cron jobs** | Issue triage (hourly), nightly staging deploy |
+| **6. Connect to Notion** | Engineering logs PRs/issues to Engineering Wiki |
+
+**Common `gh` commands your agents use:**
+
+| Action | Command |
+|--------|---------|
+| List issues | `gh issue list --repo owner/repo` |
+| Create issue | `gh issue create --title "..." --body "..."` |
+| List PRs | `gh pr list --repo owner/repo` |
+| Create PR | `gh pr create --title "..." --body "..."` |
+| Review PR | `gh pr diff 42 --repo owner/repo` |
+| Merge PR | `gh pr merge 42 --merge --repo owner/repo` |
+| Check CI | `gh run list --repo owner/repo` |
+| Re-run CI | `gh run rerun <run-id> --repo owner/repo` |
+| View workflow | `gh run view <run-id> --repo owner/repo` |
+
+> 💡 **Agents compose these commands automatically** — you just say "review PR #42" and Engineering translates that into the right `gh` commands, reads the diff, and provides feedback. No need to memorize the CLI.
+
+---
+
 ## Architecture
 
 ```
@@ -1579,6 +1916,9 @@ Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `s
 **Q: How do I connect Notion?**
 Create an integration at [notion.so/my-integrations](https://www.notion.so/my-integrations), copy the token, share your pages with the integration, and store the token in your workspace. Clawdbot's built-in Notion skill handles all API calls — agents create pages, query databases, and update records via natural language. See the [Notion Integration](#notion-integration--your-companys-knowledge-base) section for setup details and workflow examples.
 
+**Q: How does GitHub integration work?**
+Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authenticate once on your server with `gh auth login`, and all agents can create issues, manage PRs, review code, and trigger CI/CD workflows. Engineering handles most GitHub operations, but any agent can read repo data. See the [GitHub Integration](#github-integration--your-engineering-pipeline) section for setup and workflow examples.
+
 **Q: How do I create custom skills?**
 Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically.
 
@@ -1690,4 +2030,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.4
+v4.5
