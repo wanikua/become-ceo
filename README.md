@@ -76,6 +76,7 @@ Everyone:     [Each agent reports in with their status]
 - [What It Looks Like](#what-it-looks-like) — Real usage examples
 - [Config Deep-Dive](#config-deep-dive) — Customize everything
 - [Growing Your Team](#growing-your-team) — Add new specialists
+- [Personalizing Your Workspace](#personalizing-your-workspace) — SOUL.md, AGENTS.md, USER.md, IDENTITY.md scenario templates (20 templates for 5 team styles)
 - [FAQ](#faq) — Common questions answered
 - [Troubleshooting](#troubleshooting) — Fix common issues fast
 
@@ -4879,6 +4880,81 @@ Restart the gateway (`systemctl --user restart clawdbot-gateway`) and your new t
 
 ---
 
+## Personalizing Your Workspace
+
+Every agent reads four workspace files at session start. These files shape how your team thinks and behaves — they're as important as the config itself.
+
+| File | Purpose | Contains |
+|------|---------|----------|
+| `SOUL.md` | Team culture & rules | Communication style, decision framework, quality standards |
+| `AGENTS.md` | Workspace behavior | Memory management, group chat rules, safety, cron guidelines |
+| `USER.md` | About you, the CEO | Name, timezone, preferences, context, key people |
+| `IDENTITY.md` | Org chart | Model tiers, department roles, delegation flow |
+
+### Included Scenario Templates
+
+Each reference file includes **5 ready-to-use templates** for different team styles. Copy the template closest to your situation and customize:
+
+**SOUL.md templates:**
+| Template | Best For |
+|----------|----------|
+| Startup Mode | Move fast, ship quickly, iterate |
+| Enterprise Mode | Process-heavy, compliance, audit trails |
+| Creative Agency | Brand-focused, content calendars, creative feedback |
+| Solo Founder | One-person army, maximum delegation, minimal questions |
+| Technical Team | Code quality, RFCs, post-mortems, architecture-first |
+
+**AGENTS.md templates:**
+| Template | Best For |
+|----------|----------|
+| Multi-Channel | Discord + Telegram + WhatsApp with priority routing |
+| Heartbeat-Driven | Proactive agents that check in periodically |
+| Knowledge Worker | Research, writing, citation management |
+| DevOps-Heavy | Infrastructure focus, incident response, rollback plans |
+| Minimal | Quick start — just the essential rules |
+
+**USER.md templates:**
+| Template | Best For |
+|----------|----------|
+| Solo Indie Hacker | Bootstrapped, building alone, cost-conscious |
+| Startup Founder | Small team, Series A, product-market fit focus |
+| Technical Lead / CTO | Engineering-focused, security-conscious, metrics-driven |
+| Content Creator / Agency | Multi-client content, social media, engagement tracking |
+| Student / Researcher | Academic, thesis, paper management, deadlines |
+
+**IDENTITY.md templates:**
+| Template | Best For |
+|----------|----------|
+| Lean Startup (3 agents) | Minimal cost, simple setup, solo/small team |
+| Engineering-Heavy (5 agents) | Frontend/Backend/DevOps split, technical teams |
+| Content & Marketing (5 agents) | Agencies, content pipeline, analytics-driven |
+| Full Enterprise (7 agents) | The default — complex operations, all departments |
+| Research Lab (4 agents) | Academic teams, experiments, paper writing |
+
+> 💡 **Start small, grow later.** You don't need 7 agents from day one. Pick the Lean Startup (3 agents) template from IDENTITY.md, get comfortable, then expand. Adding agents later is just adding a JSON block + Discord bot.
+
+### Quick Customization Guide
+
+```bash
+# 1. Copy reference templates to your workspace
+cp become-ceo/references/SOUL.md ~/clawd/SOUL.md
+cp become-ceo/references/AGENTS.md ~/clawd/AGENTS.md
+cp become-ceo/references/USER.md ~/clawd/USER.md
+cp become-ceo/references/IDENTITY.md ~/clawd/IDENTITY.md
+
+# 2. Edit each file — fill in your details, pick your templates
+nano ~/clawd/USER.md    # Your name, timezone, preferences
+nano ~/clawd/SOUL.md    # Pick a team style template
+nano ~/clawd/IDENTITY.md # Pick an org structure
+
+# 3. Restart for changes to take effect
+systemctl --user restart clawdbot-gateway
+```
+
+> The included templates cover the most common setups. Mix and match sections from different templates — "Startup Mode" SOUL.md with "Technical Lead" USER.md works great for technical founders.
+
+---
+
 ## Built-In Skills (60+)
 
 Your agents aren't just chatbots — they have tools:
@@ -4990,6 +5066,12 @@ Pin production-critical skills to specific versions with `clawdhub install <name
 **Q: Are ClawdHub skills safe to install?**
 Treat skills like npm packages — review before trusting. Check the SKILL.md for red flags (external URLs, hardcoded keys, obfuscated instructions). Install in sandbox mode (`workspaceAccess: "ro"`, `network: "none"`) until you're confident. Never put credentials directly in skill files — use environment variables. See [Skill Security](#-skill-security--trust-but-verify) for the full review checklist.
 
+**Q: Which workspace template should I start with?**
+It depends on your situation. Each reference file (SOUL.md, AGENTS.md, USER.md, IDENTITY.md) includes 5 scenario templates. For most people: start with "Solo Founder" USER.md + "Startup Mode" SOUL.md + "Lean Startup" IDENTITY.md (3 agents). This gives you a functional team at minimal cost. As you scale, switch to "Full Enterprise" (7 agents) and add more structured templates. See [Personalizing Your Workspace](#personalizing-your-workspace) for the full template matrix.
+
+**Q: Do I need all 7 agents?**
+No. The "Lean Startup" template in IDENTITY.md runs just 3 agents (Chief of Staff, Engineering, Finance) — lower cost, simpler setup, less noise. You can also try "Engineering-Heavy" (5 agents) or "Content & Marketing" (5 agents) depending on your focus. Start small, split departments when you notice an agent handling too many different responsibilities.
+
 **Q: Can I use local models (Ollama, etc.)?**
 Yes. Add an OpenAI-compatible provider in `clawdbot.json` under `models.providers` and point `baseUrl` to your Ollama endpoint. Local models = zero API costs.
 
@@ -5087,10 +5169,10 @@ become-ceo/
 │   ├── SKILL.md                          # Skill definition (ClawdHub package)
 │   └── references/
 │       ├── clawdbot-template.json        # Full 7-agent config, ready to customize
-│       ├── SOUL.md                       # Team behavioral norms
-│       ├── IDENTITY.md                   # Org chart and role definitions
-│       ├── USER.md                       # About you, the CEO
-│       ├── AGENTS.md                     # Group chat + memory rules
+│       ├── SOUL.md                       # Team behavioral norms (5 scenario templates)
+│       ├── IDENTITY.md                   # Org chart and role definitions (5 org structure templates)
+│       ├── USER.md                       # About you, the CEO (5 persona templates)
+│       ├── AGENTS.md                     # Group chat + memory rules (5 workflow templates)
 │       ├── notion-templates.md           # Ready-to-use Notion database schemas
 │       ├── github-workflows.md           # Ready-to-use GitHub Actions templates
 │       ├── browser-recipes.md            # Ready-to-use browser automation recipes
@@ -5137,4 +5219,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v6.0
+v6.1
