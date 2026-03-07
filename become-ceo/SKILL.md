@@ -61,6 +61,21 @@ Off by default. To enable read-only sandboxed execution:
 
 Agents run in isolated containers with read-only workspace access and no network. The gateway handles all API authentication externally. See [Clawdbot docs](https://github.com/wanikua/become-ceo) for advanced sandbox options.
 
+## Extending with ClawdHub Skills
+
+Install additional skills from the ClawdHub marketplace:
+
+```bash
+clawdhub install email-daily-summary   # Email triage and daily digests
+clawdhub install gcalcli-calendar      # Google Calendar integration
+clawdhub install github-trending-cn    # GitHub trending repos digest
+clawdhub install hacker-news           # Tech news monitoring
+clawdhub install docker-essentials     # Container management
+clawdhub install automation-workflows  # Pre-built workflow templates
+```
+
+All installed skills are available to every agent immediately after restart.
+
 ## Troubleshooting
 
 - **@everyone doesn't work** — enable Message Content Intent + Server Members Intent in Discord Developer Portal

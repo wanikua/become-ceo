@@ -30,7 +30,7 @@ Everyone:     [Each agent reports in with their status]
 
 - 🤖 **7 specialized AI agents**, each with their own Discord bot, personality, and expertise
 - 🧠 **Persistent memory** — agents remember your codebase, your budget, your preferences
-- 🛠️ **60+ real tools** — GitHub, Notion, browser, cron, TTS, and more (not just chat)
+- 🛠️ **60+ real tools** — GitHub, Notion, browser, cron, TTS, + [hundreds more on ClawdHub](https://clawdhub.com)
 - ⏰ **24/7 autonomous operation** — scheduled tasks run while you sleep
 - 💰 **Smart cost control** — strong models for heavy work, fast models for everything else
 - 🔒 **Sandboxed execution** — optional Docker isolation for safe code execution
@@ -67,6 +67,7 @@ Everyone:     [Each agent reports in with their status]
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
 - [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, accessibility testing, PDF generation, cron integration, capability matrix, automation recipes
 - [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) — Daily reports, monitoring & alerting, auto-archiving to Notion, cron chains, event-driven cron, self-adjusting schedules, observability, cost management, migration guide, dependency graph, full integration map, troubleshooting
+- [Recommended Skills from ClawdHub](#recommended-skills-from-clawdhub) — Email summaries, calendar integration, GitHub trending, Hacker News, Docker management, automation workflows, weather, skill recommendations by role
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -3379,6 +3380,337 @@ clawdbot cron runs <job-id>
 
 ---
 
+## Recommended Skills from ClawdHub
+
+Your 7-agent team ships with 60+ built-in skills. But the real power comes from the **ClawdHub ecosystem** — a marketplace of community and official skills you can install with one command. Here are the top picks for your CEO setup:
+
+### Installing Skills
+
+```bash
+# Search for skills
+clawdhub search "email summary"
+
+# Install a skill — all your agents can use it immediately
+clawdhub install email-daily-summary
+
+# List installed skills
+clawdhub list
+
+# Update all skills to latest
+clawdhub update --all
+```
+
+No code changes needed. Install a skill, restart your gateway, and agents discover it automatically.
+
+### 📧 Email — Daily Summaries Without Inbox Overload
+
+**Skill:** `email-daily-summary`
+
+Your Chief of Staff can read your email and surface what matters — so you never open Gmail:
+
+```bash
+clawdhub install email-daily-summary
+```
+
+```
+You:             @Chief of Staff check my email
+
+Chief of Staff:  📧 Email Summary (14 unread):
+
+                 🔴 Urgent (2):
+                 • AWS — "Action Required: Payment method expiring"
+                 • Client — "Contract deadline moved to Friday"
+
+                 📋 Actionable (4):
+                 • GitHub — PR review requested on auth-v2
+                 • Notion — Shared page: "Q1 Marketing Plan"
+                 • LinkedIn — 3 new connection requests
+                 • Newsletter — "This Week in AI" (skip)
+
+                 🔇 Noise (8): promotional, social updates, newsletters
+
+                 Want me to draft a reply to the contract email?
+```
+
+**Best cron pattern:** Daily morning email digest before your standup:
+
+```bash
+clawdbot cron add --agent main \
+  --cron "0 8 * * 1-5" --tz "America/New_York" \
+  --text "Check email. Summarize urgent and actionable items. 
+         Post digest to Discord DM. Archive to Notion Daily Reports."
+```
+
+| Agent | Use Case |
+|-------|----------|
+| **Chief of Staff** | Morning email digest, flag urgent items |
+| **Marketing** | Monitor campaign response emails, newsletter replies |
+| **Legal** | Track contract-related correspondence |
+
+### 📅 Calendar — Never Miss a Meeting
+
+**Skill:** `gcalcli-calendar`
+
+Google Calendar integration via the `gcalcli` CLI — your agents know your schedule:
+
+```bash
+clawdhub install gcalcli-calendar
+```
+
+```
+You:             @Chief of Staff what's my schedule today?
+
+Chief of Staff:  📅 Today's Schedule — March 7, 2026:
+
+                 09:00  Team Standup (30 min) — Zoom
+                 11:00  Product Review with Client (1 hr) — Google Meet
+                 14:00  ☕ Free block
+                 15:30  1-on-1 with CTO (30 min) — Office
+                 17:00  EOD Review (15 min) — async
+
+                 ⚠️ Heads up: your 11 AM overlaps with a tentative 
+                    "Lunch with Sarah" — want me to reschedule?
+```
+
+**Best cron pattern:** Morning schedule briefing + upcoming meeting alerts:
+
+```bash
+# Morning briefing
+clawdbot cron add --agent main \
+  --cron "0 8 * * *" --tz "America/New_York" \
+  --text "Pull today's calendar. List all events with times and locations.
+         Flag any conflicts. Mention prep needed for important meetings."
+
+# Meeting reminder — every 30 min, check for upcoming meetings
+clawdbot cron add --agent main \
+  --cron "*/30 * * * *" \
+  --text "Check calendar for events starting in the next 30 minutes.
+         If any upcoming, remind me with event name, time, and join link.
+         If nothing upcoming, stay silent."
+```
+
+| Agent | Use Case |
+|-------|----------|
+| **Chief of Staff** | Daily briefing, conflict detection, meeting prep |
+| **Management** | Schedule project milestones, sprint ceremonies |
+| **Marketing** | Content calendar sync, campaign deadlines |
+
+### 🌤️ Weather — Context-Aware Daily Intel
+
+**Skill:** `weather` (built-in)
+
+Already included with Clawdbot — no install needed. Useful for morning briefings:
+
+```
+Chief of Staff:  Good morning! Here's your daily brief:
+
+                 🌤️ Weather: 72°F, partly cloudy. Rain expected after 5 PM.
+                    → Recommend: take an umbrella if going out after work.
+
+                 📅 Schedule: 3 meetings today...
+                 📧 Email: 2 urgent items...
+```
+
+**Best pattern:** Include weather in your morning standup cron for a complete daily brief:
+
+```bash
+clawdbot cron add --agent main \
+  --cron "0 8 * * *" --tz "America/New_York" \
+  --text "Morning brief: weather forecast, today's calendar, 
+         overnight email digest, yesterday's metrics summary."
+```
+
+### 🔥 GitHub Trending — Stay Ahead of the Curve
+
+**Skill:** `github-trending-cn` / `github-trending`
+
+Track what's trending in the developer world — your Engineering agent stays current:
+
+```bash
+clawdhub install github-trending-cn
+```
+
+```
+You:             @Engineering what's trending on GitHub this week?
+
+Engineering:     🔥 GitHub Trending — This Week:
+
+                 1. awesome-llm-apps ⭐ 48.2k (+2,300 this week)
+                    → Collection of LLM app patterns. Relevant to our stack.
+
+                 2. pydantic-ai ⭐ 12.8k (+1,800 this week)
+                    → Type-safe AI framework for Python. Worth evaluating
+                      for our ML service.
+
+                 3. dify ⭐ 95.4k (+1,500 this week)
+                    → Open-source LLM app platform. Competitor watch.
+
+                 → Full list saved to Engineering Wiki on Notion
+```
+
+**Best cron pattern:** Weekly trending digest to stay informed:
+
+```bash
+clawdbot cron add --agent engineering \
+  --cron "0 10 * * 1" --tz "America/New_York" \
+  --text "Check GitHub trending repos for the past week. Focus on 
+         repos relevant to our tech stack. Post top 10 with stars, 
+         growth, and relevance assessment to #dev-general."
+```
+
+### 🔄 Automation Workflows — Pre-Built Pipelines
+
+**Skill:** `automation-workflows`
+
+Templates for common multi-step automation patterns:
+
+```bash
+clawdhub install automation-workflows
+```
+
+This skill provides ready-made workflow templates your agents can reference:
+- **Lead-to-Close pipeline** — Marketing captures → Engineering qualifies → Management follows up
+- **Content publishing pipeline** — Draft → Review → SEO check → Publish → Monitor
+- **Incident response pipeline** — Detect → Triage → Fix → Deploy → Post-mortem
+- **Onboarding pipeline** — Account setup → Workspace access → Starter tasks → Check-in
+
+```
+You:             @Chief of Staff set up a content publishing workflow
+
+Chief of Staff:  Using the content-publish automation template:
+
+                 Pipeline: Draft → Review → Publish
+                 ┌─────────┐    ┌─────────┐    ┌─────────┐
+                 │Marketing│ → │  CEO    │ → │Marketing│
+                 │ drafts  │    │ reviews │    │publishes│
+                 └─────────┘    └─────────┘    └─────────┘
+
+                 Steps configured:
+                 1. Marketing drafts in Notion (Marketing Hub)
+                 2. You review + approve in Discord
+                 3. Marketing publishes via browser automation
+                 4. Cron tracks performance after 24h
+
+                 Want me to activate this workflow?
+```
+
+### 🐳 Docker — Container Management
+
+**Skill:** `docker-essentials`
+
+Your DevOps agent manages containers directly:
+
+```bash
+clawdhub install docker-essentials
+```
+
+```
+You:             @DevOps what containers are running?
+
+DevOps:          🐳 Docker Status:
+
+                 CONTAINER       IMAGE              STATUS     CPU    MEM
+                 myapp-web       node:22-alpine     Up 3d      2%    128MB
+                 myapp-db        postgres:16        Up 3d      1%    256MB
+                 redis-cache     redis:7            Up 3d      0%    32MB
+                 nginx-proxy     nginx:latest       Up 3d      0%    16MB
+
+                 Total: 4 containers, all healthy.
+                 Resource usage: 3% CPU, 432MB RAM.
+```
+
+| Agent | Use Case |
+|-------|----------|
+| **DevOps** | Container lifecycle, scaling, health checks |
+| **Engineering** | Build and test in containers, debug services |
+
+### 📰 Hacker News — Tech News Digest
+
+**Skill:** `hacker-news`
+
+Surface the most relevant tech news for your team:
+
+```bash
+clawdhub install hacker-news
+```
+
+```
+You:             @Engineering any interesting HN discussions today?
+
+Engineering:     📰 Hacker News — Top Stories Today:
+
+                 1. "Show HN: Open-source AI agent framework" (342 pts)
+                    → Relevant: similar architecture to what we built
+                    → Key comment: comparison with Clawdbot
+
+                 2. "PostgreSQL 17 released" (289 pts)
+                    → Action: we should evaluate upgrade for our user DB
+                    → Breaking changes: 2 that affect our queries
+
+                 3. "The real cost of running AI agents in production" (201 pts)
+                    → Useful benchmarks for our Finance tracking
+
+                 → Summarized to Engineering Wiki on Notion
+```
+
+**Best cron pattern:** Daily HN digest filtered for relevance:
+
+```bash
+clawdbot cron add --agent engineering \
+  --cron "0 12 * * 1-5" --tz "America/New_York" \
+  --text "Check Hacker News top stories. Filter for topics relevant to 
+         our stack: AI agents, LLMs, infrastructure, DevOps, startups.
+         Post top 5 with summaries to #dev-general. Stay silent on 
+         weekends and if nothing relevant."
+```
+
+### 📊 Skill Recommendations by Agent Role
+
+Here's which skills benefit each agent most:
+
+| Agent | Must-Have Skills | Why |
+|-------|-----------------|-----|
+| **Chief of Staff** | `email-daily-summary`, `gcalcli-calendar`, `weather` | Morning briefings, schedule management, email triage |
+| **Engineering** | `github-trending-cn`, `hacker-news`, `docker-essentials` | Stay current, container management, tech news |
+| **Finance** | `automation-workflows` | Financial reporting pipelines, budget templates |
+| **Marketing** | `automation-workflows`, `hacker-news` | Content pipelines, trending topic research |
+| **DevOps** | `docker-essentials`, `system-resource-monitor` | Container ops, server health monitoring |
+| **Management** | `gcalcli-calendar`, `automation-workflows` | Meeting scheduling, project workflow templates |
+| **Legal** | `email-daily-summary` | Contract correspondence tracking |
+
+### Quick Install — All Recommended Skills
+
+```bash
+# Install the essentials in one go
+clawdhub install email-daily-summary
+clawdhub install gcalcli-calendar
+clawdhub install github-trending-cn
+clawdhub install hacker-news
+clawdhub install automation-workflows
+clawdhub install docker-essentials
+
+# Restart gateway to pick up new skills
+systemctl --user restart clawdbot-gateway
+```
+
+### Finding More Skills
+
+The ClawdHub ecosystem is growing constantly. Search for anything you need:
+
+```bash
+# Search by keyword
+clawdhub search "slack integration"
+clawdhub search "image generation"
+clawdhub search "database backup"
+
+# Browse categories on the web
+# Visit: https://clawdhub.com
+```
+
+> 💡 **Building your own skill?** Use `clawdhub publish` to share it with the community. See the [Clawdbot docs](https://docs.clawd.bot) for the skill authoring guide.
+
+---
+
 ## Architecture
 
 ```
@@ -3438,7 +3770,7 @@ Each role is its own Discord bot. `@Engineering` and Engineering answers. `@ever
 ### 🧠 Independent Memory
 Each agent has its own workspace and `memory/` directory. Project knowledge from conversations persists to files and survives across sessions. Your Engineering agent remembers your codebase conventions. Your Finance agent remembers last month's budget. They get smarter over time.
 
-### 🛠️ 60+ Built-in Skills
+### 🛠️ 60+ Built-in Skills + ClawdHub Marketplace
 These aren't chatbots — they have real tools:
 
 | Category | Skills |
@@ -3450,6 +3782,9 @@ These aren't chatbots — they have real tools:
 | **Media** | TTS voice, screenshots, video frame extraction |
 | **Operations** | tmux remote control, shell command execution |
 | **Messaging** | Discord, Slack, Telegram, WhatsApp, Signal… |
+| **ClawdHub** | Email summaries, calendar, Docker, trending repos, news digests, and hundreds more |
+
+Install community skills with one command: `clawdhub install <name>`. See [Recommended Skills](#recommended-skills-from-clawdhub) for curated picks.
 
 ### ⏰ Cron Scheduling
 Built-in scheduler lets agents run tasks autonomously — see [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) for the full deep-dive:
@@ -3776,6 +4111,8 @@ Your agents aren't just chatbots — they have tools:
 | **Ops** | tmux remote control, shell command execution |
 | **Comms** | Discord, Slack, Telegram, WhatsApp, Signal… |
 
+> 💡 **Want more?** Install additional skills from [ClawdHub](https://clawdhub.com) with `clawdhub install <name>`. See [Recommended Skills](#recommended-skills-from-clawdhub) for curated picks.
+
 ---
 
 ## FAQ
@@ -3853,8 +4190,11 @@ Follow the [Migration Guide](#from-manual-to-automated--migration-guide): identi
 **Q: How does browser automation work?**
 Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, generate PDFs, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. Agents also use the browser for accessibility audits (WCAG compliance checking) and can combine browser tasks with cron for automated monitoring. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
 
+**Q: How do I install skills from ClawdHub?**
+Run `clawdhub install <skill-name>` — for example, `clawdhub install email-daily-summary`. Skills are downloaded to your workspace and available to all agents immediately after a gateway restart. Use `clawdhub search "<keyword>"` to find skills, and `clawdhub update --all` to keep them current. See [Recommended Skills from ClawdHub](#recommended-skills-from-clawdhub) for curated picks.
+
 **Q: How do I create custom skills?**
-Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically.
+Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically. Publish to [ClawdHub](https://clawdhub.com) with `clawdhub publish` to share with the community.
 
 **Q: Can I use local models (Ollama, etc.)?**
 Yes. Add an OpenAI-compatible provider in `clawdbot.json` under `models.providers` and point `baseUrl` to your Ollama endpoint. Local models = zero API costs.
@@ -3967,4 +4307,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.3
+v5.4
