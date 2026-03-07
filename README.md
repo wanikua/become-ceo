@@ -67,7 +67,7 @@ Everyone:     [Each agent reports in with their status]
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
 - [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, accessibility testing, PDF generation, cron integration, capability matrix, automation recipes
 - [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) — Daily reports, monitoring & alerting, auto-archiving to Notion, cron chains, event-driven cron, self-adjusting schedules, observability, cost management, migration guide, dependency graph, full integration map, troubleshooting
-- [Recommended Skills from ClawdHub](#recommended-skills-from-clawdhub) — 12 curated skills (email, calendar, weather, GitHub trending, HN, Docker, RSS, Slack bridge, AI image gen, system monitor, screenshot diff, automation workflows), skill combinations & synergies, build your own skills
+- [Recommended Skills from ClawdHub](#recommended-skills-from-clawdhub) — 12 curated skills (email, calendar, weather, GitHub trending, HN, Docker, RSS, Slack bridge, AI image gen, system monitor, screenshot diff, automation workflows), skill combinations & synergies, build your own skills, governance & security, version management, auditing
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -4059,6 +4059,365 @@ clawdhub install my-custom-skill
 
 > 💡 **Skill creation tip:** Start by documenting what you do manually, then translate those steps into SKILL.md instructions. The agent follows your playbook. See the [Clawdbot docs](https://docs.clawd.bot) for the full skill authoring guide.
 
+### 🔒 Skill Security — Trust but Verify
+
+Skills are powerful — they give agents instructions and scripts. That means you should review what you install, just like you review npm packages:
+
+#### Review Before Install
+
+```bash
+# Preview a skill without installing
+clawdhub info email-daily-summary
+
+# Install, then review the SKILL.md before restarting
+clawdhub install suspicious-skill
+cat skills/suspicious-skill/SKILL.md
+
+# If it looks wrong, remove it
+clawdhub remove suspicious-skill
+```
+
+**What to check in a skill's SKILL.md:**
+| ✅ Safe patterns | 🚩 Red flags |
+|-----------------|-------------|
+| Reads workspace files | Sends data to external URLs |
+| Uses built-in tools (exec, web_search) | Asks agent to `curl` arbitrary endpoints |
+| Clear, documented behavior | Obfuscated instructions or encoded strings |
+| Scoped to its declared purpose | Requests broad file system access |
+| Credentials via env vars | Hardcoded API keys or tokens |
+
+#### Credential Isolation
+
+Never put API keys directly in SKILL.md files. Use environment variables:
+
+```markdown
+# ❌ Bad — key exposed in skill instructions
+Use API key `sk-abc123` to authenticate.
+
+# ✅ Good — reference an environment variable
+Use the API key from $EMAIL_API_KEY to authenticate.
+```
+
+In your `clawdbot.json`, pass credentials via sandbox environment:
+
+```json
+"sandbox": {
+  "docker": {
+    "env": {
+      "EMAIL_API_KEY": "sk-abc123",
+      "WEATHER_API_KEY": "wx-456"
+    }
+  }
+}
+```
+
+This way, skills never see credentials directly — they're injected at runtime.
+
+#### Sandboxing Untrusted Skills
+
+If you install a skill you're not 100% sure about, enable sandbox mode:
+
+```json
+"sandbox": {
+  "mode": "all",
+  "workspaceAccess": "ro",
+  "docker": { "network": "none" }
+}
+```
+
+Read-only workspace + no network = the skill can instruct agents but can't exfiltrate data or modify files. Loosen restrictions as you build trust.
+
+### 📦 Skill Governance — Version Management & Auditing
+
+As your skill library grows, you need to manage versions, track updates, and audit what's installed. Think of it like dependency management for your agent team.
+
+#### Version Pinning
+
+```bash
+# Install a specific version
+clawdhub install email-daily-summary@1.2.0
+
+# Pin to avoid surprise breaking changes
+clawdhub install docker-essentials@2.0.0
+
+# Update only when you're ready
+clawdhub update email-daily-summary@1.3.0
+```
+
+**When to pin:** Production-critical skills (email, monitoring, deploy workflows). You don't want a skill update to change how your daily standup works mid-sprint.
+
+**When to float:** Informational skills (weather, trending, news). Breaking changes are unlikely and you want the latest features.
+
+#### Auditing Installed Skills
+
+```bash
+# List all installed skills with versions
+clawdhub list
+
+# Check which skills have updates available
+clawdhub outdated
+
+# View changelog for a skill
+clawdhub info email-daily-summary --changelog
+```
+
+Set up a weekly audit cron to keep your skill library healthy:
+
+```bash
+clawdbot cron add --agent main \
+  --cron "0 10 * * 1" --tz "America/New_York" \
+  --text "Run 'clawdhub outdated' and report which skills have updates.
+         For each outdated skill, check the changelog for breaking changes.
+         Post a summary to #dev-general with upgrade recommendations.
+         Auto-update skills marked as safe-to-float (weather, news, trending).
+         Flag pinned skills that need manual review."
+```
+
+#### Skill Update Strategies
+
+| Strategy | When to Use | Example |
+|----------|------------|---------|
+| **Auto-update** | Low-risk, informational skills | `weather`, `hacker-news`, `rss-feeds` |
+| **Review-then-update** | Medium-risk, workflow skills | `automation-workflows`, `slack-bridge` |
+| **Pin + manual** | High-risk, production-critical | `email-daily-summary`, `docker-essentials` |
+| **Test-first** | Skills with scripts/exec commands | Any skill with `scripts/` directory |
+
+#### Skill Health Dashboard
+
+Your Chief of Staff can maintain a skill inventory — a single source of truth for what's installed, why, and who owns it:
+
+```
+You:             @Chief of Staff skill health report
+
+Chief of Staff:  📦 Skill Inventory — 11 skills installed:
+
+                 ✅ Up to date (7):
+                 • weather v1.4.0 (built-in)
+                 • github-trending-cn v2.1.0
+                 • hacker-news v1.8.0
+                 • docker-essentials v2.0.0 📌 pinned
+                 • automation-workflows v1.5.0
+                 • rss-feeds v1.2.0
+                 • screenshot-diff v1.0.3
+
+                 ⬆️ Updates available (3):
+                 • email-daily-summary v1.2.0 → v1.3.1 (minor: new Gmail labels support)
+                 • gcalcli-calendar v1.1.0 → v2.0.0 ⚠️ major (breaking: new auth flow)
+                 • system-resource-monitor v1.0.0 → v1.1.0 (patch: ARM CPU fix)
+
+                 ❌ Unused (1):
+                 • ai-image-gen v1.0.0 — last used 30+ days ago
+
+                 Recommendation: safe to auto-update system-resource-monitor.
+                 gcalcli-calendar v2.0.0 needs manual auth migration — schedule it.
+```
+
+#### Skill Dependency Awareness
+
+Some skills work best together. Document dependencies explicitly:
+
+```markdown
+# In your workspace notes or TOOLS.md
+## Skill Dependencies
+- email-daily-summary → requires: Gmail app password in $EMAIL_API_KEY
+- gcalcli-calendar → requires: gcalcli CLI installed, Google auth
+- docker-essentials → requires: Docker installed, user in docker group
+- screenshot-diff → requires: chromium-browser installed
+- slack-bridge → requires: Slack bot token in $SLACK_BOT_TOKEN
+```
+
+### 🧪 Advanced Skill Development
+
+Building skills beyond "hello world" — testing, CI, and production patterns:
+
+#### Skill Directory Structure (Full)
+
+```
+my-skill/
+├── SKILL.md              # Agent instructions (required)
+├── scripts/
+│   ├── check.sh          # Health check script
+│   ├── run.sh            # Main automation script
+│   └── setup.sh          # One-time setup/install
+├── assets/
+│   ├── templates/        # Reference templates
+│   └── examples/         # Usage examples
+├── tests/
+│   ├── test-basic.sh     # Basic smoke test
+│   └── test-output.sh    # Output validation
+└── README.md             # Human documentation (for ClawdHub listing)
+```
+
+#### Testing Your Skills
+
+Before publishing, validate your skill works:
+
+```bash
+# 1. Install locally
+cp -r my-skill/ skills/my-skill/
+
+# 2. Restart gateway
+systemctl --user restart clawdbot-gateway
+
+# 3. Test via Discord
+@Chief of Staff use the my-skill skill to do X
+
+# 4. Check logs
+journalctl --user -u clawdbot-gateway --since "5 min ago" | grep my-skill
+```
+
+For skills with scripts, add automated tests:
+
+```bash
+#!/bin/bash
+# tests/test-basic.sh — smoke test
+set -e
+
+# Test that the script runs without errors
+./scripts/run.sh --dry-run
+
+# Test output format
+output=$(./scripts/check.sh)
+echo "$output" | grep -q "status:" || { echo "FAIL: missing status field"; exit 1; }
+
+echo "✅ All tests passed"
+```
+
+#### SKILL.md Best Practices
+
+```markdown
+---
+name: my-production-skill
+description: "Clear, specific description — agents match tasks to this"
+homepage: https://github.com/you/my-skill
+metadata: {"clawdbot":{"emoji":"🔧","requires":{"bins":["curl","jq"]},"credentials":["MY_API_KEY"]}}
+---
+
+# My Production Skill
+
+## When to Use
+Be specific — vague triggers cause false matches:
+- ✅ "Use when the user asks to check server uptime or response times"
+- ❌ "Use for server stuff"
+
+## Prerequisites
+List what must be installed/configured before this skill works.
+
+## How to Use
+
+### Step 1: Gather Input
+Describe what the agent needs from the user.
+
+### Step 2: Execute
+Exact commands or tool calls the agent should make.
+
+### Step 3: Format Output
+How to present results — tables, summaries, alerts.
+
+## Error Handling
+What to do when things go wrong — retries, fallbacks, escalation.
+
+## Examples
+Show 2-3 concrete input/output examples so the agent 
+understands the expected behavior pattern.
+```
+
+**Key principles:**
+- **Specific triggers** — vague descriptions cause skills to fire when they shouldn't
+- **Step-by-step** — agents follow numbered steps more reliably than paragraphs
+- **Error handling** — tell the agent what to do when a command fails
+- **Examples** — the best way to teach expected output format
+
+#### CI for Skills (GitHub Actions)
+
+Automate skill testing before publishing:
+
+```yaml
+# .github/workflows/skill-test.yml
+name: Skill Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate SKILL.md frontmatter
+        run: |
+          head -20 SKILL.md | grep -q "^name:" || exit 1
+          head -20 SKILL.md | grep -q "^description:" || exit 1
+      - name: Check required files exist
+        run: |
+          test -f SKILL.md
+          test -f README.md
+      - name: Run skill tests
+        run: |
+          if [ -d tests/ ]; then
+            for test in tests/test-*.sh; do
+              echo "Running $test..."
+              bash "$test"
+            done
+          fi
+      - name: Lint scripts
+        run: |
+          if [ -d scripts/ ]; then
+            shellcheck scripts/*.sh 2>/dev/null || true
+          fi
+```
+
+#### Publishing Checklist
+
+Before running `clawdhub publish`:
+
+- [ ] `SKILL.md` has clear name, description, and trigger conditions
+- [ ] `README.md` explains the skill to humans (for ClawdHub listing)
+- [ ] All required binaries listed in metadata `requires.bins`
+- [ ] All required credentials listed in metadata `credentials`
+- [ ] No hardcoded API keys, usernames, or server addresses
+- [ ] Scripts are executable (`chmod +x scripts/*.sh`)
+- [ ] Tests pass (`bash tests/test-*.sh`)
+- [ ] Examples demonstrate expected behavior
+- [ ] Error handling documented for common failure modes
+
+### 📊 Skill Ecosystem Summary
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Your Skill Stack                    │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  📦 ClawdHub Marketplace                            │
+│  ├── Install: clawdhub install <name>               │
+│  ├── Search:  clawdhub search "<keyword>"           │
+│  ├── Update:  clawdhub update --all                 │
+│  └── Publish: clawdhub publish                      │
+│                                                     │
+│  🔒 Security Layer                                  │
+│  ├── Review SKILL.md before restart                 │
+│  ├── Credentials via env vars, never hardcoded      │
+│  ├── Sandbox untrusted skills (ro + no network)     │
+│  └── Weekly audit cron for installed skills          │
+│                                                     │
+│  📦 Governance                                      │
+│  ├── Pin production-critical skill versions          │
+│  ├── Auto-update low-risk informational skills       │
+│  ├── Skill health dashboard via Chief of Staff       │
+│  └── Dependency tracking in TOOLS.md                │
+│                                                     │
+│  🧪 Development                                     │
+│  ├── Structured directory (SKILL.md + scripts/)     │
+│  ├── Test locally → Discord → publish               │
+│  ├── CI via GitHub Actions for script validation     │
+│  └── Publishing checklist for quality assurance      │
+│                                                     │
+│  🔗 Combinations (8 recipes)                        │
+│  ├── Morning Brief = email + cal + weather + RSS    │
+│  ├── Full Monitor = system + docker + screenshots   │
+│  ├── Content Pipeline = RSS + HN + AI image + WF   │
+│  └── ...5 more in skill-combinations.md             │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## Architecture
@@ -4134,7 +4493,7 @@ These aren't chatbots — they have real tools:
 | **Messaging** | Discord, Slack, Telegram, WhatsApp, Signal… |
 | **ClawdHub** | Email summaries, calendar, Docker, trending repos, news digests, RSS feeds, system monitoring, image generation, screenshot diffs, and hundreds more |
 
-Install community skills with one command: `clawdhub install <name>`. Combine multiple skills for compound value — see [Recommended Skills](#recommended-skills-from-clawdhub) for 12 curated picks and [Skill Combinations](#-skill-combinations--the-compound-effect) for ready-to-use multi-skill recipes.
+Install community skills with one command: `clawdhub install <name>`. Combine multiple skills for compound value — see [Recommended Skills](#recommended-skills-from-clawdhub) for 12 curated picks and [Skill Combinations](#-skill-combinations--the-compound-effect) for ready-to-use multi-skill recipes. Manage your skill library with version pinning, security auditing, and automated update strategies — see [Skill Governance](#-skill-governance--version-management--auditing).
 
 ### ⏰ Cron Scheduling
 Built-in scheduler lets agents run tasks autonomously — see [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) for the full deep-dive:
@@ -4544,7 +4903,13 @@ Your agents control a headless Chromium instance managed by Clawdbot. They can n
 Run `clawdhub install <skill-name>` — for example, `clawdhub install email-daily-summary`. Skills are downloaded to your workspace and available to all agents immediately after a gateway restart. Use `clawdhub search "<keyword>"` to find skills, and `clawdhub update --all` to keep them current. We recommend starting with the core 6 skills, then adding extended skills as your workflows mature. For compound value, combine skills into stacks (morning brief = email + calendar + weather + RSS + HN). See [Recommended Skills](#recommended-skills-from-clawdhub) for 12 curated picks and [Skill Combinations](#-skill-combinations--the-compound-effect) for ready-to-use recipes.
 
 **Q: How do I create custom skills?**
-Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically. Publish to [ClawdHub](https://clawdhub.com) with `clawdhub publish` to share with the community.
+Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically. Publish to [ClawdHub](https://clawdhub.com) with `clawdhub publish` to share with the community. See [Advanced Skill Development](#-advanced-skill-development) for testing, CI, directory structure, and the publishing checklist.
+
+**Q: How do I manage skill versions and updates?**
+Pin production-critical skills to specific versions with `clawdhub install <name>@<version>`. Use `clawdhub outdated` to check for available updates. Set up a weekly skill audit cron (Chief of Staff) to auto-update low-risk skills and flag pinned ones needing review. See [Skill Governance](#-skill-governance--version-management--auditing) for update strategies and the health dashboard pattern.
+
+**Q: Are ClawdHub skills safe to install?**
+Treat skills like npm packages — review before trusting. Check the SKILL.md for red flags (external URLs, hardcoded keys, obfuscated instructions). Install in sandbox mode (`workspaceAccess: "ro"`, `network: "none"`) until you're confident. Never put credentials directly in skill files — use environment variables. See [Skill Security](#-skill-security--trust-but-verify) for the full review checklist.
 
 **Q: Can I use local models (Ollama, etc.)?**
 Yes. Add an OpenAI-compatible provider in `clawdbot.json` under `models.providers` and point `baseUrl` to your Ollama endpoint. Local models = zero API costs.
@@ -4658,4 +5023,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.5
+v5.6

@@ -84,6 +84,15 @@ clawdhub install screenshot-diff          # Visual change detection
 
 All installed skills are available to every agent immediately after restart. Combine skills for compound value — see `references/skill-combinations.md` for 8 multi-skill recipes.
 
+## Skill Governance
+
+- **Pin production-critical skills** to specific versions: `clawdhub install email-daily-summary@1.2.0`
+- **Auto-update low-risk skills** (weather, news): `clawdhub update weather`
+- **Audit regularly**: `clawdhub outdated` shows available updates
+- **Review before installing**: always check a new skill's SKILL.md for security red flags
+- **Credential isolation**: never put API keys in SKILL.md files — use environment variables via sandbox config
+- Set up a weekly skill audit cron on Chief of Staff to maintain your skill library
+
 ## Troubleshooting
 
 - **@everyone doesn't work** — enable Message Content Intent + Server Members Intent in Discord Developer Portal
