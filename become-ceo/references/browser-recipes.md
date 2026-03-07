@@ -2,6 +2,19 @@
 
 Ready-to-use workflow templates for common browser automation scenarios. These can be used as-is or adapted for your specific needs.
 
+## Quick Index
+
+| # | Recipe | Agent | Use Case |
+|---|--------|-------|----------|
+| 1 | [SEO Audit](#-seo-audit) | Marketing / Engineering | Weekly site health |
+| 2 | [Price Monitoring](#-price-monitoring) | Marketing | Competitor tracking |
+| 3 | [Content Publishing Pipeline](#-content-publishing-pipeline) | Marketing | Multi-platform posting |
+| 4 | [Report Extraction](#-report-extraction) | Finance | Dashboard data export |
+| 5 | [Multi-Site Health Check](#-multi-site-health-check) | DevOps | Uptime verification |
+| 6 | [Social Media Scheduler](#-social-media-scheduler) | Marketing | Cross-platform scheduling |
+| 7 | [Accessibility Audit](#-accessibility-audit) | Engineering | WCAG compliance |
+| 8 | [PDF Report Generation](#-pdf-report-generation) | Finance | Billing & analytics export |
+
 ---
 
 ## 🔍 SEO Audit

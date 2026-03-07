@@ -2,6 +2,19 @@
 
 Ready-to-use multi-skill workflows for your AI executive team. Each recipe combines 2+ skills for compound value.
 
+## Quick Index
+
+| # | Recipe | Agent | Skills Combined |
+|---|--------|-------|----------------|
+| 1 | [Morning Brief](#1-the-morning-brief) | Chief of Staff | email + calendar + weather + RSS + HN |
+| 2 | [Full Monitoring Stack](#2-the-full-monitoring-stack) | DevOps | system-monitor + docker + screenshot-diff |
+| 3 | [Content Pipeline](#3-the-content-pipeline) | Marketing | RSS + HN + ai-image + automation + slack |
+| 4 | [Executive Dashboard](#4-the-executive-dashboard) | Chief of Staff | email + calendar + system-monitor + docker |
+| 5 | [Incident Response Stack](#5-the-incident-response-stack) | DevOps + Engineering | system-monitor + docker + screenshot + slack |
+| 6 | [Competitive Intelligence](#6-the-competitive-intelligence-stack) | Marketing + Engineering | RSS + HN + screenshot-diff + automation |
+| 7 | [Onboarding Accelerator](#7-the-onboarding-accelerator) | Chief of Staff + Mgmt | email + calendar + automation + slack |
+| 8 | [Cost Optimization](#8-the-cost-optimization-stack) | Finance + DevOps | system-monitor + docker + automation |
+
 ---
 
 ## 1. The Morning Brief

@@ -48,10 +48,13 @@ See [references/clawdbot-template.json](references/clawdbot-template.json) for t
 
 | File | What it does |
 |---|---|
-| `SOUL.md` | How your team behaves |
-| `IDENTITY.md` | Org chart and model tiers |
-| `USER.md` | About you, the CEO |
-| `AGENTS.md` | Group chat rules, memory protocol |
+| `QUICKSTART.md` | ⭐ One-page cheat sheet — commands, patterns, troubleshooting |
+| `SOUL.md` | How your team behaves (5 scenario templates) |
+| `IDENTITY.md` | Org chart and model tiers (5 org structure templates) |
+| `USER.md` | About you, the CEO (5 persona templates) |
+| `AGENTS.md` | Group chat rules, memory protocol (5 workflow templates) |
+| `TOOLS.md` | Equipment manifest — services, servers (5 stack templates) |
+| `HEARTBEAT.md` | Periodic monitoring checks (5 monitoring templates) |
 
 ## Sandbox
 

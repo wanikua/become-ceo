@@ -2,6 +2,19 @@
 
 Ready-to-use database schemas for your AI company. Copy these property configurations when creating Notion databases.
 
+## Quick Index
+
+| # | Database | Owner | Schedule |
+|---|----------|-------|----------|
+| 1 | [Daily Reports](#-daily-reports) | Chief of Staff | Daily 10 PM |
+| 2 | [Weekly Reports](#-weekly-reports) | Chief of Staff | Monday 9 AM |
+| 3 | [Monthly Reports](#-monthly-reports) | Chief of Staff | 1st of month |
+| 4 | [Financial Records](#-financial-records) | Finance | Ongoing |
+| 5 | [Engineering Wiki (ADRs)](#-engineering-wiki-adrs) | Engineering | On decision |
+| 6 | [Marketing Hub](#-marketing-hub) | Marketing | Ongoing |
+| 7 | [Project Archives](#-project-archives) | Management | On milestone |
+| 8 | [Incident Log](#-incident-log) | DevOps | On incident |
+
 ---
 
 ## 📅 Daily Reports

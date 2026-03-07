@@ -2,6 +2,19 @@
 
 Ready-to-use GitHub Actions workflow templates for your AI team. DevOps can deploy these to any repo with one command.
 
+## Quick Index
+
+| # | Workflow | Trigger | Purpose |
+|---|---------|---------|---------|
+| 1 | [CI — Node.js](#ci--nodejs) | Push / PR | Lint, test, build |
+| 2 | [CI — Python](#ci--python) | Push / PR | Lint, test, type check |
+| 3 | [Deploy to Staging](#deploy-to-staging-auto-on-merge) | Merge to main | Auto-deploy staging |
+| 4 | [Deploy to Production](#deploy-to-production-manual-approval) | Manual dispatch | Gated production deploy |
+| 5 | [Release Drafter](#release-drafter-auto-changelog-from-pr-labels) | PR merge | Auto-generate changelogs |
+| 6 | [Dependency Audit](#dependency-audit-weekly-security-scan) | Weekly schedule | Security vulnerability scan |
+| 7 | [Stale Issue Cleanup](#stale-issue-cleanup-auto-close-inactive-issues) | Daily schedule | Close abandoned issues |
+| 8 | [Secret & SAST Scanning](#secret--sast-scanning-catch-leaks--code-vulnerabilities) | PR + weekly | Leak detection, license check |
+
 ---
 
 ## CI — Node.js

@@ -2,6 +2,29 @@
 
 Copy these recipes and customize for your team. Each includes the cron command, expected agent behavior, output destination, and integration notes.
 
+## Quick Index
+
+| # | Recipe | Agent | Schedule |
+|---|--------|-------|----------|
+| 1 | [Daily Standup Report](#-1-daily-standup-report) | Chief of Staff | Daily 9 AM |
+| 2 | [Weekly Cost Review](#-2-weekly-cost-review) | Finance | Friday 9 AM |
+| 3 | [Monthly Executive Summary](#-3-monthly-executive-summary) | Chief of Staff | 1st of month |
+| 4 | [Hourly Issue Triage](#-4-hourly-issue-triage) | Engineering | Every hour |
+| 5 | [Nightly Staging Deploy](#-5-nightly-staging-deploy) | DevOps | Daily 2 AM |
+| 6 | [Weekly Security Scan](#-6-weekly-security-scan) | DevOps | Sunday 3 AM |
+| 7 | [Visual Regression Check](#-7-visual-regression-check) | DevOps | Daily 6 AM |
+| 8 | [Multi-Site Uptime Monitor](#-8-multi-site-uptime-monitor) | DevOps | Every 6 hours |
+| 9 | [Notion Backup to Workspace](#-9-notion-backup-to-workspace) | Chief of Staff | Sunday 4 AM |
+| 10 | [Sprint Velocity Tracker](#-10-sprint-velocity-tracker) | Management | Friday 5 PM |
+| 11 | [Content Performance Review](#-11-content-performance-review) | Marketing | Monday 10 AM |
+| 12 | [Workspace Cleanup](#-12-workspace-cleanup) | Chief of Staff | Sunday 5 AM |
+| 13 | [Event-Driven Deploy Smoke Test](#-13-event-driven-deploy-smoke-test) | DevOps | On wake event |
+| 14 | [Cron Health Audit](#-14-cron-health-audit-meta-cron) | Chief of Staff | Daily 8:45 AM |
+| 15 | [Adaptive Cost Monitoring](#-15-adaptive-cost-monitoring) | Finance | Every 4 hours |
+| 16 | [Quarterly OKR Review](#-16-quarterly-okr-review) | Management | Quarterly |
+| 17 | [Incident Auto-Escalation](#-17-incident-auto-escalation) | DevOps | On wake event |
+| 18 | [Cross-Department Audit](#-18-cross-department-audit) | Chief of Staff | Biweekly |
+
 ---
 
 ## 📋 1. Daily Standup Report

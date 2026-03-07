@@ -76,7 +76,7 @@ Everyone:     [Each agent reports in with their status]
 - [What It Looks Like](#what-it-looks-like) — Real usage examples
 - [Config Deep-Dive](#config-deep-dive) — Customize everything
 - [Growing Your Team](#growing-your-team) — Add new specialists
-- [Personalizing Your Workspace](#personalizing-your-workspace) — 30 scenario templates across 6 files (SOUL.md, AGENTS.md, USER.md, IDENTITY.md, TOOLS.md, HEARTBEAT.md), 5 getting-started combos, growth guide
+- [Personalizing Your Workspace](#personalizing-your-workspace) — 30 scenario templates across 6 files, one-page QUICKSTART.md cheat sheet, 5 getting-started combos, growth guide
 - [FAQ](#faq) — Common questions answered
 - [Troubleshooting](#troubleshooting) — Fix common issues fast
 
@@ -4680,6 +4680,8 @@ In Discord, `@mention` any of your bots:
 
 If you get a response, you're live. 🎉
 
+> 📋 **Want a one-page cheat sheet?** See [`references/QUICKSTART.md`](./become-ceo/references/QUICKSTART.md) — essential commands, common patterns, and troubleshooting on one page.
+
 ---
 
 ## What It Looks Like
@@ -4892,6 +4894,7 @@ Every agent reads workspace files at session start. These files shape how your t
 | `IDENTITY.md` | Org chart | Model tiers, department roles, delegation flow |
 | `TOOLS.md` | ⭐ Equipment manifest | Service configs, server access, model preferences, channel setup |
 | `HEARTBEAT.md` | ⭐ Periodic checks | What to monitor on each heartbeat poll, alert thresholds |
+| `QUICKSTART.md` | ⭐ Cheat sheet | One-page reference — commands, patterns, troubleshooting |
 
 ### Included Scenario Templates
 
@@ -5027,6 +5030,9 @@ As your company evolves, your templates should too. Here's when to upgrade:
 ### Quick Customization Guide
 
 ```bash
+# 0. Keep the cheat sheet handy
+cp become-ceo/references/QUICKSTART.md ~/clawd/QUICKSTART.md
+
 # 1. Copy reference templates to your workspace
 cp become-ceo/references/SOUL.md ~/clawd/SOUL.md
 cp become-ceo/references/AGENTS.md ~/clawd/AGENTS.md
@@ -5263,6 +5269,7 @@ become-ceo/
 ├── become-ceo/
 │   ├── SKILL.md                          # Skill definition (ClawdHub package)
 │   └── references/
+│       ├── QUICKSTART.md                 # ⭐ One-page cheat sheet — commands, patterns, troubleshooting
 │       ├── clawdbot-template.json        # Full 7-agent config, ready to customize
 │       ├── SOUL.md                       # Team behavioral norms (5 scenario templates)
 │       ├── IDENTITY.md                   # Org chart and role definitions (5 org structure templates)
@@ -5270,11 +5277,11 @@ become-ceo/
 │       ├── AGENTS.md                     # Group chat + memory rules (5 workflow templates)
 │       ├── TOOLS.md                      # Equipment manifest — services, servers, models (5 stack templates)
 │       ├── HEARTBEAT.md                  # Periodic check-in tasks (5 monitoring templates)
-│       ├── notion-templates.md           # Ready-to-use Notion database schemas
-│       ├── github-workflows.md           # Ready-to-use GitHub Actions templates
-│       ├── browser-recipes.md            # Ready-to-use browser automation recipes
-│       ├── cron-recipes.md               # 18 ready-to-use scheduled task templates
-│       └── skill-combinations.md         # 8 multi-skill combination recipes
+│       ├── notion-templates.md           # 8 Notion database schemas (with quick index)
+│       ├── github-workflows.md           # 8 GitHub Actions templates (with quick index)
+│       ├── browser-recipes.md            # 8 browser automation recipes (with quick index)
+│       ├── cron-recipes.md               # 18 scheduled task templates (with quick index)
+│       └── skill-combinations.md         # 8 multi-skill combination recipes (with quick index)
 ├── README.md                             # You are here
 ├── README_CN.md                          # 中文说明
 └── LICENSE                               # MIT
@@ -5316,4 +5323,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v6.2
+v6.3
