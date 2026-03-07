@@ -276,6 +276,74 @@ jobs:
 
 ---
 
+## Secret & SAST Scanning (catch leaks + code vulnerabilities)
+
+```yaml
+# .github/workflows/security-scan.yml
+name: Security Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 8 * * 1"  # Weekly Monday scan
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history for secret scanning
+      - name: Scan for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified --results=verified
+      - name: Check for hardcoded credentials
+        run: |
+          # Pattern-based scan for common secret formats
+          PATTERNS='(AKIA[0-9A-Z]{16}|sk-[a-zA-Z0-9]{48}|ghp_[a-zA-Z0-9]{36}|ntn_[a-zA-Z0-9]+)'
+          if grep -rEn "$PATTERNS" --include='*.js' --include='*.ts' --include='*.py' --include='*.env' .; then
+            echo "::error::Potential secrets found in source code!"
+            exit 1
+          fi
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+      - name: License check
+        run: |
+          npx license-checker --production --failOn 'GPL-3.0;AGPL-3.0' \
+            --summary 2>&1 | tee license-report.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: license-report.txt
+```
+
+**Why this template matters:**
+- **TruffleHog** catches verified secrets (API keys, tokens) in your git history — not just the latest commit
+- **Pattern matching** adds a fast regex layer for common credential formats
+- **License checking** flags GPL/AGPL dependencies that could affect your project's licensing
+- **Weekly schedule** ensures continuous monitoring even without new PRs
+
+> 💡 **DevOps deploys this to every repo.** Legal gets notified when a GPL dependency is found. Engineering gets notified on secret leaks. The cron schedule ensures nothing slips through even if the repo is quiet.
+
+---
+
 ## Tips for Your AI Team
 
 - **DevOps owns workflow files** — when you ask "set up CI for repo X," DevOps picks the right template, customizes it, and commits the workflow YAML.

@@ -64,7 +64,7 @@ Everyone:     [Each agent reports in with their status]
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
-- [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates
+- [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -1707,6 +1707,7 @@ For common CI/CD patterns, see [`references/github-workflows.md`](./become-ceo/r
 | **Release Drafter** | Auto-generate changelog from PR labels |
 | **Dependency Audit** | Weekly security scan of dependencies |
 | **Stale Issue Cleanup** | Auto-close inactive issues after 30 days |
+| **Secret & SAST Scanning** | Secret leak detection, dependency audit, license compliance |
 
 ```
 You:             @DevOps set up CI for our new Python repo
@@ -1730,6 +1731,186 @@ DevOps:          Deploying CI workflow to wanikua/ml-service...
 ```
 
 > 💡 **DevOps maintains your workflow templates.** When you ask "set up CI for repo X," DevOps picks the right template from `references/github-workflows.md`, customizes it for the repo's language/framework, and commits it. No manual YAML editing required.
+
+### Security Scanning & Vulnerability Management
+
+Your agents don't just write code — they **guard it**. Automated security scanning catches vulnerabilities before they reach production:
+
+**Automated dependency auditing:**
+
+```
+You:             @DevOps run a security scan on all our repos
+
+DevOps:          🔒 Security Scan Results:
+
+                 wanikua/myapp
+                 ├── npm audit: 0 critical, 1 moderate (lodash prototype pollution)
+                 ├── Recommendation: npm update lodash (fix available)
+                 └── License scan: all dependencies MIT/Apache — ✅ compliant
+
+                 wanikua/api-gateway
+                 ├── npm audit: 1 critical (jsonwebtoken <9.0.0 — CVE-2022-23529)
+                 ├── Recommendation: URGENT — update jsonwebtoken to 9.0.2+
+                 └── License scan: 1 GPL-3.0 dependency (review needed) ⚠️
+
+                 wanikua/ml-service
+                 ├── pip audit: 0 critical, 0 moderate
+                 └── License scan: all dependencies permissive ✅
+
+                 🚨 Action items:
+                 1. CRITICAL: api-gateway jsonwebtoken update — creating PR now
+                 2. MODERATE: myapp lodash update — scheduling for next sprint
+                 3. REVIEW: api-gateway GPL dependency — flagging Legal
+
+                 → Spawning Engineering: fix critical vulnerability
+                 → Spawning Legal: review GPL-3.0 license compatibility
+```
+
+**Scheduled security scans (cron-driven):**
+
+```bash
+# Weekly Monday security audit across all repos
+clawdbot cron add \
+  --name "security-audit" --agent devops \
+  --cron "0 8 * * 1" --tz "America/New_York" \
+  --message "Run security audit on all repos: npm audit / pip audit, check for known CVEs, scan for exposed secrets in recent commits (git log --diff-filter=A). Report critical findings immediately to Chief of Staff. Log all results to the Incident Log on Notion tagged 'security-audit'." \
+  --session isolated --token <your-token>
+```
+
+**Secret scanning — catch leaked credentials:**
+
+```
+DevOps (cron):   🚨 SECRET LEAK DETECTED
+
+                 Repository: wanikua/myapp
+                 Commit: abc1234 (3 hours ago)
+                 File: src/config/database.js
+                 Finding: Hardcoded database connection string detected
+
+                 → Notified Engineering to rotate credentials
+                 → Notified Chief of Staff
+                 → Created INC-009 in Incident Log on Notion
+                 → Recommendation: add pre-commit hook to prevent future leaks
+```
+
+> 💡 **Add secret scanning to your CI pipeline.** See [`references/github-workflows.md`](./become-ceo/references/github-workflows.md) for the Secret & SAST Scanning workflow template. DevOps can deploy it to any repo with one command.
+
+### Conventional Commits & Semantic Versioning
+
+Consistent commit messages make changelogs, release notes, and git history actually useful. Configure your Engineering agent to follow **Conventional Commits**:
+
+```
+# Commit message format:
+#   <type>(<scope>): <description>
+#
+# Types: feat, fix, docs, style, refactor, perf, test, chore
+# Breaking changes: add ! after type — feat!: remove legacy auth
+
+# Examples from your Engineering agent:
+feat(auth): add JWT refresh token support
+fix(checkout): handle cart with 10+ items
+docs(api): update rate limiting documentation
+refactor(db): migrate from callbacks to async/await
+perf(search): add database index for user queries
+test(auth): add edge case tests for token expiry
+chore(deps): update lodash to 4.17.21
+feat!(api): remove deprecated v1 endpoints
+```
+
+**Why this matters:**
+
+| Benefit | How |
+|---------|-----|
+| **Auto-generated changelogs** | Release Drafter groups commits by type (features, fixes, etc.) |
+| **Semantic version bumps** | `feat` → minor bump, `fix` → patch, `feat!` → major bump |
+| **Searchable history** | `git log --grep="fix(auth)"` finds all auth fixes instantly |
+| **Cross-agent clarity** | When DevOps reads Engineering's commits, the intent is clear |
+
+**Enforce in agent themes:**
+
+```json
+{
+  "id": "engineering",
+  "identity": {
+    "theme": "...Follow Conventional Commits for all git operations (feat/fix/docs/refactor/perf/test/chore). Include scope when relevant. Mark breaking changes with !..."
+  }
+}
+```
+
+> 💡 Agents follow Conventional Commits automatically when instructed in their theme. No git hooks or tooling required — the LLM formats commit messages correctly based on the instruction.
+
+### GitHub Discussions — Long-Form Decision Making
+
+Not everything fits in a Discord message or a GitHub Issue. Use **GitHub Discussions** for architectural debates, RFCs, and decisions that need structured input from multiple agents:
+
+```
+You:             @Engineering we need to decide on our API versioning
+                 strategy. Open a Discussion for it.
+
+Engineering:     Created GitHub Discussion in wanikua/myapp:
+
+                 📋 "RFC: API Versioning Strategy"
+                 Category: Architecture Decisions
+
+                 Options analyzed:
+                 1. URL versioning (/v1/, /v2/) — simple, explicit
+                 2. Header versioning (Accept: application/vnd.api+v2)
+                 3. Query param (?version=2) — easy but messy
+
+                 Recommendation: URL versioning for simplicity.
+                 Trade-offs documented in the Discussion body.
+
+                 @Finance @DevOps — your input on migration cost
+                 and infrastructure impact?
+```
+
+**Discussions → Notion pipeline:**
+
+```
+# After a Discussion reaches consensus:
+Engineering:     Discussion "API Versioning Strategy" resolved.
+                 Decision: URL versioning (/v1/, /v2/).
+
+                 → Created ADR-005 in Engineering Wiki on Notion
+                 → Linked to GitHub Discussion #12
+                 → Closed Discussion with summary comment
+```
+
+This creates a **decision trail**: the debate lives on GitHub (public, commentable), the decision lives on Notion (structured, searchable), and both cross-reference each other.
+
+### GitHub Integration Summary
+
+After three rounds of GitHub coverage, here's what your AI team can do with GitHub — all from Discord:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    GitHub Integration Map                        │
+│                                                                 │
+│  📋 Issues                    🔀 Pull Requests                  │
+│  • Auto-triage (hourly cron)  • Create from Discord             │
+│  • Label + prioritize         • Code review (security-focused)  │
+│  • Create from conversations  • Auto-merge (with protection)    │
+│  • Link to Notion projects    • Cross-agent coordination        │
+│                                                                 │
+│  🚀 CI/CD                     🔒 Security                       │
+│  • Monitor build status       • Dependency audits (weekly)      │
+│  • Re-run failed workflows    • Secret scanning                 │
+│  • Nightly staging deploys    • License compliance              │
+│  • Production with approval   • CVE response automation         │
+│                                                                 │
+│  📊 Analytics                  📦 Releases                      │
+│  • PR merge times             • Semantic versioning             │
+│  • Issue velocity             • Auto-changelog from PRs         │
+│  • CI pass rates              • Weekly release cron             │
+│  • Code coverage trends       • GitHub Release publishing       │
+│                                                                 │
+│  📁 Multi-Repo                 💬 Discussions                    │
+│  • Health checks across repos • RFCs and architecture debates   │
+│  • Cross-repo dependency sync • Decision → Notion ADR pipeline  │
+│  • GitHub Projects boards     • Structured long-form input      │
+│  • Sprint velocity tracking   • Cross-agent collaboration       │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -2182,6 +2363,9 @@ Create an integration at [notion.so/my-integrations](https://www.notion.so/my-in
 **Q: How does GitHub integration work?**
 Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authenticate once on your server with `gh auth login`, and all agents can create issues, manage PRs, review code, and trigger CI/CD workflows. Engineering handles most GitHub operations, but any agent can read repo data. See the [GitHub Integration](#github-integration--your-engineering-pipeline) section for setup and workflow examples.
 
+**Q: How do I set up automated security scanning?**
+DevOps can deploy the Secret & SAST Scanning workflow template to any repo from `references/github-workflows.md`. It runs on every PR and weekly on a schedule — catching leaked secrets, vulnerable dependencies, and license conflicts automatically. DevOps notifies Engineering for code fixes and Legal for license issues. See the [Security Scanning](#security-scanning--vulnerability-management) section for details.
+
 **Q: How do I create custom skills?**
 Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically.
 
@@ -2294,4 +2478,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.6
+v4.7
