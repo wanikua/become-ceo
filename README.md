@@ -63,7 +63,7 @@ Everyone:     [Each agent reports in with their status]
 
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
-- [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge base sync, cross-agent knowledge graph, executive dashboard, incident post-mortems
+- [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -1023,6 +1023,114 @@ Chief of Staff:  Post-mortem:
 
 Every incident is documented, searchable, and linked to the fix. Next time a similar issue occurs, agents can find the previous incident and apply the same solution.
 
+### Notion Relations & Rollups — Connecting Your Data
+
+Individual databases are useful. **Connected databases** are powerful. Use Notion's Relations and Rollups to build a knowledge graph your agents can traverse:
+
+```
+┌───────────────┐       ┌───────────────┐       ┌───────────────┐
+│ 🗂️ Projects   │──────▶│ 💰 Fin Recs   │◀──────│ 📅 Daily Reps │
+│               │       │               │       │               │
+│ "Auth v2"     │       │ Mar API Spend │       │ 2026-03-07    │
+│ Budget: $120  │       │ Total: $36.70 │       │ Cost: $4.20   │
+│ Status: Active│       │ ↕ Rollup: sum │       │ Project: Auth │
+└───────┬───────┘       └───────────────┘       └───────────────┘
+        │
+        ▼
+┌───────────────┐       ┌───────────────┐
+│ 🖥️ Eng Wiki   │──────▶│ 🔒 Incidents  │
+│               │       │               │
+│ ADR-003: PG   │       │ INC-007: Pool │
+│ Project: Auth │       │ Related ADR:  │
+│ Status: Done  │       │ ADR-004       │
+└───────────────┘       └───────────────┘
+```
+
+**Key relation patterns:**
+
+| Relation | From → To | Why |
+|----------|-----------|-----|
+| Project ↔ Costs | Projects → Financial Records | Track budget burn per project |
+| Daily → Weekly | Daily Reports → Weekly Reports | Roll up daily data into weekly |
+| ADR ↔ Incident | Engineering Wiki → Incident Log | Link fixes to root-cause decisions |
+| ADR ↔ Project | Engineering Wiki → Projects | Track which decisions belong to which project |
+| Incident → Daily | Incident Log → Daily Reports | Include incidents in daily summaries |
+| Content → Project | Marketing Hub → Projects | Track content per project/launch |
+
+**Using Rollups for automatic aggregation:**
+
+```
+# In the Projects database, add:
+#   Relation: "Daily Costs" → Daily Reports database
+#   Rollup:   "Total Cost" → sum of "Cost Today" from related Daily Reports
+#
+# Now each project page auto-calculates its total spend!
+
+You:             @Management what's the total spend on Project Alpha?
+
+Management:      Checking Notion...
+                 Project Alpha — Total Spend (rollup): $142.30
+                 Budget: $200 | Remaining: $57.70 | Burn rate: $4.70/day
+                 At current rate, budget runs out in ~12 days.
+```
+
+> 💡 **Set up Relations in Notion UI** — the API can create relation properties, but it's easier to configure them visually in Notion. Once set up, agents can read and write related records via the API.
+
+### Notion ↔ Workspace Backup
+
+Discord conversations vanish into scroll-back. Notion could go down. Your workspace files are the **last line of defense**. Configure periodic backups from Notion to your workspace:
+
+```bash
+# Weekly — back up critical Notion data to workspace files
+clawdbot cron add \
+  --name "notion-backup" --agent main \
+  --cron "0 3 * * 0" --tz "America/New_York" \
+  --message "Export the last 7 days of Notion data to workspace. Query Daily Reports, Financial Records, and Incident Log databases. Write summaries to memory/notion-backup/YYYY-MM-DD.md. This is our disaster recovery copy." \
+  --session isolated --token <your-token>
+```
+
+**What gets backed up:**
+
+```
+~/clawd/
+└── memory/
+    └── notion-backup/
+        ├── 2026-03-07.md    ← daily reports, incidents, costs
+        ├── 2026-02-28.md
+        └── ...
+```
+
+This gives you a **local, searchable archive** of everything your team documented in Notion. If Notion is ever unreachable, agents can still reference the backup files.
+
+> 💡 **Two-way sync:** Agents can also **restore to Notion from workspace files**. If you accidentally delete a Notion page, ask your Chief of Staff to recreate it from the backup in `memory/notion-backup/`.
+
+### Notion Quick-Reference Card
+
+Here's everything you need for Notion integration at a glance:
+
+| Step | What to Do |
+|------|-----------|
+| **1. Create integration** | [notion.so/my-integrations](https://www.notion.so/my-integrations) → New → copy token |
+| **2. Share pages** | Open each Notion page → "..." → Add connections → your integration |
+| **3. Store token** | Add `NOTION_TOKEN=ntn_...` to your workspace env or TOOLS.md |
+| **4. Create databases** | Use schemas from [`references/notion-templates.md`](./become-ceo/references/notion-templates.md) |
+| **5. Set up relations** | Connect databases in Notion UI (Projects ↔ Costs, ADRs ↔ Incidents) |
+| **6. Add cron jobs** | Daily reports, weekly summaries, monthly reviews (see examples above) |
+| **7. Set up backup** | Weekly Notion → workspace export cron (disaster recovery) |
+
+**Databases to create (recommended order):**
+
+1. 📅 Daily Reports — your foundation, everything flows from here
+2. 💰 Financial Records — cost tracking, budget monitoring
+3. 🖥️ Engineering Wiki — ADRs, technical decisions
+4. 🔒 Incident Log — outage tracking, post-mortems
+5. 📊 Weekly Reports — aggregate dailies (add relation to Daily Reports)
+6. 🌙 Monthly Reports — aggregate weeklies
+7. 📢 Marketing Hub — content calendar
+8. 🗂️ Project Archives — project-level view with cost rollups
+
+> 💡 **Start with just #1 and #2.** You can always add more databases later. The daily report + cost tracking combo alone gives you 80% of the value.
+
 ---
 
 ## Architecture
@@ -1582,4 +1690,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.3
+v4.4

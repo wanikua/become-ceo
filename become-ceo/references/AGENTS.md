@@ -12,6 +12,18 @@
 - Long-term: `MEMORY.md` (main session only)
 - Write it down. Files survive restarts, your "memory" doesn't.
 
+## Documentation & Archiving
+
+When completing significant work, archive it to Notion:
+- **Daily summaries** → Daily Reports database
+- **Architecture decisions** → Engineering Wiki (ADR format)
+- **Cost data** → Financial Records database
+- **Incidents** → Incident Log database
+- **Content** → Marketing Hub database
+- **Project milestones** → Project Archives database
+
+If Notion is unreachable, write a local copy to `memory/notion-pending/` and retry next session.
+
 ## Group Chat Etiquette
 
 **Speak when:**
