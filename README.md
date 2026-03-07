@@ -65,6 +65,7 @@ Everyone:     [Each agent reports in with their status]
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
+- [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -1914,6 +1915,381 @@ After three rounds of GitHub coverage, here's what your AI team can do with GitH
 
 ---
 
+## Browser Automation — Your Eyes on the Web
+
+Your AI team doesn't just read APIs — it can **see and interact with real websites**. Browser automation turns your agents into web power users: scraping data, filling forms, managing social media accounts, monitoring competitors, and navigating any web UI — all from Discord commands.
+
+### Why Browser Automation?
+
+Not everything has an API. Many critical business tasks require interacting with actual web pages:
+
+- 📊 **Competitor monitoring** — check competitor pricing, features, and announcements
+- 📱 **Social media management** — post to platforms, respond to DMs, scrape leads
+- 📝 **Form filling** — submit applications, register for services, fill surveys
+- 🔍 **Web scraping** — extract data from websites that don't offer APIs
+- 📸 **Visual verification** — take screenshots to confirm deployments look correct
+- 🛒 **E-commerce ops** — monitor product listings, check inventory, track orders
+
+### How It Works
+
+Clawdbot includes a built-in browser control layer that agents use to interact with web pages programmatically:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  You: @Marketing check our competitor's pricing page         │
+└──────────────┬───────────────────────────────────────────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  Marketing Agent                     │
+│                                      │
+│  1. browser → open competitor URL    │
+│  2. browser → snapshot (read DOM)    │
+│  3. Extract pricing data from page   │
+│  4. Compare with our pricing         │
+│  5. Report findings to Discord       │
+└──────────────────────────────────────┘
+```
+
+Under the hood, Clawdbot manages a headless Chromium instance. Agents interact with it through high-level actions: navigate, click, type, snapshot, screenshot — no Puppeteer or Selenium code required.
+
+```
+┌───────────────────────────────────────────────────────────┐
+│                  Browser Automation Stack                  │
+│                                                           │
+│  Discord Command                                          │
+│       ↓                                                   │
+│  Agent (Marketing / Engineering / DevOps)                 │
+│       ↓                                                   │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │  Browser Control Layer                              │  │
+│  │                                                     │  │
+│  │  • navigate(url)     — go to a URL                  │  │
+│  │  • snapshot()        — read page content (DOM/aria) │  │
+│  │  • screenshot()      — capture visual screenshot    │  │
+│  │  • click(ref)        — click an element             │  │
+│  │  • type(ref, text)   — type into input fields       │  │
+│  │  • select(ref, val)  — choose from dropdowns        │  │
+│  │  • evaluate(js)      — run custom JavaScript        │  │
+│  │  • upload(ref, file) — upload files to forms        │  │
+│  └─────────────────────────────────────────────────────┘  │
+│       ↓                                                   │
+│  Headless Chromium (managed by Clawdbot)                  │
+│       ↓                                                   │
+│  🌐 Any Website                                          │
+└───────────────────────────────────────────────────────────┘
+```
+
+### Setting Up Browser Automation
+
+Browser support is installed automatically by `setup.sh` (Chromium is included). No additional configuration needed — agents can start using the browser immediately.
+
+If you're adding browser capabilities to an existing setup:
+
+```bash
+# Install Chromium (if not already present)
+sudo apt install -y chromium-browser
+
+# Verify it works
+chromium-browser --headless --no-sandbox --dump-dom https://example.com
+```
+
+> 💡 **No API keys required** for browser automation. The browser runs locally on your server — you're just automating what a human would do in Chrome.
+
+### Web Scraping — Extract Data from Any Site
+
+Your agents can read and extract structured data from websites that don't offer APIs:
+
+```
+You:             @Engineering scrape the documentation structure from
+                 docs.example.com and create a summary
+
+Engineering:     Navigating to docs.example.com...
+
+                 📄 Documentation Structure:
+                 ├── Getting Started (4 pages)
+                 │   ├── Installation
+                 │   ├── Quick Start Guide
+                 │   ├── Configuration
+                 │   └── First Project
+                 ├── API Reference (12 pages)
+                 │   ├── Authentication
+                 │   ├── Endpoints
+                 │   └── ...
+                 └── Tutorials (8 pages)
+
+                 Total: 24 pages across 3 sections.
+                 → Summary saved to Engineering Wiki on Notion.
+```
+
+**Scraping competitor pricing:**
+
+```
+You:             @Marketing compare our pricing with competitors X, Y, and Z
+
+Marketing:       Checking pricing pages...
+
+                 📊 Pricing Comparison:
+
+                 | Feature        | Us    | Competitor X | Competitor Y | Competitor Z |
+                 |----------------|-------|-------------|-------------|-------------|
+                 | Free tier      | ✅ Yes | ✅ Yes      | ❌ No       | ✅ Yes      |
+                 | Starter plan   | $9/mo | $12/mo      | $15/mo      | $10/mo      |
+                 | Pro plan       | $29/mo| $39/mo      | $35/mo      | $49/mo      |
+                 | API access     | ✅ All | ⚠️ Pro only | ✅ All      | ⚠️ Pro only |
+                 | Custom domain  | ✅ Yes | ✅ Yes      | ❌ No       | ✅ Yes      |
+
+                 💡 Our pricing is competitive on all tiers.
+                    Gap: Competitor X offers SSO on Starter — we only offer it on Pro.
+
+                 → Saved to Marketing Hub on Notion: "Competitive Analysis Q1"
+```
+
+### Social Media Management
+
+Browser automation shines for social media — platforms where API access is limited or expensive:
+
+```
+You:             @Marketing post our product update to LinkedIn
+
+Marketing:       Navigating to LinkedIn...
+
+                 ✅ Posted to company page:
+                 "🚀 Exciting update! Our v2.1 release includes JWT refresh
+                 tokens, rate limiting, and faster API response times.
+                 Read the full changelog: [link]"
+
+                 → Post URL: linkedin.com/posts/...
+                 → Logged to Marketing Hub on Notion
+```
+
+**Social media monitoring:**
+
+```
+You:             @Marketing check for any mentions of our brand this week
+
+Marketing:       Scanning social platforms...
+
+                 📱 Brand Mentions (past 7 days):
+
+                 LinkedIn:
+                 • 3 mentions — 2 positive (feature praise), 1 question (pricing)
+                 • Top post: "[User] called our API docs 'best in class'" (142 likes)
+
+                 Twitter/X:
+                 • 5 mentions — 4 neutral, 1 support request
+                 • Support request: "@ourcompany getting timeout errors" → flagging Engineering
+
+                 Reddit:
+                 • 1 thread in r/webdev comparing our tool to alternatives
+                 • Sentiment: mostly positive, 12 upvotes
+
+                 → Full report saved to Marketing Hub on Notion
+                 → Flagged support request → Engineering for follow-up
+```
+
+**Lead scraping from professional networks:**
+
+```
+You:             @Marketing find potential partners in the AI tools space
+                 on Product Hunt
+
+Marketing:       Browsing Product Hunt...
+
+                 🎯 Potential Partners (AI Tools — launched this month):
+
+                 1. ToolAI — AI writing assistant (450 upvotes)
+                    • Complementary to our product
+                    • Founder: active on Product Hunt
+                    • Integration opportunity: embed our API
+
+                 2. DataPipe — ETL automation (320 upvotes)
+                    • Potential data pipeline integration
+                    • Already supports similar tools
+
+                 3. DesignBot — AI design tool (280 upvotes)
+                    • Marketing collaboration potential
+                    • Large social following
+
+                 → List saved to Marketing Hub on Notion: "Partner Prospects"
+                 Want me to draft outreach messages?
+```
+
+### Screenshot Verification — Visual QA
+
+After deployments, your agents can visually verify that everything looks right:
+
+```
+You:             @DevOps verify the production deployment looks correct
+
+DevOps:          Taking screenshots of key pages...
+
+                 📸 Visual Verification — production.example.com:
+
+                 ✅ Homepage — renders correctly, hero banner visible
+                 ✅ Login page — form elements present, no layout shift
+                 ✅ Dashboard — charts loading, data populated
+                 ⚠️ Pricing page — footer overlaps content on mobile viewport
+
+                 Found 1 issue. Flagging Engineering for the pricing page
+                 footer bug.
+
+                 → Screenshots archived to #deployments channel
+```
+
+**Scheduled visual regression monitoring:**
+
+```bash
+# Daily at 6 AM — check production pages for visual regressions
+clawdbot cron add \
+  --name "visual-qa" --agent devops \
+  --cron "0 6 * * *" \
+  --message "Take screenshots of the top 5 pages on production (homepage, login, dashboard, pricing, docs). Compare against yesterday's screenshots. Flag any visual differences or broken layouts. Only alert if something looks wrong." \
+  --session isolated --token <your-token>
+```
+
+### Form Automation & Data Entry
+
+Agents can fill out web forms — useful for repetitive registration, application, or data entry tasks:
+
+```
+You:             @Engineering register our API on the three developer
+                 directories I listed yesterday
+
+Engineering:     Checking yesterday's conversation...
+                 Found: DevDirectory, APIHub, and ToolsList.
+
+                 Registering on each:
+                 1. DevDirectory — navigating → filling form → submitted ✅
+                    → Listing URL: devdirectory.com/tools/our-api
+                 2. APIHub — navigating → filling form → submitted ✅
+                    → Listing URL: apihub.io/listing/our-api
+                 3. ToolsList — navigating → filling form → submitted ✅
+                    → Pending review (manual approval)
+
+                 All 3 directories submitted.
+                 → Logged to Marketing Hub on Notion: "Directory Listings"
+```
+
+### Browser + Agent Cross-Collaboration
+
+The real power comes when browser automation combines with your multi-agent team:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  You: @Chief of Staff do a full competitive analysis         │
+└──────────────┬───────────────────────────────────────────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  Chief of Staff orchestrates:        │
+│                                      │
+│  spawn → Marketing                   │
+│    "Browse competitor websites,      │
+│     extract pricing and features"    │
+│                                      │
+│  spawn → Engineering                 │
+│    "Check competitor GitHub repos,   │
+│     analyze their tech stack and     │
+│     release frequency"               │
+│                                      │
+│  spawn → Finance                     │
+│    "Research competitor funding      │
+│     rounds on Crunchbase"            │
+└──────────────────────────────────────┘
+
+Marketing:   [browser → competitor sites → extract pricing tables]
+Engineering: [gh CLI → competitor repos → analyze stars, commits, stack]
+Finance:     [browser → Crunchbase → extract funding data]
+
+Chief of Staff:  📊 Competitive Analysis Complete:
+
+                 Competitor A:
+                 • Pricing: $15/mo starter, $49/mo pro
+                 • Tech: React + Python, 2.3k GitHub stars
+                 • Funding: Series A, $8M (2025)
+                 • Release cadence: biweekly
+
+                 Competitor B:
+                 • Pricing: $12/mo flat
+                 • Tech: Vue + Go, 890 GitHub stars
+                 • Funding: Seed, $1.5M (2024)
+                 • Release cadence: monthly
+
+                 → Full report archived to Notion: Project Archives
+```
+
+Three agents used three different tools (browser, GitHub CLI, browser again) to produce a unified competitive analysis — from one command.
+
+### Browser Security & Best Practices
+
+Browser automation is powerful but requires care. Follow these guidelines:
+
+| ✅ Do | ❌ Don't |
+|-------|---------|
+| Use browser for public web pages | Log into accounts with real credentials via bot |
+| Scrape publicly available data | Violate website Terms of Service |
+| Take screenshots for visual QA | Store passwords in agent themes or SOUL.md |
+| Fill forms with provided data | Automate human-verification (CAPTCHA) bypasses |
+| Monitor your own properties | Scrape at rates that could trigger IP bans |
+| Use headless mode (default) | Leave browser sessions open indefinitely |
+
+**Rate limiting best practices:**
+
+```
+# Add delays between page loads to avoid detection/blocking
+# Clawdbot handles this automatically — but be mindful of:
+# - Respect robots.txt when scraping
+# - Add 2-3 second delays between rapid page navigations
+# - Rotate user agents for large scraping jobs
+# - Cache results to avoid repeated fetches
+```
+
+**Credential management:**
+
+If your agents need to interact with authenticated web pages, use environment variables — never hardcode credentials in agent themes or workspace files:
+
+```json
+{
+  "sandbox": {
+    "docker": {
+      "env": {
+        "LINKEDIN_SESSION": "$SESSION_COOKIE",
+        "TWITTER_AUTH": "$AUTH_TOKEN"
+      }
+    }
+  }
+}
+```
+
+> ⚠️ **Important:** Browser automation for social media should follow platform guidelines. Use official APIs where available (Twitter API, LinkedIn API) and fall back to browser automation only for actions not covered by APIs. Always respect rate limits and Terms of Service.
+
+### Browser Quick-Reference Card
+
+| Step | What to Do |
+|------|-----------|
+| **1. Verify Chromium** | `chromium-browser --version` (auto-installed by setup.sh) |
+| **2. Test from Discord** | `@Engineering take a screenshot of example.com` |
+| **3. Common actions** | Navigate, snapshot, screenshot, click, type, select |
+| **4. Social media** | Use Marketing agent for posting, monitoring, lead gen |
+| **5. Visual QA** | Use DevOps agent for deployment verification screenshots |
+| **6. Competitive intel** | Use Marketing + Engineering for cross-agent analysis |
+
+**Common browser actions your agents use:**
+
+| Action | What It Does | Example |
+|--------|-------------|---------|
+| `navigate(url)` | Go to a web page | Open competitor's pricing page |
+| `snapshot()` | Read page content as structured text | Extract article text, table data |
+| `screenshot()` | Capture a visual image of the page | Visual QA after deployment |
+| `click(ref)` | Click a button or link | Navigate multi-page sites |
+| `type(ref, text)` | Type into an input field | Fill search boxes, forms |
+| `select(ref, value)` | Choose from a dropdown menu | Select country, plan tier |
+| `evaluate(js)` | Run custom JavaScript on the page | Extract complex data structures |
+| `upload(ref, file)` | Upload a file to a form | Submit documents, images |
+
+> 💡 **Agents compose browser actions automatically** — you just say "check our homepage on mobile" and the agent translates that into: set viewport to 375px, navigate, screenshot. No need to learn the browser control API yourself.
+
+---
+
 ## Architecture
 
 ```
@@ -2366,6 +2742,9 @@ Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authent
 **Q: How do I set up automated security scanning?**
 DevOps can deploy the Secret & SAST Scanning workflow template to any repo from `references/github-workflows.md`. It runs on every PR and weekly on a schedule — catching leaked secrets, vulnerable dependencies, and license conflicts automatically. DevOps notifies Engineering for code fixes and Legal for license issues. See the [Security Scanning](#security-scanning--vulnerability-management) section for details.
 
+**Q: How does browser automation work?**
+Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
+
 **Q: How do I create custom skills?**
 Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically.
 
@@ -2478,4 +2857,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.7
+v4.8
