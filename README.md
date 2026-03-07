@@ -61,7 +61,7 @@ Everyone:     [Each agent reports in with their status]
 
 ## Table of Contents
 
-- [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture + voice control
+- [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -229,6 +229,88 @@ You don't have to pick one or the other. The most effective workflow combines bo
 | Urgent alerts | 🔊 Voice — grabs your attention immediately |
 
 > 💡 **Pro tip:** After a voice meeting, ask the Chief of Staff to "summarize what we just discussed and post it to `#standup`." You get the speed of voice with the permanence of text.
+
+### Enabling TTS for Your Agents
+
+To make an agent respond with voice, enable TTS in their identity configuration:
+
+```json
+{
+  "id": "engineering",
+  "identity": {
+    "name": "Engineering",
+    "theme": "You are the Engineering lead. Direct, working solutions.",
+    "emoji": "⚔️"
+  },
+  "tts": {
+    "enabled": true,
+    "voice": "alloy"
+  }
+}
+```
+
+Each agent can have a different voice — give Engineering a deep, authoritative tone and Marketing something more upbeat. Your team literally sounds different, making it easy to know who's talking in a voice channel.
+
+> 💡 Clawdbot's built-in `tts` skill converts text to speech on the fly. For advanced voice options (custom voices, multilingual), check out the ElevenLabs TTS integration on [ClawdHub](https://clawdhub.com).
+
+### Discord Bot Threads — Auto-Organized Work
+
+When an agent works on a complex task, Clawdbot automatically creates a **Discord thread** to keep the main channel clean:
+
+```
+#dev-general
+├── 💬 You: @Engineering refactor the auth module
+│   └── 🧵 Thread: "Auth Module Refactor"
+│       ├── Engineering: Here's my plan...
+│       ├── Engineering: PR ready — github.com/you/app/pull/42
+│       └── Engineering: ✅ Merged. Auth module now uses refresh tokens.
+│
+├── 💬 You: @Engineering set up rate limiting on the API
+│   └── 🧵 Thread: "API Rate Limiting"
+│       └── Engineering: Working on it...
+```
+
+Threads keep your channels scannable. You see the high-level request in the channel; the detailed work lives in the thread. No more scrolling through 50 messages of code output to find the next conversation.
+
+### Bot Status & Presence
+
+Your bots show as "online" in Discord's member list, making your AI team feel like real coworkers. You can customize their status to show what they're working on or their current availability:
+
+```
+👥 ONLINE — 8
+    ⚡ Chief of Staff    — Watching the team
+    ⚔️ Engineering       — Coding
+    💰 Finance           — Reviewing spend
+    🎭 Marketing         — Drafting content
+    🔧 DevOps            — Systems nominal
+    👔 Management        — Tracking projects
+    ⚖️ Legal             — Reviewing contracts
+    👤 You               — Being the CEO
+```
+
+### Creating 7 Discord Bots — Step by Step
+
+This is the most time-consuming part of setup (~10 minutes). Here's the exact process:
+
+**For each of the 7 roles** (Chief of Staff, Engineering, Finance, Marketing, DevOps, Management, Legal):
+
+1. Go to [discord.com/developers/applications](https://discord.com/developers/applications)
+2. Click **"New Application"** → name it (e.g., "Engineering")
+3. Go to **Bot** tab → click **"Add Bot"**
+4. Under **Privileged Gateway Intents**, enable:
+   - ✅ **Message Content Intent** (required — bot can't read messages without this)
+   - ✅ **Server Members Intent** (required for `@everyone` to work)
+5. Click **"Reset Token"** → copy the token → paste into `clawdbot.json`
+6. Go to **OAuth2** → **URL Generator**:
+   - Scopes: `bot`, `applications.commands`
+   - Bot Permissions: `Send Messages`, `Read Message History`, `View Channels`, `Create Public Threads`, `Send Messages in Threads`, `Use Slash Commands`
+7. Copy the generated URL → open it → select your server → authorize
+
+Repeat 7 times. Yes, it's tedious. But you only do it once.
+
+> 💡 **Naming tip:** Name each application exactly like its role (Engineering, Finance, etc.) so you can tell them apart in the Developer Portal. Upload a unique avatar for each bot to make your Discord server feel alive.
+
+> ⚠️ **Common mistake:** Forgetting to enable **Message Content Intent**. Without it, your bot connects to Discord but receives empty messages — it looks online but never responds. This is Discord's privacy restriction, not a Clawdbot bug.
 
 ---
 
@@ -785,4 +867,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v3.8
+v3.9
