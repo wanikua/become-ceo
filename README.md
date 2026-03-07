@@ -67,7 +67,7 @@ Everyone:     [Each agent reports in with their status]
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
 - [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, accessibility testing, PDF generation, cron integration, capability matrix, automation recipes
 - [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) — Daily reports, monitoring & alerting, auto-archiving to Notion, cron chains, event-driven cron, self-adjusting schedules, observability, cost management, migration guide, dependency graph, full integration map, troubleshooting
-- [Recommended Skills from ClawdHub](#recommended-skills-from-clawdhub) — Email summaries, calendar integration, GitHub trending, Hacker News, Docker management, automation workflows, weather, skill recommendations by role
+- [Recommended Skills from ClawdHub](#recommended-skills-from-clawdhub) — 12 curated skills (email, calendar, weather, GitHub trending, HN, Docker, RSS, Slack bridge, AI image gen, system monitor, screenshot diff, automation workflows), skill combinations & synergies, build your own skills
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -3664,24 +3664,326 @@ clawdbot cron add --agent engineering \
          weekends and if nothing relevant."
 ```
 
+### 📡 System Monitor — Server Health at a Glance
+
+**Skill:** `system-resource-monitor`
+
+Your DevOps agent tracks CPU, memory, disk, and network in real time:
+
+```bash
+clawdhub install system-resource-monitor
+```
+
+```
+You:             @DevOps server health check
+
+DevOps:          📡 System Health — vibe-server:
+
+                 CPU:     12% (4 cores, load avg: 0.48)
+                 Memory:  3.2 GB / 8 GB (40%)
+                 Disk:    42 GB / 100 GB (42%)
+                 Network: ↑ 2.3 MB/s  ↓ 8.1 MB/s
+                 Uptime:  47 days
+
+                 ✅ All metrics within normal range.
+                 ⚠️ Note: disk usage grew 3% this week —
+                    mostly log files. Want me to rotate?
+```
+
+**Best cron pattern:** Continuous health monitoring with threshold alerts:
+
+```bash
+clawdbot cron add --agent devops \
+  --cron "0 */4 * * *" \
+  --text "Check system resources. Alert ONLY if: CPU > 80% sustained,
+         memory > 85%, disk > 90%, or load average > 3.0.
+         Stay silent if everything is healthy."
+```
+
+| Agent | Use Case |
+|-------|----------|
+| **DevOps** | Real-time health checks, capacity planning, log rotation |
+| **Finance** | Server cost correlation — map resource usage to cloud bills |
+| **Engineering** | Performance profiling during load tests |
+
+### 📰 RSS Feeds — Custom News Aggregation
+
+**Skill:** `rss-feeds`
+
+Subscribe to any RSS/Atom feed and let agents curate a custom news digest:
+
+```bash
+clawdhub install rss-feeds
+```
+
+```
+You:             @Marketing check our industry feeds
+
+Marketing:       📰 Feed Digest — Last 24h:
+
+                 🏷️ TechCrunch (3 relevant):
+                 • "AI agents are replacing SaaS dashboards" — matches our positioning
+                 • "Discord raises Series F" — platform growth validates our approach
+                 • "No-code tools hit $10B market" — competitor landscape update
+
+                 🏷️ Product Hunt (2 new):
+                 • "AgentOS — AI team management" — direct competitor, 340 upvotes
+                 • "DiscordBot Pro — bot hosting" — adjacent market
+
+                 🏷️ Hacker News RSS (1 notable):
+                 • "Show HN: I automated my startup with AI agents" — 180 comments
+
+                 → Saved to Marketing Hub on Notion with analysis notes
+```
+
+**Best cron pattern:** Morning content digest from curated feed list:
+
+```bash
+clawdbot cron add --agent marketing \
+  --cron "0 9 * * 1-5" --tz "America/New_York" \
+  --text "Check RSS feeds: TechCrunch AI, Product Hunt, our competitors' 
+         blogs. Summarize anything relevant to AI agents or Discord 
+         automation. Post digest to #marketing. Stay silent if nothing new."
+```
+
+| Agent | Use Case |
+|-------|----------|
+| **Marketing** | Industry news, competitor monitoring, content inspiration |
+| **Engineering** | Tech blog subscriptions, framework release announcements |
+| **Legal** | Regulatory news feeds, compliance updates |
+
+### 🌉 Slack Bridge — Multi-Platform Presence
+
+**Skill:** `slack-bridge`
+
+If your team uses Slack alongside Discord, bridge the gap:
+
+```bash
+clawdhub install slack-bridge
+```
+
+```
+You:             @Chief of Staff post the standup summary to Slack too
+
+Chief of Staff:  Done! Daily standup posted to:
+                 ✅ Discord #daily-standup
+                 ✅ Slack #general
+
+                 Both channels synced. Future standups will 
+                 auto-post to both platforms.
+```
+
+**Use case:** Many companies run Discord internally but Slack for external communication. The bridge skill lets agents operate across both platforms seamlessly — post announcements to Slack, monitor Slack channels for client messages, and keep both platforms in sync.
+
+| Agent | Use Case |
+|-------|----------|
+| **Chief of Staff** | Cross-platform standup posting, announcement sync |
+| **Marketing** | Post content to Slack communities, monitor brand channels |
+| **Management** | Client communication bridges, partner channel monitoring |
+
+### 🎨 AI Image Generation — Visual Content on Demand
+
+**Skill:** `ai-image-gen`
+
+Generate images for presentations, social media, or documentation:
+
+```bash
+clawdhub install ai-image-gen
+```
+
+```
+You:             @Marketing create a hero image for our blog post 
+                 about AI agent teams
+
+Marketing:       🎨 Generated 3 options:
+
+                 1. Futuristic command center with 7 holographic agents
+                 2. Minimalist — robot team around a conference table
+                 3. Abstract — interconnected nodes forming a company org chart
+
+                 [image-1.png] [image-2.png] [image-3.png]
+
+                 Which style fits the blog best?
+```
+
+| Agent | Use Case |
+|-------|----------|
+| **Marketing** | Social media visuals, blog hero images, ad creatives |
+| **Engineering** | Architecture diagrams, documentation illustrations |
+| **Management** | Presentation slides, pitch deck visuals |
+
+### 📸 Screenshot Diff — Visual Change Detection
+
+**Skill:** `screenshot-diff`
+
+Detect visual regressions by comparing screenshots over time:
+
+```bash
+clawdhub install screenshot-diff
+```
+
+```
+You:             @DevOps compare our homepage before and after the deploy
+
+DevOps:          📸 Visual Diff Report — homepage:
+
+                 Changes detected: 3 regions
+                 ┌─────────────────────┐
+                 │ ██ Header (nav)     │ ← font-weight changed
+                 │                     │
+                 │ ██ Hero section     │ ← new CTA button position
+                 │                     │
+                 │                     │
+                 │ ██ Footer           │ ← copyright year updated
+                 └─────────────────────┘
+
+                 Pixel diff: 2.3% (threshold: 5%)
+                 ✅ Within acceptable range — no visual regression.
+
+                 [diff-overlay.png attached]
+```
+
+**Best cron pattern:** Post-deploy visual regression check:
+
+```bash
+clawdbot cron add --agent devops \
+  --cron "0 6 * * *" \
+  --text "Take screenshots of homepage, pricing, and docs pages.
+         Compare against yesterday's baseline. If pixel diff > 5%
+         on any page, alert #devops with diff overlay image.
+         Update baselines after review."
+```
+
+| Agent | Use Case |
+|-------|----------|
+| **DevOps** | Post-deploy visual regression, nightly layout checks |
+| **Marketing** | Brand consistency monitoring, competitor site tracking |
+| **Engineering** | CSS regression detection, responsive breakpoint verification |
+
 ### 📊 Skill Recommendations by Agent Role
 
 Here's which skills benefit each agent most:
 
-| Agent | Must-Have Skills | Why |
-|-------|-----------------|-----|
-| **Chief of Staff** | `email-daily-summary`, `gcalcli-calendar`, `weather` | Morning briefings, schedule management, email triage |
-| **Engineering** | `github-trending-cn`, `hacker-news`, `docker-essentials` | Stay current, container management, tech news |
-| **Finance** | `automation-workflows` | Financial reporting pipelines, budget templates |
-| **Marketing** | `automation-workflows`, `hacker-news` | Content pipelines, trending topic research |
-| **DevOps** | `docker-essentials`, `system-resource-monitor` | Container ops, server health monitoring |
-| **Management** | `gcalcli-calendar`, `automation-workflows` | Meeting scheduling, project workflow templates |
-| **Legal** | `email-daily-summary` | Contract correspondence tracking |
+| Agent | Must-Have Skills | Nice-to-Have | Why |
+|-------|-----------------|--------------|-----|
+| **Chief of Staff** | `email-daily-summary`, `gcalcli-calendar`, `weather` | `slack-bridge`, `rss-feeds` | Morning briefings, cross-platform sync |
+| **Engineering** | `github-trending-cn`, `hacker-news`, `docker-essentials` | `screenshot-diff`, `ai-image-gen` | Stay current, visual QA, container ops |
+| **Finance** | `automation-workflows`, `system-resource-monitor` | `rss-feeds` | Reporting pipelines, cost-resource correlation |
+| **Marketing** | `automation-workflows`, `hacker-news`, `rss-feeds` | `ai-image-gen`, `slack-bridge` | Content pipelines, visual creation, multi-platform |
+| **DevOps** | `docker-essentials`, `system-resource-monitor`, `screenshot-diff` | `automation-workflows` | Full-stack monitoring, visual regression |
+| **Management** | `gcalcli-calendar`, `automation-workflows` | `slack-bridge`, `ai-image-gen` | Scheduling, workflows, presentations |
+| **Legal** | `email-daily-summary`, `rss-feeds` | `automation-workflows` | Contract tracking, regulatory news |
+
+### 🔗 Skill Combinations — The Compound Effect
+
+Individual skills are useful. **Combining** them is where the magic happens. Here are the most powerful skill stacks:
+
+#### ☀️ The Morning Brief Stack
+
+`email-daily-summary` + `gcalcli-calendar` + `weather` + `rss-feeds` + `hacker-news`
+
+One cron job, five skills, zero effort:
+
+```bash
+clawdbot cron add --agent main \
+  --cron "0 8 * * *" --tz "America/New_York" \
+  --text "Morning briefing — combine all sources:
+         1. Weather forecast and commute advisory
+         2. Today's calendar with conflict alerts
+         3. Email triage (urgent → actionable → noise)
+         4. RSS feed highlights from overnight
+         5. Top 3 relevant HN stories
+         Format as one clean digest. Post to CEO DM."
+```
+
+```
+Chief of Staff:  ☀️ Good Morning — Friday March 6, 2026
+
+                 🌤️ 68°F, sunny. Clear evening — good for 
+                    that dinner reservation.
+
+                 📅 3 meetings today:
+                    10:00  Sprint review (Zoom)
+                    14:00  Investor call (Google Meet) ← prep notes ready
+                    16:30  1-on-1 with CTO
+
+                 📧 2 urgent emails:
+                    • AWS — payment method expiring tomorrow
+                    • Client — revised timeline (needs reply by noon)
+
+                 📰 Overnight highlights:
+                    • TechCrunch: "AI agents replacing SaaS dashboards"
+                    • HN: "Show HN: Open-source agent framework" (342 pts)
+
+                 Anything you want me to handle?
+```
+
+#### 🛡️ The Full Monitoring Stack
+
+`system-resource-monitor` + `docker-essentials` + `screenshot-diff` + `automation-workflows`
+
+Complete infrastructure visibility:
+
+```bash
+clawdbot cron add --agent devops \
+  --cron "0 */2 * * *" \
+  --text "Full monitoring sweep:
+         1. System resources (CPU/mem/disk/network)
+         2. Docker container health and resource usage
+         3. Visual regression check on production pages
+         Alert on: container unhealthy, resource threshold breach,
+         or visual diff > 5%. Stay silent when everything is green."
+```
+
+#### 📢 The Content Pipeline Stack
+
+`rss-feeds` + `hacker-news` + `ai-image-gen` + `automation-workflows` + `slack-bridge`
+
+Research → create → publish → distribute — all automated:
+
+```
+Marketing:       📢 Content Pipeline — Weekly Cycle:
+
+                 Mon: Research (RSS + HN trending topics) → topic list
+                 Tue: Draft blog post → Notion Marketing Hub
+                 Wed: Generate hero image → attach to draft
+                 Thu: CEO review → approve in Discord
+                 Fri: Publish + auto-post to Slack community + Discord
+
+                 This week's topic: "5 Lessons from Running an AI Team"
+                 Based on: 3 trending HN discussions + 2 RSS articles
+```
+
+#### 💼 The Executive Dashboard Stack
+
+`email-daily-summary` + `gcalcli-calendar` + `system-resource-monitor` + `automation-workflows`
+
+Weekend or vacation mode — a single message catches you up on everything:
+
+```
+You:             @Chief of Staff give me a full status update
+
+Chief of Staff:  💼 Executive Dashboard — as of now:
+
+                 📧 Email: 23 messages (3 urgent, 7 actionable)
+                 📅 Calendar: 2 meetings remaining today
+                 🖥️ Systems: all 4 containers healthy, 40% resource usage
+                 📊 GitHub: 3 PRs merged, 1 review pending, CI all green
+                 💰 Cloud spend: $42.30 MTD (projected: $78 — under budget)
+
+                 🔴 Needs attention:
+                 • Client contract email awaiting reply (48h old)
+                 • PR #127 has merge conflicts
+```
+
+> 💡 **The compound effect:** Each additional skill multiplies (not just adds) the value of your team. A single `@Chief of Staff morning brief` can pull from 5+ skills simultaneously — something no human assistant could do in under a minute.
+
+See [references/skill-combinations.md](become-ceo/references/skill-combinations.md) for 8 more ready-to-use combination recipes.
 
 ### Quick Install — All Recommended Skills
 
 ```bash
-# Install the essentials in one go
+# Core skills — install the essentials in one go
 clawdhub install email-daily-summary
 clawdhub install gcalcli-calendar
 clawdhub install github-trending-cn
@@ -3689,9 +3991,18 @@ clawdhub install hacker-news
 clawdhub install automation-workflows
 clawdhub install docker-essentials
 
+# Extended skills — add these for the full experience
+clawdhub install system-resource-monitor
+clawdhub install rss-feeds
+clawdhub install slack-bridge
+clawdhub install ai-image-gen
+clawdhub install screenshot-diff
+
 # Restart gateway to pick up new skills
 systemctl --user restart clawdbot-gateway
 ```
+
+> 💡 **Start small:** Install the core 6 first, get comfortable, then add extended skills as your workflows mature.
 
 ### Finding More Skills
 
@@ -3707,7 +4018,46 @@ clawdhub search "database backup"
 # Visit: https://clawdhub.com
 ```
 
-> 💡 **Building your own skill?** Use `clawdhub publish` to share it with the community. See the [Clawdbot docs](https://docs.clawd.bot) for the skill authoring guide.
+### 🛠️ Building Your Own Skills
+
+Don't see what you need? Create it:
+
+```
+skill-folder/
+├── SKILL.md          # Instructions (the agent reads this)
+├── scripts/          # Helper scripts the agent can run
+└── assets/           # Reference files, templates, etc.
+```
+
+The `SKILL.md` is the brain of the skill — it tells agents what the skill does, when to use it, and how. Here's the minimal structure:
+
+```markdown
+---
+name: my-custom-skill
+description: "One line — what this does"
+---
+
+# My Custom Skill
+
+## When to Use
+Describe the trigger conditions.
+
+## How to Use
+Step-by-step instructions the agent follows.
+```
+
+Publish to share with the community:
+
+```bash
+# Publish your skill to ClawdHub
+cd skills/my-custom-skill
+clawdhub publish
+
+# Others can then install it
+clawdhub install my-custom-skill
+```
+
+> 💡 **Skill creation tip:** Start by documenting what you do manually, then translate those steps into SKILL.md instructions. The agent follows your playbook. See the [Clawdbot docs](https://docs.clawd.bot) for the full skill authoring guide.
 
 ---
 
@@ -3782,9 +4132,9 @@ These aren't chatbots — they have real tools:
 | **Media** | TTS voice, screenshots, video frame extraction |
 | **Operations** | tmux remote control, shell command execution |
 | **Messaging** | Discord, Slack, Telegram, WhatsApp, Signal… |
-| **ClawdHub** | Email summaries, calendar, Docker, trending repos, news digests, and hundreds more |
+| **ClawdHub** | Email summaries, calendar, Docker, trending repos, news digests, RSS feeds, system monitoring, image generation, screenshot diffs, and hundreds more |
 
-Install community skills with one command: `clawdhub install <name>`. See [Recommended Skills](#recommended-skills-from-clawdhub) for curated picks.
+Install community skills with one command: `clawdhub install <name>`. Combine multiple skills for compound value — see [Recommended Skills](#recommended-skills-from-clawdhub) for 12 curated picks and [Skill Combinations](#-skill-combinations--the-compound-effect) for ready-to-use multi-skill recipes.
 
 ### ⏰ Cron Scheduling
 Built-in scheduler lets agents run tasks autonomously — see [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) for the full deep-dive:
@@ -4191,7 +4541,7 @@ Follow the [Migration Guide](#from-manual-to-automated--migration-guide): identi
 Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, generate PDFs, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. Agents also use the browser for accessibility audits (WCAG compliance checking) and can combine browser tasks with cron for automated monitoring. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
 
 **Q: How do I install skills from ClawdHub?**
-Run `clawdhub install <skill-name>` — for example, `clawdhub install email-daily-summary`. Skills are downloaded to your workspace and available to all agents immediately after a gateway restart. Use `clawdhub search "<keyword>"` to find skills, and `clawdhub update --all` to keep them current. See [Recommended Skills from ClawdHub](#recommended-skills-from-clawdhub) for curated picks.
+Run `clawdhub install <skill-name>` — for example, `clawdhub install email-daily-summary`. Skills are downloaded to your workspace and available to all agents immediately after a gateway restart. Use `clawdhub search "<keyword>"` to find skills, and `clawdhub update --all` to keep them current. We recommend starting with the core 6 skills, then adding extended skills as your workflows mature. For compound value, combine skills into stacks (morning brief = email + calendar + weather + RSS + HN). See [Recommended Skills](#recommended-skills-from-clawdhub) for 12 curated picks and [Skill Combinations](#-skill-combinations--the-compound-effect) for ready-to-use recipes.
 
 **Q: How do I create custom skills?**
 Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically. Publish to [ClawdHub](https://clawdhub.com) with `clawdhub publish` to share with the community.
@@ -4265,7 +4615,8 @@ become-ceo/
 │       ├── notion-templates.md           # Ready-to-use Notion database schemas
 │       ├── github-workflows.md           # Ready-to-use GitHub Actions templates
 │       ├── browser-recipes.md            # Ready-to-use browser automation recipes
-│       └── cron-recipes.md               # 18 ready-to-use scheduled task templates
+│       ├── cron-recipes.md               # 18 ready-to-use scheduled task templates
+│       └── skill-combinations.md         # 8 multi-skill combination recipes
 ├── README.md                             # You are here
 ├── README_CN.md                          # 中文说明
 └── LICENSE                               # MIT
@@ -4307,4 +4658,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.4
+v5.5

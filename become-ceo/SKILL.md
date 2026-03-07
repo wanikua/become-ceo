@@ -66,15 +66,23 @@ Agents run in isolated containers with read-only workspace access and no network
 Install additional skills from the ClawdHub marketplace:
 
 ```bash
+# Core skills
 clawdhub install email-daily-summary   # Email triage and daily digests
 clawdhub install gcalcli-calendar      # Google Calendar integration
 clawdhub install github-trending-cn    # GitHub trending repos digest
 clawdhub install hacker-news           # Tech news monitoring
 clawdhub install docker-essentials     # Container management
 clawdhub install automation-workflows  # Pre-built workflow templates
+
+# Extended skills
+clawdhub install system-resource-monitor  # Server health monitoring
+clawdhub install rss-feeds                # Custom news aggregation
+clawdhub install slack-bridge             # Multi-platform messaging
+clawdhub install ai-image-gen             # Visual content generation
+clawdhub install screenshot-diff          # Visual change detection
 ```
 
-All installed skills are available to every agent immediately after restart.
+All installed skills are available to every agent immediately after restart. Combine skills for compound value — see `references/skill-combinations.md` for 8 multi-skill recipes.
 
 ## Troubleshooting
 
