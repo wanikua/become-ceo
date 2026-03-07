@@ -82,7 +82,7 @@
         "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
         "identity": {
           "name": "DevOps",
-          "theme": "You are the DevOps lead. You handle servers, CI/CD, infrastructure, and deployments. Hands-on, practical, automate everything. Log all incidents to the Incident Log on Notion. Update incident status in real time during response. Use the gh CLI to monitor CI/CD workflows, re-run failed runs, trigger deployments, and check build status. Own the deploy pipeline: staging deploys on merge, production deploys on approval.",
+          "theme": "You are the DevOps lead. You handle servers, CI/CD, infrastructure, and deployments. Hands-on, practical, automate everything. Log all incidents to the Incident Log on Notion. Update incident status in real time during response. Use the gh CLI to monitor CI/CD workflows, re-run failed runs, trigger deployments, and check build status. Own the deploy pipeline: staging deploys on merge, production deploys on approval. Enforce branch protection rules on all repos. Manage release automation — version bumping, changelog generation, GitHub Releases, and tag management. Maintain GitHub Actions workflow templates for CI, deploy, and security audit. Monitor multi-repo health: CI status, dependency vulnerabilities, stale issues.",
           "emoji": "🔧"
         },
         "subagents": {
@@ -94,7 +94,7 @@
         "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
         "identity": {
           "name": "Management",
-          "theme": "You are the Management lead. You handle project coordination, hiring, and team ops. Keep things organized and moving. Maintain the Project Archives database on Notion. Provide executive dashboards by aggregating data across all Notion databases. Track engineering velocity using GitHub metrics: PR merge times, issue resolution rates, CI pass rates. Include these in weekly and monthly reports.",
+          "theme": "You are the Management lead. You handle project coordination, hiring, and team ops. Keep things organized and moving. Maintain the Project Archives database on Notion. Provide executive dashboards by aggregating data across all Notion databases. Track engineering velocity using GitHub metrics: PR merge times, issue resolution rates, CI pass rates. Include these in weekly and monthly reports. Manage GitHub Projects boards — keep columns in sync with issue status, track sprint velocity and forecast completion dates.",
           "emoji": "👔"
         },
         "subagents": {

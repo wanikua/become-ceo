@@ -64,7 +64,7 @@ Everyone:     [Each agent reports in with their status]
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
-- [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, issue-to-deploy pipeline
+- [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -1468,6 +1468,269 @@ Engineering:     PR #95 merged. Updating records:
 
 > 💡 **Agents compose these commands automatically** — you just say "review PR #42" and Engineering translates that into the right `gh` commands, reads the diff, and provides feedback. No need to memorize the CLI.
 
+### Branch Protection & Merge Policies
+
+Your DevOps agent can enforce branch protection rules programmatically — no clicking through GitHub's UI:
+
+```
+You:             @DevOps set up branch protection on our main repos
+
+DevOps:          Setting up branch protection rules:
+
+                 wanikua/myapp (main):
+                 ✅ Require PR reviews before merge (1 reviewer)
+                 ✅ Require status checks to pass (ci.yml)
+                 ✅ Require branches up-to-date before merge
+                 ✅ Restrict direct pushes — only merge via PR
+                 ✅ Require linear history (no merge commits)
+
+                 wanikua/api-gateway (main):
+                 ✅ Same rules applied
+
+                 → All repos now require CI pass + PR review to merge.
+                 → Nobody (including agents) can push directly to main.
+```
+
+**How agents interact with protected branches:**
+
+```
+# Engineering creates a branch, pushes code, opens a PR
+Engineering:     Branch fix/issue-150 created.
+                 → PR #95 opened against main
+                 → CI running...
+
+# Direct merge blocked — needs review
+Engineering:     CI passed ✅ but branch protection requires review.
+                 @DevOps — can you review and approve?
+
+DevOps:          Reviewing PR #95...
+                 Code looks good. Approved ✅
+                 → Merged via squash merge.
+```
+
+**Configuring protection via the GitHub API:**
+
+```bash
+# DevOps can set this up using gh api
+gh api repos/OWNER/REPO/branches/main/protection \
+  --method PUT \
+  --field required_status_checks='{"strict":true,"contexts":["ci"]}' \
+  --field enforce_admins=true \
+  --field required_pull_request_reviews='{"required_approving_review_count":1}'
+```
+
+> 💡 Add "Enforce branch protection rules on all new repos" to DevOps's `identity.theme` to make this automatic for every new repository.
+
+### Release Automation
+
+Manual releases are error-prone. Let your agents handle the full release lifecycle:
+
+```
+You:             @DevOps prepare a release for v2.1.0
+
+DevOps:          Preparing release v2.1.0...
+
+                 1. ✅ All CI checks passing on main
+                 2. ✅ Changelog generated from merged PRs since v2.0.0:
+                    • feat: JWT refresh tokens (#87)
+                    • feat: rate limiting on /api/search (#90)
+                    • fix: timezone handling for UTC users (#95)
+                    • fix: connection pool sizing (#94)
+                 3. ✅ Version bumped in package.json
+                 4. ✅ Git tag v2.1.0 created
+                 5. ✅ GitHub Release published with changelog
+
+                 → Release: github.com/wanikua/myapp/releases/tag/v2.1.0
+                 → npm package published (if configured)
+
+                 Shall I deploy v2.1.0 to production?
+```
+
+**Automated release cron — tag on schedule:**
+
+```bash
+# Every Friday at 4 PM — create a release from the week's work
+clawdbot cron add \
+  --name "weekly-release" --agent devops \
+  --cron "0 16 * * 5" --tz "America/New_York" \
+  --message "Check if there are unreleased commits on wanikua/myapp since the last tag. If yes: bump the patch version, generate a changelog from merged PRs, create a GitHub release, and notify Engineering + Chief of Staff. If nothing new, skip." \
+  --session isolated --token <your-token>
+```
+
+**Changelog generation pattern:**
+
+```
+# DevOps generates a changelog from PR titles
+DevOps:          📋 Changelog for v2.1.0 (auto-generated):
+
+                 ### ✨ Features
+                 - JWT refresh token support (#87) — @Engineering
+                 - API rate limiting (#90) — @Engineering
+
+                 ### 🐛 Bug Fixes
+                 - Timezone handling for UTC users (#95) — @Engineering
+                 - Connection pool exhaustion (#94) — @Engineering
+
+                 ### 📊 Stats
+                 - 4 PRs merged | 6 issues closed | 892 lines changed
+                 - 0 breaking changes
+
+                 → Written to CHANGELOG.md and attached to GitHub Release
+```
+
+### Multi-Repo Management
+
+Most companies run multiple repos. Your agents manage them all from one Discord server:
+
+```
+You:             @DevOps give me a health check on all our repos
+
+DevOps:          📊 Repository Health Check:
+
+                 wanikua/myapp
+                 ├── Branch: main (protected ✅)
+                 ├── CI: ✅ passing | Coverage: 87%
+                 ├── Open PRs: 2 | Open Issues: 5
+                 ├── Last release: v2.1.0 (3 days ago)
+                 └── Dependencies: 0 critical vulnerabilities
+
+                 wanikua/api-gateway
+                 ├── Branch: main (protected ✅)
+                 ├── CI: ⚠️ flaky (test_timeout — 3rd time this week)
+                 ├── Open PRs: 1 | Open Issues: 3
+                 ├── Last release: v1.4.2 (2 weeks ago)
+                 └── Dependencies: 1 moderate vulnerability (lodash)
+
+                 wanikua/landing-page
+                 ├── Branch: main (unprotected ⚠️)
+                 ├── CI: ✅ passing | Coverage: N/A
+                 ├── Open PRs: 0 | Open Issues: 0
+                 ├── Last release: none (static site)
+                 └── Dependencies: 0 vulnerabilities
+
+                 ⚠️ Action items:
+                 1. api-gateway: fix flaky test (Engineering)
+                 2. api-gateway: update lodash to fix vulnerability
+                 3. landing-page: add branch protection rules
+```
+
+**Cross-repo dependency management:**
+
+```
+You:             @Engineering we need to update the shared auth library
+                 across all repos
+
+Engineering:     Updating shared-auth@2.0.0 across 3 repos:
+
+                 1. wanikua/myapp
+                    → Branch: chore/update-shared-auth
+                    → Updated package.json + package-lock.json
+                    → Tests passing ✅
+                    → PR #97 created
+
+                 2. wanikua/api-gateway
+                    → Branch: chore/update-shared-auth
+                    → Updated + ran migration script
+                    → Tests passing ✅
+                    → PR #45 created
+
+                 3. wanikua/landing-page
+                    → No dependency on shared-auth. Skipped.
+
+                 All PRs are ready for review.
+                 Want me to merge them after CI passes?
+```
+
+### GitHub Projects — Visual Task Tracking
+
+Your agents can manage GitHub Projects (the built-in project board) for visual task tracking alongside code:
+
+```
+You:             @Management set up a project board for the v3 launch
+
+Management:      Created GitHub Project: "v3 Launch Roadmap"
+                 → github.com/orgs/wanikua/projects/4
+
+                 Columns:
+                 📋 Backlog | 🔄 In Progress | 👀 Review | ✅ Done
+
+                 Populated from open issues:
+                 • Backlog: 8 issues (features + enhancements)
+                 • In Progress: 2 (auth refactor, rate limiting)
+                 • Review: 1 (PR #91 awaiting review)
+                 • Done: 12 (completed this sprint)
+
+                 I'll keep this updated as issues move through the pipeline.
+```
+
+**Auto-update project board via cron:**
+
+```bash
+# Every 4 hours, Management syncs the project board
+clawdbot cron add \
+  --name "project-board-sync" --agent management \
+  --cron "0 */4 * * *" \
+  --message "Sync the v3 Launch Roadmap GitHub Project. Move issues to correct columns based on their status: unassigned→Backlog, assigned→In Progress, has open PR→Review, PR merged→Done. Report any blockers to Chief of Staff." \
+  --session isolated --token <your-token>
+```
+
+**Connecting GitHub Projects to Notion:**
+
+```
+Management:      📊 Sprint Summary (synced from GitHub Project):
+
+                 GitHub Project: v3 Launch Roadmap
+                 ═══════════════════════════════════
+                 Backlog:      8 issues (est. 24 story points)
+                 In Progress:  2 issues (est. 8 story points)
+                 Review:       1 issue  (est. 3 story points)
+                 Done:         12 issues (35 story points completed)
+
+                 Velocity: 35 points / 2 weeks = 17.5 pts/sprint
+                 Forecast: at current velocity, remaining backlog
+                           clears in ~2 sprints (4 weeks)
+
+                 → Archived to Notion: Project Archives → "v3 Launch"
+                 → Updated weekly report with sprint metrics
+```
+
+### GitHub Workflow Templates
+
+For common CI/CD patterns, see [`references/github-workflows.md`](./become-ceo/references/github-workflows.md) — ready-to-use GitHub Actions workflow templates your DevOps agent can deploy to any repo:
+
+| Template | What It Does |
+|----------|-------------|
+| **CI (Node.js)** | Install, lint, test, coverage report on every PR |
+| **CI (Python)** | Install, pytest, type checking, coverage |
+| **Deploy Staging** | Auto-deploy to staging when PR merges to main |
+| **Deploy Production** | Manual approval + deploy to production |
+| **Release Drafter** | Auto-generate changelog from PR labels |
+| **Dependency Audit** | Weekly security scan of dependencies |
+| **Stale Issue Cleanup** | Auto-close inactive issues after 30 days |
+
+```
+You:             @DevOps set up CI for our new Python repo
+
+DevOps:          Deploying CI workflow to wanikua/ml-service...
+
+                 → Created .github/workflows/ci.yml
+                   • Python 3.11 + pip install
+                   • pytest with coverage (min 80%)
+                   • mypy type checking
+                   • Runs on: push to main, all PRs
+
+                 → Created .github/workflows/deploy-staging.yml
+                   • Auto-deploys on merge to main
+                   • Runs tests first, then deploys
+
+                 → Branch protection updated:
+                   • Require ci.yml to pass before merge
+
+                 CI pipeline is live. First run triggered now.
+```
+
+> 💡 **DevOps maintains your workflow templates.** When you ask "set up CI for repo X," DevOps picks the right template from `references/github-workflows.md`, customizes it for the repo's language/framework, and commits it. No manual YAML editing required.
+
 ---
 
 ## Architecture
@@ -1988,7 +2251,8 @@ become-ceo/
 │       ├── IDENTITY.md                   # Org chart and role definitions
 │       ├── USER.md                       # About you, the CEO
 │       ├── AGENTS.md                     # Group chat + memory rules
-│       └── notion-templates.md           # Ready-to-use Notion database schemas
+│       ├── notion-templates.md           # Ready-to-use Notion database schemas
+│       └── github-workflows.md           # Ready-to-use GitHub Actions templates
 ├── README.md                             # You are here
 ├── README_CN.md                          # 中文说明
 └── LICENSE                               # MIT
@@ -2030,4 +2294,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.5
+v4.6
