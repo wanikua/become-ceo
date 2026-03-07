@@ -7,9 +7,13 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Built on Clawdbot](https://img.shields.io/badge/built%20on-Clawdbot-8A2BE2)](https://github.com/clawdbot/clawdbot)
 [![Discord](https://img.shields.io/badge/interface-Discord-5865F2?logo=discord&logoColor=white)](https://discord.com)
+[![One-Click Setup](https://img.shields.io/badge/setup-5%20minutes-brightgreen)](https://github.com/wanikua/become-ceo#quick-start)
+[![Skills](https://img.shields.io/badge/skills-60%2B%20built--in-orange)](https://github.com/wanikua/become-ceo#built-in-skills-60)
 
-Ship features. Track spend. Write content. Run standup. Deploy to prod.
-You just type one message in Discord — your team handles the rest.
+**Ship features. Track spend. Write content. Run standup. Deploy to prod.**
+Type one message in Discord — your team handles the rest.
+
+### See it in action
 
 ```
 You:          @Engineering build me a user auth API with JWT
@@ -22,6 +26,15 @@ You:          @everyone Monday standup. What's everyone working on?
 Everyone:     [Each agent reports in with their status]
 ```
 
+### What you get in 5 minutes
+
+- 🤖 **7 specialized AI agents**, each with their own Discord bot, personality, and expertise
+- 🧠 **Persistent memory** — agents remember your codebase, your budget, your preferences
+- 🛠️ **60+ real tools** — GitHub, Notion, browser, cron, TTS, and more (not just chat)
+- ⏰ **24/7 autonomous operation** — scheduled tasks run while you sleep
+- 💰 **Smart cost control** — strong models for heavy work, fast models for everything else
+- 🔒 **Sandboxed execution** — optional Docker isolation for safe code execution
+
 ---
 
 > 📌 **About Originality** — This project is the English adaptation of [AI Court Tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) (first commit 2026-02-22), the original implementation of "ancient governance systems as AI multi-agent orchestration." We noticed [cft0808/edict](https://github.com/cft0808/edict) (first commit 2026-02-23, ~21 hours later) shares highly similar framework choices, SOUL.md personality files, deployment methods, and competitor comparison tables — see [Issue #55](https://github.com/cft0808/edict/issues/55).
@@ -32,16 +45,30 @@ Everyone:     [Each agent reports in with their status]
 
 ## Why This Setup?
 
-|  | ChatGPT / Web UIs | AutoGPT / CrewAI / MetaGPT | **Become CEO (this project)** |
+|  | ChatGPT / Web UIs | AutoGPT / CrewAI / MetaGPT | **Become CEO** ✅ |
 |---|---|---|---|
-| Multi-agent collab | ❌ Single generalist | ✅ Requires Python orchestration | ✅ Config file — zero code |
-| Independent memory | ⚠️ One shared context | ⚠️ Roll your own vector DB | ✅ Each agent has its own workspace + memory files |
-| Tool integrations | ⚠️ Limited plugins | ⚠️ Build them yourself | ✅ 60+ built-in skills (GitHub, Notion, browser, cron…) |
-| Interface | Web browser | CLI / custom UI | ✅ Discord — works on phone, tablet, desktop |
-| Setup difficulty | None (SaaS) | Docker + coding | ✅ One-line script, 5 minutes to running |
-| 24/7 online | ❌ Manual conversations | ✅ | ✅ Cron tasks + heartbeat self-checks |
+| **Multi-agent collab** | ❌ Single generalist | ⚠️ Python orchestration required | ✅ Config file — zero code |
+| **Independent memory** | ❌ Forgets between sessions | ⚠️ Roll your own vector DB | ✅ Each agent has its own workspace + persistent files |
+| **Tool integrations** | ⚠️ Limited plugins | ⚠️ Build them yourself | ✅ 60+ built-in (GitHub, Notion, browser, cron…) |
+| **Interface** | Web browser only | CLI / custom UI | ✅ Discord — phone, tablet, desktop |
+| **Setup time** | None (SaaS) | Hours of Docker + coding | ✅ **5 minutes**, one script |
+| **Always-on** | ❌ Manual conversations | ⚠️ Requires setup | ✅ Cron tasks + heartbeat self-checks |
+| **Cost control** | ❌ Fixed subscription | ⚠️ Manual | ✅ Per-agent model tiers (save ~5×) |
 
-**The core difference: this isn't a framework — it's a finished product.** Run one script, get a working team. `@mention` anyone, they respond.
+> **The core difference: this isn't a framework — it's a finished product.** Run one script, get a working team. `@mention` anyone, they respond.
+
+---
+
+## Table of Contents
+
+- [Architecture](#architecture) — How it works under the hood
+- [Your Team](#your-team) — The 7 agents and their roles
+- [Core Capabilities](#core-capabilities) — What makes this different
+- [Quick Start](#quick-start) — Get running in 5 minutes
+- [What It Looks Like](#what-it-looks-like) — Real usage examples
+- [Config Deep-Dive](#config-deep-dive) — Customize everything
+- [Growing Your Team](#growing-your-team) — Add new specialists
+- [FAQ](#faq) — Common questions answered
 
 ---
 
@@ -507,4 +534,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v3.4
+v3.5
