@@ -172,6 +172,64 @@ Finance:         🔊 "Yes, $38 spent against a $50 budget. Engineering's
 
 > 💡 **TTS is a built-in Clawdbot skill** — agents can respond with voice automatically. Configure it in your agent's identity to enable voice responses in voice channels.
 
+### Running a Team Meeting by Voice
+
+Discord voice channels let you run a full executive meeting — speak your agenda, and each agent responds in turn:
+
+```
+You (voice):       "Alright team, let's do a quick sync. Engineering, go first."
+Engineering (TTS): "Auth refactor is 80% done. Blocked on the OAuth provider
+                    docs being outdated. I worked around it — PR is up for review."
+
+You (voice):       "Good. Finance, any budget concerns this week?"
+Finance (TTS):     "We're at $34 of $50 budget. Engineering's strong model usage
+                    spiked Tuesday during the refactor — I'd recommend switching
+                    to fast model for code review tasks to save about $8/week."
+
+You (voice):       "Marketing, what's the content pipeline look like?"
+Marketing (TTS):   "Two blog posts drafted. SEO analysis shows we should target
+                    'AI automation' keywords — I'll adjust the headlines. Want me
+                    to post the first one today?"
+
+You (voice):       "Yes, publish it. DevOps, are we good on infrastructure?"
+DevOps (TTS):      "All green. SSL cert renews in 12 days — I'll handle it
+                    automatically. Uptime is 99.97% this month."
+```
+
+The entire meeting happens hands-free. You don't touch a keyboard.
+
+### Voice Notification Routing
+
+Configure agents to **proactively speak up** when something urgent happens — even if you didn't ask:
+
+```
+# Finance detects a cost anomaly via scheduled cron check
+Finance (TTS):     "⚠️ Heads up — API spend jumped 40% in the last 2 hours.
+                    Looks like Engineering's coding agent is in a loop.
+                    Want me to flag Engineering to investigate?"
+
+You (voice):       "Yes, do it."
+Finance:           → spawns task to Engineering
+Engineering (TTS): "Found it — the retry logic had no backoff. Fixing now."
+```
+
+This turns Discord into a **real-time operations center** where your AI team monitors, reports, and escalates — all by voice.
+
+### Combining Text + Voice Workflows
+
+You don't have to pick one or the other. The most effective workflow combines both:
+
+| Task | Best Channel |
+|------|-------------|
+| Quick status checks | 🔊 Voice — fastest way to get updates |
+| Detailed code review | 💬 Text — you want to see the code |
+| Brainstorming | 🔊 Voice — faster back-and-forth, less typing |
+| Complex instructions | 💬 Text — precise, referenceable, can include links/code |
+| Meeting summaries | 💬 Text — agents auto-post written summaries after voice meetings |
+| Urgent alerts | 🔊 Voice — grabs your attention immediately |
+
+> 💡 **Pro tip:** After a voice meeting, ask the Chief of Staff to "summarize what we just discussed and post it to `#standup`." You get the speed of voice with the permanence of text.
+
 ---
 
 ## Architecture
@@ -727,4 +785,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v3.7
+v3.8
