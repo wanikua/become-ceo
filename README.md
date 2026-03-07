@@ -65,7 +65,7 @@ Everyone:     [Each agent reports in with their status]
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
-- [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, automation recipes
+- [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, accessibility testing, PDF generation, cron integration, capability matrix, automation recipes
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -2502,9 +2502,179 @@ DevOps:          Running responsive checks...
                  → Screenshot comparison saved to #design-review
 ```
 
+### Accessibility Testing
+
+Your agents can audit web pages for accessibility (a11y) compliance — ensuring your products work for everyone:
+
+```
+You:             @Engineering run an accessibility audit on our app
+
+Engineering:     Auditing app.example.com for a11y issues...
+
+                 ♿ Accessibility Audit — app.example.com
+
+                 Critical (WCAG 2.1 Level A):
+                 ❌ 3 images missing alt text (homepage hero, team photos)
+                 ❌ Form labels not associated with inputs (login page)
+                 ❌ Color contrast ratio 2.8:1 on CTA button (needs ≥4.5:1)
+
+                 Warnings (WCAG 2.1 Level AA):
+                 ⚠️ No skip-to-content link
+                 ⚠️ Focus order breaks in mobile nav menu
+                 ⚠️ aria-label missing on icon-only buttons (3 instances)
+
+                 Passed (12/18 checks):
+                 ✅ Semantic HTML structure (h1→h2→h3)
+                 ✅ Keyboard navigation works on main flows
+                 ✅ Language attribute set on <html>
+                 ... and 9 more
+
+                 Score: 67/100 — needs work on critical issues first.
+                 → Full report saved to Engineering Wiki on Notion
+                 → Created GitHub Issue #142: "Fix 3 critical a11y issues"
+```
+
+**Scheduled a11y monitoring:**
+```bash
+# Monthly accessibility regression check
+clawdbot cron add \
+  --name "a11y-audit" --agent engineering \
+  --cron "0 10 1 * *" \
+  --message "Run an accessibility audit on our top 5 pages. Check: alt text, form labels, color contrast, keyboard navigation, ARIA attributes, heading hierarchy, and focus management. Compare with last month's results. Flag any regressions. Save report to Engineering Wiki on Notion and post summary to #engineering." \
+  --session isolated
+```
+
+### PDF Generation & Document Export
+
+Agents can generate PDFs from web pages — useful for reports, invoices, and documentation archival:
+
+```
+You:             @Finance generate a PDF of this month's billing dashboard
+
+Finance:         Navigating to billing dashboard...
+                 Setting date range to March 2026...
+                 Generating PDF...
+
+                 📄 Billing Report — March 2026
+                 • Total spend: $67.70
+                 • Breakdown by service: 4 line items
+                 • Month-over-month change: -8.3%
+
+                 → PDF saved: billing-march-2026.pdf
+                 → Attached to Financial Records on Notion
+                 → Posted to #finance channel
+```
+
+```
+You:             @Engineering export our API docs as a PDF for the client
+
+Engineering:     Generating PDF from docs.example.com...
+
+                 📄 API Documentation Export
+                 • Pages captured: 24
+                 • Total pages: 47 (letter size)
+                 • Includes: ToC, endpoint reference, code examples
+
+                 → PDF saved: api-docs-v2.1.pdf
+                 → Shared in #engineering
+```
+
+> 💡 **PDF generation** uses the browser's built-in print-to-PDF — no additional dependencies needed. Agents can customize page size, margins, headers/footers, and background graphics.
+
+### Browser + Cron — Automated Web Monitoring
+
+Combine browser automation with cron scheduling for powerful hands-off monitoring workflows:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Browser + Cron Patterns                                    │
+│                                                             │
+│  Pattern              │ Agent   │ Frequency │ Example       │
+│  ─────────────────────┼─────────┼───────────┼──────────────│
+│  Visual regression    │ DevOps  │ Daily     │ Screenshot    │
+│                       │         │           │ comparison    │
+│  Price monitoring     │ Mktg    │ Daily     │ Competitor    │
+│                       │         │           │ pricing check │
+│  SEO health           │ Mktg    │ Weekly    │ Meta tags,    │
+│                       │         │           │ broken links  │
+│  Uptime monitoring    │ DevOps  │ 6-hourly  │ Status page   │
+│                       │         │           │ verification  │
+│  Dashboard export     │ Finance │ Weekly    │ Analytics →   │
+│                       │         │           │ PDF → Notion  │
+│  Social engagement    │ Mktg    │ Daily     │ Post metrics  │
+│                       │         │           │ tracking      │
+│  A11y regression      │ Eng     │ Monthly   │ WCAG checks   │
+│                       │         │           │ on key pages  │
+│  Content freshness    │ Mktg    │ Weekly    │ Check for     │
+│                       │         │           │ stale content │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Content freshness checker:**
+```bash
+# Weekly — check your own site for stale or outdated content
+clawdbot cron add \
+  --name "content-freshness" --agent marketing \
+  --cron "0 11 * * 3" \
+  --message "Browse our website's blog and docs pages. Identify any content that references outdated versions, deprecated features, or dates older than 6 months. List pages that need updating with the specific outdated references found. Save findings to Marketing Hub on Notion." \
+  --session isolated
+```
+
+### Browser Agent Capability Matrix
+
+Every agent can use the browser, but each applies it differently:
+
+| Agent | Primary Browser Use | Key Actions | Output |
+|-------|-------------------|-------------|--------|
+| **Engineering** | A11y audits, doc scraping, tech research | snapshot, evaluate, screenshot | Notion Wiki, GitHub Issues |
+| **Marketing** | Social media, competitor intel, SEO | navigate, snapshot, click, type | Notion Hub, Discord reports |
+| **Finance** | Dashboard exports, invoice capture | navigate, snapshot, pdf | Notion Records, PDF files |
+| **DevOps** | Visual QA, uptime checks, responsive testing | screenshot, navigate, snapshot | Notion Incidents, alerts |
+| **Management** | Executive reporting, project dashboards | snapshot, pdf | Notion Archives, presentations |
+| **Legal** | ToS monitoring, compliance checks | snapshot, navigate | Notion compliance log |
+| **Chief of Staff** | Orchestrates multi-agent browser tasks | delegates to specialists | Aggregated reports |
+
+### Browser Integration Summary
+
+Browser automation connects with every other integration in your stack:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│            Browser Automation — Integration Map              │
+│                                                             │
+│  ┌──────────┐    scrape data     ┌──────────────┐           │
+│  │ Browser  │ ─────────────────→ │ Notion       │           │
+│  │          │    archive results  │ (Knowledge)  │           │
+│  │          │ ←───────────────── │              │           │
+│  │          │    read templates   └──────────────┘           │
+│  │          │                                               │
+│  │          │    screenshot QA    ┌──────────────┐           │
+│  │          │ ─────────────────→ │ Discord      │           │
+│  │          │    post findings    │ (Team Chat)  │           │
+│  │          │                    └──────────────┘           │
+│  │          │                                               │
+│  │          │    visual verify    ┌──────────────┐           │
+│  │          │ ←───────────────── │ GitHub       │           │
+│  │          │    post-deploy QA   │ (CI/CD)      │           │
+│  │          │ ─────────────────→ │              │           │
+│  │          │    create issues    └──────────────┘           │
+│  │          │                                               │
+│  │          │    scheduled runs   ┌──────────────┐           │
+│  │          │ ←───────────────── │ Cron         │           │
+│  │          │    trigger by timer │ (Scheduler)  │           │
+│  └──────────┘                    └──────────────┘           │
+│                                                             │
+│  Flow examples:                                             │
+│  • Deploy → Browser QA → screenshot → Discord alert         │
+│  • Cron → Browser scrape → data → Notion archive            │
+│  • Browser a11y audit → GitHub Issue → Engineering fix       │
+│  • Browser PDF export → Notion attachment → Discord share    │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ### Browser Automation Recipes
 
-For ready-to-use browser workflow templates covering common scenarios (SEO audits, price monitoring, content publishing, report extraction), see [`references/browser-recipes.md`](become-ceo/references/browser-recipes.md).
+For ready-to-use browser workflow templates covering common scenarios, see [`references/browser-recipes.md`](become-ceo/references/browser-recipes.md).
 
 Available recipes:
 - 🔍 **SEO Audit** — check meta tags, headings, broken links, page speed
@@ -2513,6 +2683,8 @@ Available recipes:
 - 📊 **Report Extraction** — extract data from dashboards to Notion
 - 🔄 **Multi-Site Health Check** — batch-check status pages and uptime
 - 📱 **Social Media Scheduler** — queue and publish posts at optimal times
+- ♿ **Accessibility Audit** — WCAG compliance checking with regression tracking
+- 📄 **PDF Report Generation** — dashboard snapshots to archival-quality PDFs
 
 ---
 
@@ -2969,7 +3141,7 @@ Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authent
 DevOps can deploy the Secret & SAST Scanning workflow template to any repo from `references/github-workflows.md`. It runs on every PR and weekly on a schedule — catching leaked secrets, vulnerable dependencies, and license conflicts automatically. DevOps notifies Engineering for code fixes and Legal for license issues. See the [Security Scanning](#security-scanning--vulnerability-management) section for details.
 
 **Q: How does browser automation work?**
-Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
+Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, generate PDFs, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. Agents also use the browser for accessibility audits (WCAG compliance checking) and can combine browser tasks with cron for automated monitoring. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
 
 **Q: How do I create custom skills?**
 Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically.
@@ -3084,4 +3256,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.9
+v5.0

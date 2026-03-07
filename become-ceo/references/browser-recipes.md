@@ -240,6 +240,119 @@ clawdbot cron add \
 
 ---
 
+## ♿ Accessibility Audit
+
+**Agent:** Engineering  
+**Frequency:** Monthly (via cron) or on-demand  
+**Description:** Audit key pages for WCAG 2.1 compliance and track regressions.
+
+### What It Checks
+- Image alt text (missing, generic, or decorative not marked)
+- Form input labels (associated `<label>` or aria-label)
+- Color contrast ratios (text, buttons, links)
+- Heading hierarchy (proper h1→h2→h3 nesting)
+- Keyboard navigation (tab order, focus visibility, skip links)
+- ARIA attributes (roles, labels, live regions)
+- Semantic HTML (landmarks, lists, tables)
+- Focus management (modals, dynamic content)
+
+### Cron Setup
+```bash
+clawdbot cron add \
+  --name "a11y-monthly-audit" --agent engineering \
+  --cron "0 10 1 * *" \
+  --message "Run an accessibility audit on these pages: homepage, login, dashboard, pricing, docs landing. For each page: check image alt text, form labels, color contrast (min 4.5:1 for text, 3:1 for large text), heading hierarchy, keyboard navigation, ARIA attributes, and focus management. Score each page out of 100. Compare with last month's audit in the Engineering Wiki. Flag any regressions (score dropped or new critical issues). Save the full report to Notion and post a summary to #engineering. If any page scores below 70, create a GitHub Issue with the specific fixes needed." \
+  --session isolated
+```
+
+### Expected Output
+```
+♿ Accessibility Audit — example.com (March 2026)
+
+Page Scores:
+┌─────────────────┬───────┬────────────┬──────────┐
+│ Page            │ Score │ Last Month │ Change   │
+├─────────────────┼───────┼────────────┼──────────┤
+│ Homepage        │ 92    │ 88         │ +4 ✅    │
+│ Login           │ 85    │ 85         │ — ✅     │
+│ Dashboard       │ 67    │ 72         │ -5 ⚠️    │
+│ Pricing         │ 91    │ 91         │ — ✅     │
+│ Docs Landing    │ 78    │ 75         │ +3 ✅    │
+└─────────────────┴───────┴────────────┴──────────┘
+
+⚠️ Dashboard regression — 2 new issues:
+  • Color contrast on sidebar nav links dropped to 3.2:1
+  • New modal missing focus trap (keyboard users can tab behind it)
+
+→ Created GitHub Issue #156: "Dashboard a11y regression — contrast + focus trap"
+→ Full report saved to Engineering Wiki on Notion
+```
+
+### Cross-Integration
+- **GitHub:** Auto-create issues for critical a11y failures
+- **Notion:** Track scores over time in Engineering Wiki
+- **Discord:** Post summary to #engineering, alert on regressions
+- **Cron:** Monthly automated checks prevent silent degradation
+
+---
+
+## 📄 PDF Report Generation
+
+**Agent:** Finance or Management  
+**Frequency:** Weekly/Monthly (via cron) or on-demand  
+**Description:** Capture web dashboards and reports as archival PDFs.
+
+### Workflow
+1. Navigate to the target dashboard or report page
+2. Authenticate if needed (Chrome profile for logged-in sessions)
+3. Set date ranges and filters
+4. Generate PDF with browser print-to-PDF
+5. Archive to Notion and share on Discord
+
+### Cron Setup — Monthly Billing PDF
+```bash
+clawdbot cron add \
+  --name "billing-pdf-monthly" --agent finance \
+  --cron "0 9 1 * *" \
+  --message "Using the Chrome browser profile, navigate to our billing dashboard. Set the date range to last month. Generate a PDF of the full billing summary page (letter size, include background graphics). Attach the PDF to this month's Financial Records entry on Notion. Post the total spend and PDF to #finance." \
+  --session isolated
+```
+
+### Cron Setup — Weekly Analytics PDF
+```bash
+clawdbot cron add \
+  --name "analytics-pdf-weekly" --agent marketing \
+  --cron "0 9 * * 1" \
+  --message "Using the Chrome browser profile, navigate to our analytics dashboard. Set date range to last 7 days. Generate a PDF of the traffic overview page. Also generate a PDF of the conversion funnel page. Attach both PDFs to this week's entry in the Marketing Hub on Notion. Post key metrics (visitors, conversions, top pages) to #marketing." \
+  --session isolated
+```
+
+### PDF Options
+Agents can customize PDF output:
+- **Page size:** Letter, A4, Legal, or custom dimensions
+- **Orientation:** Portrait or landscape
+- **Margins:** Custom top/bottom/left/right margins
+- **Headers/footers:** Page numbers, dates, titles
+- **Background:** Include or exclude background colors/images
+- **Page ranges:** Export specific pages from multi-page views
+
+### Expected Output
+```
+Finance:         📄 Monthly Billing Report — February 2026
+
+                 Generated from billing.example.com
+                 • Date range: Feb 1–28, 2026
+                 • Total spend: $312.40
+                 • Largest item: API usage ($187.20)
+                 • vs. January: +12% ($278.90)
+
+                 📎 billing-feb-2026.pdf (3 pages, 245 KB)
+                 → Attached to Notion: Financial Records
+                 → Posted to #finance
+```
+
+---
+
 ## Tips for Writing Browser Recipes
 
 1. **Be specific about what to look for** — "check the pricing page" is vague; "extract plan names, prices, and feature counts from the pricing table" is actionable
