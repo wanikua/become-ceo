@@ -63,7 +63,7 @@ Everyone:     [Each agent reports in with their status]
 
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
-- [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge base sync
+- [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge base sync, cross-agent knowledge graph, executive dashboard, incident post-mortems
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -893,7 +893,135 @@ When setting up your Notion databases, use these property schemas for best resul
 | Trend | Select | Up / Down / Flat |
 | Notes | Rich text | Anomalies and recommendations |
 
-> 💡 **Pro tip:** Create Notion database templates for each report type. When agents create new pages, they follow the template structure automatically — consistent, clean, every time.
+> 💡 **Pro tip:** Create Notion database templates for each report type. When agents create new pages, they follow the template structure automatically — consistent, clean, every time. See [`references/notion-templates.md`](./become-ceo/references/notion-templates.md) for ready-to-use schemas.
+
+### Cross-Agent Knowledge Sharing via Notion
+
+The real power of Notion integration isn't individual agents writing docs — it's **agents reading each other's work**. Notion becomes the shared brain your team builds together:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Notion (Shared Brain)                 │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
+│  │ Eng Wiki │  │ Fin Recs │  │ Mktg Hub │  ...        │
+│  │ ADR-001  │  │ Mar Cost │  │ Blog #5  │             │
+│  │ ADR-002  │  │ Apr Cost │  │ Campaign │             │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘             │
+│       │              │              │                   │
+│       └──────────────┼──────────────┘                   │
+│                      ▼                                  │
+│         ┌────────────────────────┐                      │
+│         │ Cross-references &     │                      │
+│         │ linked databases       │                      │
+│         └────────────────────────┘                      │
+└───────────┬──────────┬──────────┬───────────────────────┘
+            ▼          ▼          ▼
+         ⚔️ Eng     💰 Fin     🎭 Mktg    (read + write)
+```
+
+**Example: Marketing uses Engineering's decision log**
+
+```
+You:             @Marketing write a blog post about our new database architecture
+
+Marketing:       Let me check what Engineering documented on Notion...
+
+                 Found: ADR-003 — "PostgreSQL for User Service"
+                 Context: ACID compliance, relational model, team familiarity
+
+                 📝 Blog draft: "Why We Chose PostgreSQL (and What We Learned)"
+                 → Created in Marketing Hub database on Notion
+                 → Tagged: Technical, Architecture, Blog Post
+                 → Cross-linked to ADR-003 in Engineering Wiki
+```
+
+Marketing didn't hallucinate technical details — it pulled from Engineering's actual documentation.
+
+**Example: Finance audits Engineering's spend**
+
+```
+Finance (cron):  Weekly cost review complete.
+
+                 📊 Findings from cross-referencing:
+                 • Engineering used Strong Model for 23 tasks this week
+                 • 8 of those were simple formatting tasks (should use Fast Model)
+                 • Estimated savings if switched: $6.40/week ($27.50/month)
+
+                 → Updated Financial Records on Notion with recommendations
+                 → Linked to Engineering's task log for traceability
+```
+
+Finance doesn't just report numbers — it correlates cost data with what agents actually did.
+
+### Notion as Executive Dashboard
+
+Configure your Chief of Staff or Management agent to **aggregate data across all Notion databases** for a unified view:
+
+```
+You:             @Management give me the executive dashboard
+
+Management:      📊 Executive Dashboard — March 7, 2026
+
+                 ═══ Engineering ═══
+                 • 12 ADRs documented (3 new this month)
+                 • 47 PRs merged, 2 open
+                 • Tech debt score: improving (4 items resolved)
+
+                 ═══ Finance ═══
+                 • MTD spend: $36.70 (budget: $50)
+                 • Runway: 14 days at current rate
+                 • Top cost: Engineering Strong Model ($28.50)
+
+                 ═══ Marketing ═══
+                 • 5 blog posts published, 2 in draft
+                 • Best performer: "AI Teams" (2.3k views)
+                 • Content pipeline: 3 weeks ahead of schedule
+
+                 ═══ Infrastructure ═══
+                 • Uptime: 99.97% (SLA: 99.9% ✅)
+                 • 0 open incidents (1 resolved this week)
+                 • SSL certs: all valid, next renewal in 12 days
+
+                 ═══ Projects ═══
+                 • Active: 3 | Completed: 1 | At risk: 0
+                 • Next milestone: Auth v2 launch (Mar 12)
+
+                 Full data: [Notion Dashboard Link]
+```
+
+This is exactly what a CEO sees in a real company — one page that synthesizes everything.
+
+### Incident Post-Mortem to Notion
+
+When something breaks, your team documents the full incident lifecycle to Notion automatically:
+
+```
+DevOps (alert):  ⚠️ API latency spike detected — p99 at 3.2s (threshold: 500ms)
+
+Chief of Staff:  Initiating incident response.
+                 → Created INC-007 in Incident Log on Notion
+                 → Status: Investigating
+                 → Spawning Engineering to diagnose
+
+Engineering:     Root cause: database connection pool exhausted.
+                 Fix: increased pool size from 10 to 50.
+                 → PR #94 merged, deploying now.
+                 → Updated INC-007: Root Cause filled
+
+DevOps:          Fix deployed. Latency back to 120ms.
+                 → Updated INC-007: Status → Resolved, Duration: 14 minutes
+
+Chief of Staff:  Post-mortem:
+                 → Updated INC-007 with action items:
+                   1. Add connection pool monitoring alert
+                   2. Set auto-scaling threshold for DB connections
+                   3. Update runbook with pool tuning steps
+                 → Status → Post-mortem Done
+                 → Linked to ADR-004: "Connection Pool Sizing"
+```
+
+Every incident is documented, searchable, and linked to the fix. Next time a similar issue occurs, agents can find the previous incident and apply the same solution.
 
 ---
 
@@ -1411,7 +1539,8 @@ become-ceo/
 │       ├── SOUL.md                       # Team behavioral norms
 │       ├── IDENTITY.md                   # Org chart and role definitions
 │       ├── USER.md                       # About you, the CEO
-│       └── AGENTS.md                     # Group chat + memory rules
+│       ├── AGENTS.md                     # Group chat + memory rules
+│       └── notion-templates.md           # Ready-to-use Notion database schemas
 ├── README.md                             # You are here
 ├── README_CN.md                          # 中文说明
 └── LICENSE                               # MIT
@@ -1453,4 +1582,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.2
+v4.3
