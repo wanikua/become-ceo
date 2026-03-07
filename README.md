@@ -65,7 +65,7 @@ Everyone:     [Each agent reports in with their status]
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
-- [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis
+- [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, automation recipes
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -2288,6 +2288,232 @@ If your agents need to interact with authenticated web pages, use environment va
 
 > 💡 **Agents compose browser actions automatically** — you just say "check our homepage on mobile" and the agent translates that into: set viewport to 375px, navigate, screenshot. No need to learn the browser control API yourself.
 
+### Multi-Step Browser Workflows
+
+Real-world browser tasks rarely consist of a single page visit. Your agents handle complex, multi-step workflows with state carried across pages:
+
+```
+You:             @Marketing log into our analytics dashboard, export last
+                 week's traffic report, and compare with the previous week
+
+Marketing:       Starting multi-step browser workflow...
+
+                 Step 1/4 — Navigating to analytics.example.com
+                 Step 2/4 — Logging in (using stored credentials)
+                 Step 3/4 — Setting date range: Feb 24 – Mar 2
+                 Step 4/4 — Extracting report data
+
+                 📊 Weekly Traffic Comparison:
+
+                 | Metric          | This Week | Last Week | Change  |
+                 |-----------------|-----------|-----------|---------|
+                 | Visitors        | 12,340    | 11,890    | +3.8%   |
+                 | Page views      | 45,200    | 42,100    | +7.4%   |
+                 | Bounce rate     | 34%       | 38%       | -4% ✅  |
+                 | Avg session     | 3m 12s    | 2m 48s    | +14% ✅ |
+                 | Top source      | Organic   | Organic   | —       |
+
+                 📈 Traffic trending up across all key metrics.
+                 → Report saved to Marketing Hub on Notion
+```
+
+**Multi-step workflow anatomy:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Multi-Step Browser Workflow                                │
+│                                                             │
+│  1. navigate(url)              — open target site           │
+│  2. snapshot() → find login    — locate the login form      │
+│  3. type(email) + type(pass)   — fill credentials           │
+│  4. click(submit)              — authenticate               │
+│  5. snapshot() → verify login  — confirm we're logged in    │
+│  6. navigate(dashboard)        — go to target page          │
+│  7. snapshot() → extract data  — read the information       │
+│  8. Return structured results  — format and report          │
+│                                                             │
+│  State is maintained across all steps — cookies, session,   │
+│  and page context persist within a single browser session.  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> 💡 **State persistence:** Within a workflow, the browser maintains cookies, local storage, and session tokens automatically. An agent can log in once and navigate multiple pages without re-authenticating.
+
+### Browser Profiles — Isolating Sessions
+
+Different tasks may need different browser contexts. Clawdbot supports browser profiles to isolate sessions:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Browser Profiles                                           │
+│                                                             │
+│  profile="clawd" (default)                                  │
+│  └── Isolated, headless Chromium managed by Clawdbot        │
+│  └── Clean session each time — no leftover cookies          │
+│  └── Best for: scraping, screenshots, form filling          │
+│                                                             │
+│  profile="chrome"                                           │
+│  └── Connects to your existing Chrome via browser relay     │
+│  └── Uses your logged-in sessions and extensions            │
+│  └── Best for: accessing authenticated dashboards,          │
+│       managing accounts you're already signed into          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When to use each profile:**
+
+| Profile | Use Case | Persistence | Auth |
+|---------|---------|-------------|------|
+| `clawd` | Scraping, visual QA, public sites | Fresh each time | None (clean) |
+| `chrome` | Authenticated dashboards, admin panels | Uses your sessions | Your cookies |
+
+**Example — using Chrome profile for authenticated access:**
+
+```
+You:             @Marketing check our Google Ads performance
+                 (I'm already logged in on Chrome)
+
+Marketing:       Connecting via Chrome relay...
+                 Using your authenticated Google Ads session.
+
+                 📊 Google Ads — Last 7 Days:
+                 • Impressions: 23,400
+                 • Clicks: 1,240 (CTR: 5.3%)
+                 • Spend: $187.40
+                 • Conversions: 34
+                 • Cost per conversion: $5.51
+
+                 → Logged to Financial Records on Notion
+```
+
+### Error Recovery & Retry Patterns
+
+Web pages are unpredictable — they time out, change layout, show CAPTCHAs, or require JavaScript. Your agents handle these gracefully:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Browser Error Recovery                                     │
+│                                                             │
+│  Error Type           │ Agent Response                      │
+│  ─────────────────────┼───────────────────────────────────  │
+│  Page timeout          │ Retry with longer timeout (2×)     │
+│  Element not found     │ Re-snapshot, try alternate selector │
+│  CAPTCHA detected      │ Notify human, skip task             │
+│  Login required        │ Use stored credentials or ask human │
+│  Rate limited (429)    │ Back off, retry after delay         │
+│  SSL / network error   │ Report failure, try alternative URL │
+│  Unexpected modal      │ Dismiss and continue                │
+│  Page layout changed   │ Re-snapshot, adapt dynamically      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Error recovery in action:**
+
+```
+You:             @DevOps check the status page for our CDN provider
+
+DevOps:          Navigating to cdn-provider.com/status...
+
+                 ⚠️ Page took 12s to load (slow response).
+                 Retrying with extended timeout...
+
+                 ✅ Loaded on second attempt.
+
+                 CDN Status — All Regions:
+                 • US-East: ✅ Operational
+                 • US-West: ✅ Operational
+                 • EU-West: ⚠️ Degraded (latency +40ms)
+                 • AP-South: ✅ Operational
+
+                 EU-West shows degradation. Want me to set up
+                 a monitoring cron to check every 30 minutes?
+```
+
+**CAPTCHA handling (the honest approach):**
+
+```
+You:             @Engineering submit our tool to that review directory
+
+Engineering:     Navigating to directory.example.com/submit...
+
+                 ⛔ CAPTCHA detected on submission form.
+                 I can't solve CAPTCHAs — that's a human thing.
+
+                 I've filled out all other fields:
+                 • Tool name: ✅
+                 • Description: ✅
+                 • Category: ✅
+                 • URL: ✅
+
+                 → Please solve the CAPTCHA manually, then tell me
+                   to click Submit.
+```
+
+### Page Interaction Strategies
+
+Agents use smart strategies to interact with complex web pages:
+
+**Aria refs (accessible references):**
+```
+# Agents read the page using aria snapshots — like screen readers
+# Elements are referenced by accessible roles and labels
+# This is more resilient than CSS selectors (survives redesigns)
+
+snapshot → finds: [button "Sign In"] [textbox "Email"] [link "Pricing"]
+click("Sign In")    — clicks by aria label
+type("Email", "…")  — types into named field
+```
+
+**Handling dynamic content:**
+```
+# For pages that load content with JavaScript:
+# 1. Navigate to the page
+# 2. Wait for key elements to appear (agent checks snapshot)
+# 3. If content not loaded, agent retries with delay
+# 4. Extract once content is confirmed present
+
+# For infinite scroll pages:
+# 1. Scroll to bottom using evaluate(js)
+# 2. Wait for new content to load
+# 3. Repeat until desired data collected or limit reached
+```
+
+**Responsive testing — multiple viewports:**
+```
+You:             @DevOps test our homepage on mobile, tablet, and desktop
+
+DevOps:          Running responsive checks...
+
+                 📱 Mobile (375×812):
+                 ✅ Navigation hamburger menu works
+                 ✅ Hero text readable, no overflow
+                 ⚠️ CTA button partially hidden below fold
+
+                 📱 Tablet (768×1024):
+                 ✅ Two-column layout renders correctly
+                 ✅ Images properly scaled
+
+                 🖥️ Desktop (1440×900):
+                 ✅ Full navigation bar visible
+                 ✅ Three-column feature grid aligned
+                 ✅ Footer links all visible
+
+                 1 issue found → CTA position on mobile.
+                 → Screenshot comparison saved to #design-review
+```
+
+### Browser Automation Recipes
+
+For ready-to-use browser workflow templates covering common scenarios (SEO audits, price monitoring, content publishing, report extraction), see [`references/browser-recipes.md`](become-ceo/references/browser-recipes.md).
+
+Available recipes:
+- 🔍 **SEO Audit** — check meta tags, headings, broken links, page speed
+- 💰 **Price Monitoring** — track competitor prices with change alerts
+- 📝 **Content Publishing Pipeline** — draft → review → publish across platforms
+- 📊 **Report Extraction** — extract data from dashboards to Notion
+- 🔄 **Multi-Site Health Check** — batch-check status pages and uptime
+- 📱 **Social Media Scheduler** — queue and publish posts at optimal times
+
 ---
 
 ## Architecture
@@ -2815,7 +3041,8 @@ become-ceo/
 │       ├── USER.md                       # About you, the CEO
 │       ├── AGENTS.md                     # Group chat + memory rules
 │       ├── notion-templates.md           # Ready-to-use Notion database schemas
-│       └── github-workflows.md           # Ready-to-use GitHub Actions templates
+│       ├── github-workflows.md           # Ready-to-use GitHub Actions templates
+│       └── browser-recipes.md            # Ready-to-use browser automation recipes
 ├── README.md                             # You are here
 ├── README_CN.md                          # 中文说明
 └── LICENSE                               # MIT
@@ -2857,4 +3084,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.8
+v4.9
