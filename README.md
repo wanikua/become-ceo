@@ -63,6 +63,7 @@ Everyone:     [Each agent reports in with their status]
 
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
 - [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Delegation, error handling, monitoring, escalation, workflow templates
+- [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge base sync
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -666,6 +667,236 @@ Phase 3 — Cleanup:
 
 ---
 
+## Notion Integration — Your Company's Knowledge Base
+
+Your AI team doesn't just chat — it **documents everything** to Notion automatically. Meeting notes, daily reports, project wikis, financial records — all organized in databases your whole team can search.
+
+### Why Notion?
+
+Discord is great for real-time work. But conversations scroll away. Notion is where knowledge **persists**:
+
+- 📅 **Daily reports** — auto-generated standup summaries, archived forever
+- 📊 **Weekly/monthly reviews** — trend analysis with actual data
+- 📝 **Project documentation** — specs, decisions, postmortems
+- 💰 **Financial records** — cost tracking in structured databases
+- 🗂️ **Knowledge base** — SOPs, onboarding docs, technical references
+
+### Recommended Notion Structure
+
+Set up your Notion workspace to mirror your company departments:
+
+```
+🏢 Company HQ (parent page)
+├── 📅 Daily Reports         ← database: auto-filled by Chief of Staff via cron
+│   ├── 2026-03-07 Standup
+│   ├── 2026-03-06 Standup
+│   └── ...
+│
+├── 📊 Weekly Reports        ← database: auto-generated every Monday
+│   ├── Week 10 Review
+│   └── ...
+│
+├── 💰 Financial Records     ← database: cost tracking per day/week
+│   ├── March API Spend
+│   └── ...
+│
+├── 🖥️ Engineering Wiki      ← database: architecture docs, ADRs, runbooks
+│   ├── Auth Module Design
+│   ├── API Rate Limiting
+│   └── ...
+│
+├── 📢 Marketing Hub         ← database: content calendar, campaign results
+│   ├── Blog Post Pipeline
+│   └── ...
+│
+├── 🗂️ Project Archives      ← database: per-project decision logs
+│   ├── Project Alpha
+│   └── ...
+│
+└── 📖 SOPs & Playbooks      ← pages: how we do things
+    ├── Incident Response
+    ├── Deploy Checklist
+    └── ...
+```
+
+### Setting Up Notion Access
+
+1. Go to [notion.so/my-integrations](https://www.notion.so/my-integrations)
+2. Create a new integration → copy the token
+3. Share your Notion pages with the integration (click "..." → "Add connections")
+4. Add the token to your agent config or workspace:
+
+```bash
+# Store in your workspace's TOOLS.md or environment
+NOTION_TOKEN=ntn_your_token_here
+```
+
+> 💡 Clawdbot's built-in **Notion skill** handles all API calls — agents can create pages, query databases, and update records using natural language. No code required.
+
+### Auto-Archiving Daily Reports to Notion
+
+The killer workflow: your Chief of Staff generates a daily standup and **automatically writes it to Notion**:
+
+```bash
+# Daily at 10 PM — generate report and save to Notion
+clawdbot cron add \
+  --name "daily-notion-report" --agent main \
+  --cron "0 22 * * *" --tz "America/New_York" \
+  --message "Generate today's standup report. Include: what each agent worked on, key decisions made, blockers. Post to Discord #standup AND create a new page in the Daily Reports Notion database." \
+  --session isolated --token <your-token>
+```
+
+**What the agent does:**
+1. Reviews the day's Discord conversations
+2. Summarizes each agent's contributions
+3. Posts a summary to `#standup` on Discord
+4. Creates a structured Notion page in the Daily Reports database with:
+   - Date, title, department breakdowns
+   - Key metrics (PRs merged, costs, content published)
+   - Action items for tomorrow
+
+```
+# Example Notion page created automatically:
+
+📅 2026-03-07 Daily Report
+━━━━━━━━━━━━━━━━━━━━━━━━━
+⚔️ Engineering
+  • Merged PR #42: auth module refactor
+  • Started rate limiting implementation
+  • Blocked: waiting on DevOps for staging env
+
+💰 Finance
+  • API spend today: $4.20 (within budget)
+  • Flagged 15% increase in Engineering model usage
+
+🎭 Marketing
+  • Published blog post: "Why AI Teams Work"
+  • Drafted social media calendar for next week
+
+🔧 DevOps
+  • SSL cert renewed (auto)
+  • Uptime: 99.98%
+
+📋 Action Items
+  • [ ] Engineering: finish rate limiting
+  • [ ] DevOps: provision staging environment
+  • [ ] Marketing: review SEO keywords
+```
+
+### Weekly & Monthly Summaries to Notion
+
+Scale the same pattern for longer-term reports:
+
+```bash
+# Weekly — every Monday at 9 AM
+clawdbot cron add \
+  --name "weekly-notion-summary" --agent main \
+  --cron "0 9 * * 1" --tz "America/New_York" \
+  --message "Create a weekly summary in the Weekly Reports Notion database. Review the past 7 daily reports, synthesize trends, highlight wins, flag risks. Include cost trends from Finance." \
+  --session isolated --token <your-token>
+
+# Monthly — 1st of each month at 9 AM
+clawdbot cron add \
+  --name "monthly-notion-review" --agent main \
+  --cron "0 9 1 * *" --tz "America/New_York" \
+  --message "Create a monthly review in Notion. Aggregate weekly summaries, show month-over-month trends, project ROI analysis, team performance metrics." \
+  --session isolated --token <your-token>
+```
+
+This creates a **self-documenting company** — reports generate themselves, archive to Notion, and build a searchable history over time.
+
+### Engineering → Notion: Auto-Document Technical Decisions
+
+When Engineering makes architecture decisions, capture them in Notion automatically:
+
+```
+You:           @Engineering We need to decide: PostgreSQL or MongoDB for the
+               new user service. Analyze and decide.
+
+Engineering:   After analysis:
+               • PostgreSQL wins for our use case — relational data,
+                 ACID compliance needed for user accounts
+               • MongoDB would only make sense for unstructured logs
+
+               ✅ Decision: PostgreSQL
+               📝 Documenting to Engineering Wiki on Notion...
+
+               → Created: "ADR-003: Database Selection for User Service"
+                 in Engineering Wiki database
+```
+
+Now every technical decision is **findable in Notion** months later, not buried in Discord scroll-back.
+
+### Finance → Notion: Structured Cost Tracking
+
+Finance can maintain a live cost database in Notion:
+
+```
+You:           @Finance log this month's costs to Notion
+
+Finance:       📊 March 2026 cost data written to Financial Records:
+
+               | Category      | Amount  | vs Last Month |
+               |---------------|---------|---------------|
+               | Strong Model  | $28.50  | +12%          |
+               | Fast Model    | $8.20   | -5%           |
+               | Server        | $0.00   | —             |
+               | Total         | $36.70  | +8%           |
+
+               → Notion page created with full breakdown and trend chart data.
+               → Tagged: March 2026, Q1, API Costs
+```
+
+The Financial Records database becomes your **single source of truth** for cost tracking — queryable, filterable, and always up to date.
+
+### Querying Notion from Discord
+
+Your agents can also **read from Notion** to answer questions:
+
+```
+You:           @Chief of Staff what did we decide about the database last month?
+
+Chief of Staff: Let me check the Engineering Wiki on Notion...
+
+               Found: ADR-003 (Feb 15, 2026)
+               Decision: PostgreSQL for User Service
+               Rationale: ACID compliance, relational data model,
+               team familiarity
+               Status: Implemented (PR #38)
+```
+
+Notion becomes your team's **institutional memory** — even if agents' conversation context resets, the knowledge persists in structured databases.
+
+### Notion Database Properties Template
+
+When setting up your Notion databases, use these property schemas for best results:
+
+**📅 Daily Reports Database:**
+| Property | Type | Purpose |
+|----------|------|---------|
+| Title | Title | Report date + title |
+| Date | Date | Report date (for calendar view) |
+| Status | Select | Draft / Published |
+| Departments | Multi-select | Which teams reported |
+| Highlights | Rich text | Key achievements |
+| Blockers | Rich text | Issues needing attention |
+| Cost Today | Number | API spend for the day |
+
+**💰 Financial Records Database:**
+| Property | Type | Purpose |
+|----------|------|---------|
+| Title | Title | Period label (e.g., "March 2026") |
+| Period | Date | Date range |
+| Total Spend | Number | Total cost |
+| Strong Model | Number | Strong model costs |
+| Fast Model | Number | Fast model costs |
+| Trend | Select | Up / Down / Flat |
+| Notes | Rich text | Anomalies and recommendations |
+
+> 💡 **Pro tip:** Create Notion database templates for each report type. When agents create new pages, they follow the template structure automatically — consistent, clean, every time.
+
+---
+
 ## Architecture
 
 ```
@@ -1109,6 +1340,9 @@ Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `s
 - `docker.network: "bridge"` — allows network access
 - `docker.env` — pass in API keys (sandbox doesn't inherit host env vars)
 
+**Q: How do I connect Notion?**
+Create an integration at [notion.so/my-integrations](https://www.notion.so/my-integrations), copy the token, share your pages with the integration, and store the token in your workspace. Clawdbot's built-in Notion skill handles all API calls — agents create pages, query databases, and update records via natural language. See the [Notion Integration](#notion-integration--your-companys-knowledge-base) section for setup details and workflow examples.
+
 **Q: How do I create custom skills?**
 Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically.
 
@@ -1219,4 +1453,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v4.1
+v4.2
