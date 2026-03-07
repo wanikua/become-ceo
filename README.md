@@ -4,14 +4,17 @@
 
 > One free server + [Clawdbot](https://github.com/clawdbot/clawdbot) = a 7-person team that works 24/7
 
+[![GitHub Stars](https://img.shields.io/github/stars/wanikua/become-ceo?style=flat&logo=github&label=Stars)](https://github.com/wanikua/become-ceo)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Built on Clawdbot](https://img.shields.io/badge/built%20on-Clawdbot-8A2BE2)](https://github.com/clawdbot/clawdbot)
 [![Discord](https://img.shields.io/badge/interface-Discord-5865F2?logo=discord&logoColor=white)](https://discord.com)
 [![One-Click Setup](https://img.shields.io/badge/setup-5%20minutes-brightgreen)](https://github.com/wanikua/become-ceo#quick-start)
-[![Skills](https://img.shields.io/badge/skills-60%2B%20built--in-orange)](https://github.com/wanikua/become-ceo#built-in-skills-60)
+[![Skills](https://img.shields.io/badge/skills-60%2B%20%2B%20ClawdHub-orange)](https://github.com/wanikua/become-ceo#built-in-skills-60)
 
 **Ship features. Track spend. Write content. Run standup. Deploy to prod.**
 Type one message in Discord — your team handles the rest.
+
+> **TL;DR** — Run `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)` on any Linux server. 5 minutes later you have 7 AI agents on Discord: Engineering, Finance, Marketing, DevOps, Legal, Management, and a Chief of Staff that coordinates them all. They remember context, use real tools (GitHub, Notion, browser, cron), and work 24/7 on autopilot. Cost: ~$15–30/month in API calls on a free server.
 
 ### See it in action
 
@@ -77,6 +80,7 @@ Everyone:     [Each agent reports in with their status]
 - [Config Deep-Dive](#config-deep-dive) — Customize everything
 - [Growing Your Team](#growing-your-team) — Add new specialists
 - [Personalizing Your Workspace](#personalizing-your-workspace) — 30 scenario templates across 6 files, one-page QUICKSTART.md cheat sheet, 5 getting-started combos, growth guide
+- [Built-In Skills (60+)](#built-in-skills-60) — Full skill category breakdown
 - [FAQ](#faq) — Common questions answered
 - [Troubleshooting](#troubleshooting) — Fix common issues fast
 
@@ -2677,7 +2681,7 @@ Browser automation connects with every other integration in your stack:
 
 ### Browser Automation Recipes
 
-For ready-to-use browser workflow templates covering common scenarios, see [`references/browser-recipes.md`](become-ceo/references/browser-recipes.md).
+For ready-to-use browser workflow templates covering common scenarios, see [`references/browser-recipes.md`](./become-ceo/references/browser-recipes.md).
 
 Available recipes:
 - 🔍 **SEO Audit** — check meta tags, headings, broken links, page speed
@@ -3979,7 +3983,7 @@ Chief of Staff:  💼 Executive Dashboard — as of now:
 
 > 💡 **The compound effect:** Each additional skill multiplies (not just adds) the value of your team. A single `@Chief of Staff morning brief` can pull from 5+ skills simultaneously — something no human assistant could do in under a minute.
 
-See [references/skill-combinations.md](become-ceo/references/skill-combinations.md) for 8 more ready-to-use combination recipes.
+See [references/skill-combinations.md](./become-ceo/references/skill-combinations.md) for 8 more ready-to-use combination recipes.
 
 ### Quick Install — All Recommended Skills
 
@@ -5323,4 +5327,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v6.3
+v6.4
