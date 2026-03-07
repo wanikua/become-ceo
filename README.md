@@ -64,11 +64,13 @@ Everyone:     [Each agent reports in with their status]
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
+- [Prerequisites](#prerequisites) — What you need before starting
 - [Quick Start](#quick-start) — Get running in 5 minutes
 - [What It Looks Like](#what-it-looks-like) — Real usage examples
 - [Config Deep-Dive](#config-deep-dive) — Customize everything
 - [Growing Your Team](#growing-your-team) — Add new specialists
 - [FAQ](#faq) — Common questions answered
+- [Troubleshooting](#troubleshooting) — Fix common issues fast
 
 ---
 
@@ -170,11 +172,34 @@ Agents can run inside Docker containers with configurable isolation levels:
 
 ---
 
+## Prerequisites
+
+Before you start, you'll need:
+
+| Requirement | Details |
+|-------------|---------|
+| **Server** | Ubuntu 22.04 or 24.04 (ARM or x86). See below for free options. |
+| **LLM API Key** | From any OpenAI-compatible provider (Anthropic, OpenAI, Google, Mistral, etc.) |
+| **Discord Bots** | 7 bot tokens from [discord.com/developers](https://discord.com/developers/applications) |
+| **Discord Server** | Your own server where you can invite bots |
+
+### Free server options
+
+| Provider | Specs | Notes |
+|----------|-------|-------|
+| **Oracle Cloud** | 4 ARM cores, 24GB RAM | Always-free tier, best specs |
+| **Google Cloud** | 1 vCPU, 1GB RAM (e2-micro) | Always-free, tight on RAM |
+| **AWS** | 1 vCPU, 1GB RAM (t2.micro) | Free for 12 months |
+
+> 💡 **Oracle Cloud's free ARM instance** is the sweet spot — 24GB RAM means you can run all 7 agents comfortably with room to spare.
+
+---
+
 ## Quick Start
 
 ### Step 1: One-Click Deploy (~5 min)
 
-Grab an Ubuntu server — many cloud providers offer free-tier ARM instances (4-core, 24GB RAM). SSH in and run:
+SSH into your Ubuntu server and run:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)
@@ -256,6 +281,27 @@ Chief of Staff: 📋 Daily Standup — here's what happened today:
                • DevOps: SSL cert renewed, monitoring alert resolved
 ```
 
+### Inter-agent delegation (Chief of Staff routes automatically)
+```
+You:           @Chief of Staff We need to launch a blog. Handle it.
+Chief of Staff: Coordinating. Here's the plan:
+
+               → Spawning Engineering: set up a static site with Next.js,
+                 push to GitHub, configure CI/CD
+               → Spawning Marketing: draft 3 launch blog posts with SEO keywords
+               → Spawning DevOps: configure Vercel deployment from the new repo
+
+               I'll follow up when each team reports back.
+
+[10 minutes later]
+
+Chief of Staff: ✅ All tasks complete:
+               • Engineering: repo `company-blog` created, Next.js + MDX,
+                 CI passing — github.com/you/company-blog
+               • Marketing: 3 drafts ready in /content/posts/
+               • DevOps: live at blog.yourcompany.com (Vercel auto-deploy on push)
+```
+
 ### Setting up automated reports
 ```bash
 # Get your gateway token
@@ -266,6 +312,16 @@ clawdbot cron add \
   --name "daily-report" --agent main \
   --cron "0 22 * * *" --tz "America/New_York" \
   --message "Generate today's standup report and post it to Discord" \
+  --session isolated --token <your-token>
+```
+
+### Weekly cost review (automated via cron)
+```bash
+# Every Monday at 9 AM — Finance reviews API spend
+clawdbot cron add \
+  --name "weekly-cost-review" --agent finance \
+  --cron "0 9 * * 1" --tz "America/New_York" \
+  --message "Review this week's API costs. Compare to last week. Flag any anomalies. Post summary to Discord." \
   --session isolated --token <your-token>
 ```
 
@@ -480,6 +536,43 @@ clawdbot doctor
 
 ---
 
+## Troubleshooting
+
+Quick fixes for the most common first-run issues:
+
+### Gateway won't start
+```bash
+# Check the logs first
+journalctl --user -u clawdbot-gateway --since today --no-pager -n 50
+
+# Run diagnostics
+clawdbot doctor
+```
+
+**Common causes:**
+- Invalid JSON in `clawdbot.json` — run `cat ~/.clawdbot/clawdbot.json | python3 -m json.tool` to find syntax errors
+- Missing or invalid API key — double-check your LLM provider dashboard
+- Bad bot token — regenerate in Discord Developer Portal
+
+### Bot is online but doesn't respond
+1. **Check intents:** Discord Developer Portal → Bot → enable "Message Content Intent" + "Server Members Intent"
+2. **Check permissions:** Bot role needs "View Channels", "Send Messages", "Read Message History"
+3. **Check `groupPolicy`:** Must be `"open"` on **each individual account**, not just the top level
+4. **Check `requireMention`:** If `true`, the bot only responds to `@mentions`, not plain text
+
+### Agent responds but seems confused
+- Check the workspace has `SOUL.md`, `IDENTITY.md`, `USER.md` — missing files mean missing context
+- Verify `identity.theme` in `clawdbot.json` gives clear role instructions
+- Make sure the correct model is set — complex tasks need a Strong Model, not a Fast Model
+
+### High API costs
+- Audit which agents use Strong Model vs Fast Model — only Engineering and Finance typically need strong
+- Add a Budget Model tier for trivial tasks (greetings, acknowledgements)
+- Reduce `historyLimit` in Discord config to send fewer past messages as context
+- Use `clawdbot cron` for scheduled tasks instead of keeping sessions alive
+
+---
+
 ## What's In The Box
 
 ```
@@ -534,4 +627,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v3.5
+v3.6
