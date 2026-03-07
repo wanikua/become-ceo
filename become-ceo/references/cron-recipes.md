@@ -290,6 +290,76 @@ clawdbot cron runs <job-id>
 
 ---
 
+## 🔔 13. Event-Driven Deploy Smoke Test
+
+**Agent:** DevOps  
+**Schedule:** Event-driven (no fixed schedule)  
+**Trigger:** `clawdbot cron wake <job-id>` from CI webhook  
+**Output:** Discord `#deployments`
+
+```bash
+clawdbot cron add \
+  --agent devops \
+  --text "Production deploy detected. Run smoke tests: check all 
+         critical endpoints (homepage, API /health, dashboard login).
+         If any test fails, post failure details to #deployments and
+         recommend rollback. If all pass, confirm deploy success."
+```
+
+**Integration notes:**
+- No `--cron` flag — this job only runs when woken by an event
+- Wire your CI/CD pipeline to call `clawdbot cron wake <job-id>` after deploy
+- Combines with the nightly staging deploy for full coverage
+
+---
+
+## 🩺 14. Cron Health Audit (Meta-Cron)
+
+**Agent:** Chief of Staff  
+**Schedule:** Every day at 8:00 AM  
+**Output:** Discord `#general` (only on failures)
+
+```bash
+clawdbot cron add \
+  --agent main \
+  --cron "0 8 * * *" --tz "America/New_York" \
+  --text "Audit all cron jobs. Run 'clawdbot cron list' and check 
+         'clawdbot cron runs <id>' for each. Report: jobs that failed 
+         in the last 24h, jobs that didn't run when expected, jobs 
+         taking abnormally long. If all healthy, stay silent."
+```
+
+**Integration notes:**
+- This is the "who watches the watchers" job
+- Should run before the daily standup so failures appear in the morning
+- Detects stale gate files, disabled jobs, and silent failures
+
+---
+
+## 📉 15. Adaptive Cost Monitoring
+
+**Agent:** Finance  
+**Schedule:** Every 4 hours (self-adjusting)  
+**Output:** Discord `#billing-alerts` (only when thresholds exceeded)
+
+```bash
+clawdbot cron add \
+  --agent finance \
+  --cron "0 */4 * * *" \
+  --text "Check LLM API spend. If over threshold, alert #billing-alerts.
+         If spend has been under 50% of threshold for 3 consecutive 
+         checks, update this cron to every 8 hours. If spend exceeds 
+         75% of threshold, increase to every 2 hours. Log any schedule 
+         changes to memory/cron-adjustments.log."
+```
+
+**Integration notes:**
+- Agent self-adjusts frequency based on spend patterns
+- Saves costs during quiet periods, increases vigilance during spikes
+- Logs all schedule changes for auditing
+
+---
+
 ## 🏗️ Building Your Own Recipes
 
 When designing a new cron job, follow this structure:

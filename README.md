@@ -66,7 +66,7 @@ Everyone:     [Each agent reports in with their status]
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
 - [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, accessibility testing, PDF generation, cron integration, capability matrix, automation recipes
-- [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) — Daily reports, monitoring & alerting, auto-archiving to Notion, cron chains, heartbeat vs cron, CLI reference, agent responsibilities, starter recipes
+- [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) — Daily reports, monitoring & alerting, auto-archiving to Notion, cron chains, event-driven cron, self-adjusting schedules, observability, cost management, troubleshooting
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -3004,7 +3004,233 @@ clawdbot cron add --agent devops --cron "0 */6 * * *" \
 
 Once those are running smoothly, add weekly reports, security scans, and specialized monitoring.
 
-For 12 ready-to-use cron recipes covering every scenario above (and more), see [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md).
+For 15 ready-to-use cron recipes covering every scenario above (and more), see [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md).
+
+### Event-Driven Cron — Wake Jobs On Demand
+
+Not everything runs on a fixed schedule. Sometimes you need a cron job that **sleeps until triggered by an external event**:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Event-Driven Cron Flow                                      │
+│                                                              │
+│  External Event (webhook, CI, alert)                         │
+│    ↓                                                         │
+│  clawdbot cron wake <job-id>                                 │
+│    ↓                                                         │
+│  Agent wakes up, handles event, goes back to sleep           │
+│                                                              │
+│  No polling. No wasted API calls. Instant response.          │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**GitHub webhook → auto-triage:**
+
+```bash
+# Create a cron job with no schedule (event-driven only)
+clawdbot cron add \
+  --agent engineering \
+  --text "New GitHub issue received. Read the issue details from 
+         the trigger context. Label, assign priority, and post 
+         triage summary to #bugs."
+
+# Your CI webhook or GitHub Action calls:
+clawdbot cron wake <job-id>
+```
+
+**Deploy notification → smoke test:**
+
+```bash
+# Fires when a deploy webhook hits your server
+clawdbot cron add \
+  --agent devops \
+  --text "Production deploy detected. Run smoke tests on all 
+         critical endpoints. If any fail, roll back and alert 
+         #deployments with failure details."
+```
+
+**Combine scheduled + event-driven:** A job can have both a regular schedule AND respond to wake events. The uptime monitor runs every 6 hours, but can also be woken immediately when an external alert fires:
+
+```bash
+clawdbot cron add \
+  --agent devops \
+  --cron "0 */6 * * *" \
+  --text "Health check all endpoints. Alert if anything is down."
+
+# External monitoring service detects anomaly → wake immediately
+clawdbot cron wake <job-id>
+```
+
+### Self-Adjusting Schedules
+
+Smart agents don't just follow schedules — they **adapt them based on conditions**:
+
+**Escalating monitoring during incidents:**
+
+When DevOps detects an issue, it can temporarily increase monitoring frequency:
+
+```bash
+# Normal: every 6 hours
+# During incident: agent updates itself to every 15 minutes
+clawdbot cron update <uptime-job-id> --cron "*/15 * * * *"
+
+# After resolution: agent restores normal schedule
+clawdbot cron update <uptime-job-id> --cron "0 */6 * * *"
+```
+
+Encode this behavior in the agent's theme:
+
+```
+"When you detect an outage:
+ 1. Alert #deployments immediately
+ 2. Update your uptime check cron to every 15 minutes
+ 3. When the issue resolves, restore to every 6 hours
+ 4. Post incident timeline to Notion Incident Log"
+```
+
+**Budget-aware scheduling:**
+
+Finance can reduce monitoring frequency when costs are consistently low:
+
+```
+"If spend has been under 50% of threshold for 3 consecutive checks,
+ update your cost-check cron from every 4 hours to every 8 hours. 
+ If spend exceeds 75% of threshold, increase to every 2 hours."
+```
+
+**Weekend vs weekday schedules:**
+
+Some tasks only matter during business hours. Use separate jobs instead of complex cron expressions:
+
+```bash
+# Weekday issue triage — every hour
+clawdbot cron add --agent engineering --cron "0 * * * 1-5" \
+  --text "Check for new untriaged issues. Weekday mode: assign and label."
+
+# Weekend — just once a day
+clawdbot cron add --agent engineering --cron "0 10 * * 0,6" \
+  --text "Weekend issue check. Only flag critical/security issues. 
+         Everything else waits until Monday."
+```
+
+### Cron Observability — Monitoring Your Monitors
+
+Your cron jobs are running your company. Who's monitoring **them**?
+
+**Cron health check (meta-cron):**
+
+```bash
+clawdbot cron add \
+  --agent main \
+  --cron "0 8 * * *" --tz "America/New_York" \
+  --text "Audit all cron jobs. Run 'clawdbot cron list' and 
+         'clawdbot cron runs <id>' for each job. Report:
+         1. Jobs that failed in the last 24h (with error details)
+         2. Jobs that didn't run when expected
+         3. Jobs that took abnormally long (>5 min for simple checks)
+         4. Disabled jobs that might need re-enabling
+         Post findings to #general. If all healthy, stay silent."
+```
+
+**Run history analysis:**
+
+```bash
+# Check run history for a specific job
+clawdbot cron runs <job-id>
+
+# Expected output:
+# Run ID    | Status  | Duration | Time
+# run_abc   | success | 12s      | 2026-03-07 09:00
+# run_def   | success | 15s      | 2026-03-06 09:00
+# run_ghi   | failed  | 45s      | 2026-03-05 09:00
+```
+
+**Failure alerting pattern:** Add failure detection to your standup cron:
+
+```bash
+clawdbot cron add \
+  --agent main \
+  --cron "0 9 * * *" --tz "America/New_York" \
+  --text "Daily standup. BEFORE collecting department status, 
+         check cron run history for failures in the last 24h.
+         If any jobs failed, lead the standup with a ⚠️ Cron 
+         Health section listing failures and recommended fixes."
+```
+
+### Cron Cost Management
+
+Cron jobs run automatically — which means costs can sneak up on you. Here's how to keep them in check:
+
+**Model selection per job:**
+
+```bash
+# Simple health check — use the cheapest model
+clawdbot cron add \
+  --agent devops \
+  --model "$LLM_PROVIDER/$MODEL_FAST" \
+  --cron "0 */6 * * *" \
+  --text "Ping production endpoints. Report failures only."
+
+# Complex analysis — worth the cost
+clawdbot cron add \
+  --agent management \
+  --model "$LLM_PROVIDER/$MODEL_STRONG" \
+  --cron "0 10 1 * *" \
+  --text "Monthly executive summary with trend analysis."
+```
+
+**Cost estimation table:**
+
+| Job Type | Frequency | Model | Est. Monthly Cost |
+|---|---|---|---|
+| Uptime check | Every 6h | Fast | ~$0.50 |
+| CI failure check | Every 30min | Fast | ~$4.00 |
+| Issue triage | Hourly | Fast | ~$6.00 |
+| Daily standup | Daily | Fast | ~$3.00 |
+| Weekly cost review | Weekly | Strong | ~$2.00 |
+| Monthly report | Monthly | Strong | ~$1.00 |
+| Security scan | Weekly | Fast | ~$1.00 |
+
+> 💡 **The 80/20 rule for cron costs:** 80% of your cron spend comes from high-frequency jobs (every 30min, hourly). Audit these first. A fast model at 30min intervals costs less per month than a strong model running daily.
+
+**Budget cap pattern:** Finance monitors total cron spend and disables non-essential jobs if costs exceed a threshold:
+
+```
+"If total cron-driven API spend exceeds $50/month:
+ 1. Alert #billing-alerts with breakdown by job
+ 2. Recommend which jobs to reduce frequency or switch to fast model
+ 3. NEVER auto-disable cron jobs without human approval"
+```
+
+### Cron Troubleshooting
+
+Common cron issues and how to fix them:
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Job didn't run | Missing `--tz`, ran at wrong hour | Add `--tz "America/New_York"` |
+| Job runs but no Discord post | Agent doesn't know which channel | Add explicit channel name in task text |
+| Job produces empty output | Agent has no context | Include specific instructions in `--text` |
+| Job costs too much | Strong model on high-frequency task | Switch to `--model "$LLM_PROVIDER/$MODEL_FAST"` |
+| Jobs interfere with each other | Overlapping schedules, shared state | Stagger start times by 5+ minutes |
+| Job silently fails | No error reporting in task text | Add "If you encounter errors, post to #general" |
+| Gate file stale | Cron chain step didn't clean up | Add cleanup step: "Delete gate file after processing" |
+
+**Debugging a specific job:**
+
+```bash
+# 1. Check if the job exists and is enabled
+clawdbot cron list
+
+# 2. Run it manually to see output
+clawdbot cron run <job-id>
+
+# 3. Check recent run history for errors
+clawdbot cron runs <job-id>
+
+# 4. Verify the agent can handle the task
+#    (test the same prompt in a direct message)
+```
 
 ---
 
@@ -3086,6 +3312,9 @@ Built-in scheduler lets agents run tasks autonomously — see [Cron & Scheduled 
 - Weekly summaries with cost breakdowns and trend analysis
 - Health checks, uptime monitoring, and security scans
 - Multi-step cron chains: test → tag → deploy → announce
+- Event-driven cron: webhook triggers → instant agent response
+- Self-adjusting schedules: agents adapt frequency based on conditions
+- Cron health auditing: monitor your monitors with meta-cron
 - Any custom scheduled task you can describe in plain English
 
 ### 👥 Team Collaboration
@@ -3462,7 +3691,13 @@ Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authent
 DevOps can deploy the Secret & SAST Scanning workflow template to any repo from `references/github-workflows.md`. It runs on every PR and weekly on a schedule — catching leaked secrets, vulnerable dependencies, and license conflicts automatically. DevOps notifies Engineering for code fixes and Legal for license issues. See the [Security Scanning](#security-scanning--vulnerability-management) section for details.
 
 **Q: How do I set up scheduled tasks?**
-Use `clawdbot cron add` with an agent, a cron expression, and a plain-English task description. Jobs run autonomously on schedule — no human interaction needed. Start with the three essential jobs (daily standup, cost alerts, uptime monitoring), then expand. Use `clawdbot cron list` to see all jobs and `clawdbot cron run <id>` to test before relying on the schedule. See the [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) section and [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md) for 12 ready-to-use templates.
+Use `clawdbot cron add` with an agent, a cron expression, and a plain-English task description. Jobs run autonomously on schedule — no human interaction needed. Start with the three essential jobs (daily standup, cost alerts, uptime monitoring), then expand. Use `clawdbot cron list` to see all jobs and `clawdbot cron run <id>` to test before relying on the schedule. See the [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) section and [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md) for 15 ready-to-use templates.
+
+**Q: Can cron jobs trigger on events instead of a fixed schedule?**
+Yes. Create a job without `--cron` and use `clawdbot cron wake <job-id>` to trigger it on demand — perfect for webhook-driven workflows like deploy smoke tests or GitHub event responses. Jobs can also have both a regular schedule AND respond to wake events. See [Event-Driven Cron](#event-driven-cron--wake-jobs-on-demand).
+
+**Q: My cron job runs but doesn't post anything. What's wrong?**
+Most likely: the task text doesn't specify which Discord channel to post to, the agent can't find data it needs, or the "stay silent when healthy" condition matched. Test with `clawdbot cron run <job-id>` and check the output. See the [Cron Troubleshooting](#cron-troubleshooting) table for common fixes.
 
 **Q: How does browser automation work?**
 Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, generate PDFs, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. Agents also use the browser for accessibility audits (WCAG compliance checking) and can combine browser tasks with cron for automated monitoring. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
@@ -3539,7 +3774,7 @@ become-ceo/
 │       ├── notion-templates.md           # Ready-to-use Notion database schemas
 │       ├── github-workflows.md           # Ready-to-use GitHub Actions templates
 │       ├── browser-recipes.md            # Ready-to-use browser automation recipes
-│       └── cron-recipes.md               # Ready-to-use scheduled task templates
+│       └── cron-recipes.md               # 15 ready-to-use scheduled task templates
 ├── README.md                             # You are here
 ├── README_CN.md                          # 中文说明
 └── LICENSE                               # MIT

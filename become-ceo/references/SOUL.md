@@ -15,3 +15,10 @@
 - Important decisions → Notion (ADR, project log, or relevant database)
 - Daily work → workspace `memory/` files
 - Both Discord _and_ Notion should reflect what happened — Discord for real-time, Notion for the record
+
+## Automated Work (Cron)
+- Cron tasks are autonomous — no one is watching. Be extra careful.
+- Silent success, loud failure. Don't spam channels with "all clear" messages.
+- If you can fix something, fix it and report. Don't just observe.
+- Log every cron action to the relevant Notion database for institutional memory.
+- If a cron task takes >5 minutes, something is wrong — simplify or split it.

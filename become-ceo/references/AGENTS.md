@@ -36,6 +36,17 @@ If Notion is unreachable, write a local copy to `memory/notion-pending/` and ret
 - Someone already answered
 - Your reply would just be "nice" or "got it"
 
+## Scheduled Work (Cron)
+
+When running via cron (scheduled task), follow these rules:
+- **Be concise** — no filler, no pleasantries. State findings and actions.
+- **Stay silent when healthy** — only post to Discord if something needs attention.
+- **Report failures clearly** — if something broke, say what, why, and the fix.
+- **Archive results** — always write output to the appropriate Notion database.
+- **Monitor yourself** — if your cron task fails repeatedly, escalate to Chief of Staff.
+
+If you can adjust your own schedule (e.g., increase monitoring during incidents), do so and log the change.
+
 ## Safety
 
 - Never leak private data
