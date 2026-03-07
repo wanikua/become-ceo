@@ -4565,7 +4565,7 @@ The script **auto-detects your environment** and handles everything:
 
 ```
 ╔══════════════════════════════════════╗
-║     🏢 Become CEO — Setup v2.1      ║
+║     🏢 Become CEO — Setup v2.2      ║
 ╚══════════════════════════════════════╝
 
 Environment Detected:
@@ -4590,12 +4590,15 @@ Ready to install (9 steps). Continue? [Y/n]
 - ✅ **Pre-flight checks** — validates OS, RAM (≥512MB), disk (≥2GB), architecture
 - ✅ **Network check** — verifies connectivity to npm, GitHub, NodeSource before installing
 - ✅ **Smart detection** — skips already-installed components, picks correct swap size
+- ✅ **Docker/container aware** — auto-detects Docker/LXC, skips swap & systemd, adjusts start commands
 - ✅ **System setup** — cloud firewall config, dynamic swap (scales with RAM)
 - ✅ **Dependencies** — Node.js 22 + GitHub CLI + Chromium (multi-distro support)
 - ✅ **Clawdbot** — global install + workspace initialization
 - ✅ **Config wizard** — walks you through LLM provider, API key, Discord tokens, Notion, GitHub interactively
 - ✅ **Key validation** — catches common API key format mistakes before you start
-- ✅ **Gateway service** — auto-starts on boot
+- ✅ **Auto-backup** — backs up existing config before any changes (keeps last 5)
+- ✅ **Health check** — verifies all components work after installation
+- ✅ **Gateway service** — auto-starts on boot (or manual start guidance in containers)
 
 **Supported distros:** Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+
 **Architectures:** amd64, arm64
@@ -4614,10 +4617,23 @@ Ready to install (9 steps). Continue? [Y/n]
 > bash setup.sh --dry-run
 > ```
 
-> **CI/Docker?** Run non-interactively:
+> **CI/Docker?** Run non-interactively (auto-detects containers):
 > ```bash
 > SKIP_INTERACTIVE=1 bash setup.sh
 > # Or: bash setup.sh --non-interactive
+> # In Docker: swap & systemd auto-disabled, start commands adjusted
+> ```
+
+> **Already installed? Manage your setup:**
+> ```bash
+> # Update Clawdbot + refresh templates (keeps your config)
+> bash setup.sh --upgrade
+>
+> # Factory-reset config (re-run wizard, backup kept)
+> bash setup.sh --reset
+>
+> # Clean removal (keeps workspace data safe)
+> bash setup.sh --uninstall
 > ```
 
 ### Step 2: Configure (Built Into Setup!)
@@ -5005,6 +5021,13 @@ bash setup.sh --dry-run
 
 **Re-run safely:** The script is idempotent — it skips already-installed components. Just run it again.
 
+**Running in Docker?** The script auto-detects Docker/LXC containers and adjusts:
+- Swap creation is skipped (managed by host)
+- Gateway uses `clawdbot gateway start` instead of systemd
+- All other features work normally
+
+**Want to start over?** Use `bash setup.sh --reset` to factory-reset your config (your workspace is preserved, and the old config is backed up automatically).
+
 ### Gateway won't start
 ```bash
 # Check the logs first
@@ -5043,7 +5066,7 @@ clawdbot doctor
 
 ```
 become-ceo/
-├── setup.sh                              # One-click setup (v2.1: dry-run, --check, network validation, Notion/GitHub config)
+├── setup.sh                              # One-click setup (v2.2: upgrade/uninstall/reset, Docker detection, health checks)
 ├── become-ceo/
 │   ├── SKILL.md                          # Skill definition (ClawdHub package)
 │   └── references/
@@ -5098,4 +5121,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.8
+v5.9

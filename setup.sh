@@ -1,8 +1,9 @@
 #!/bin/bash
 # ============================================================
-# Become CEO — One-Click Setup
+# Become CEO — One-Click Setup  v2.2
 # Supports: Ubuntu 22.04/24.04, Debian 12+, Amazon Linux 2023
 # Architecture: amd64, arm64
+# Modes:  install (default), --upgrade, --uninstall, --reset
 # ============================================================
 
 # ---- Strict mode ----
@@ -31,6 +32,10 @@ WARNINGS=()
 SKIP_INTERACTIVE="${SKIP_INTERACTIVE:-}"
 DRY_RUN="${DRY_RUN:-}"
 CHECK_ONLY="${CHECK_ONLY:-}"
+UPGRADE_MODE="${UPGRADE_MODE:-}"
+UNINSTALL_MODE="${UNINSTALL_MODE:-}"
+RESET_MODE="${RESET_MODE:-}"
+IN_CONTAINER=""
 
 # ---- Logging ----
 log() { echo "[$(date '+%H:%M:%S')] $*" >> "$LOG_FILE"; }
@@ -130,6 +135,45 @@ validate_notion_token() {
     return 0
 }
 
+# ---- Container/VM detection ----
+detect_container() {
+    if [ -f /.dockerenv ] || grep -q 'docker\|containerd' /proc/1/cgroup 2>/dev/null; then
+        IN_CONTAINER="docker"
+    elif [ -f /run/systemd/container ] || grep -q 'lxc' /proc/1/cgroup 2>/dev/null; then
+        IN_CONTAINER="lxc"
+    elif systemd-detect-virt --container 2>/dev/null | grep -qv "none"; then
+        IN_CONTAINER="$(systemd-detect-virt --container 2>/dev/null)"
+    fi
+}
+
+# ---- Config backup ----
+# Backs up existing config before any destructive operation
+backup_config() {
+    local config_file="$CONFIG_DIR/clawdbot.json"
+    [ ! -f "$config_file" ] && return 0
+
+    local backup_dir="$CONFIG_DIR/backups"
+    local backup_name="clawdbot.json.$(date +%Y%m%d-%H%M%S).bak"
+    mkdir -p "$backup_dir"
+
+    if [ -n "$DRY_RUN" ]; then
+        echo -e "  ${DIM}[dry-run] would backup $config_file → $backup_dir/$backup_name${NC}"
+        return 0
+    fi
+
+    cp "$config_file" "$backup_dir/$backup_name"
+    ok "Config backed up → backups/$backup_name"
+    log "Backup: $config_file → $backup_dir/$backup_name"
+
+    # Keep only last 5 backups
+    local count
+    count=$(ls -1 "$backup_dir"/clawdbot.json.*.bak 2>/dev/null | wc -l)
+    if [ "$count" -gt 5 ]; then
+        ls -1t "$backup_dir"/clawdbot.json.*.bak | tail -n +6 | xargs rm -f
+        log "Pruned old backups (kept 5)"
+    fi
+}
+
 # ---- Dependency checks ----
 require_cmd() {
     command -v "$1" &>/dev/null || return 1
@@ -153,11 +197,17 @@ require_root_or_sudo() {
 preflight() {
     echo ""
     echo -e "${BLUE}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}${BOLD}║     🏢 Become CEO — Setup v2.1      ║${NC}"
+    echo -e "${BLUE}${BOLD}║     🏢 Become CEO — Setup v2.2      ║${NC}"
     echo -e "${BLUE}${BOLD}╚══════════════════════════════════════╝${NC}"
     [ -n "$DRY_RUN" ] && echo -e "${YELLOW}${BOLD}  ⚡ DRY-RUN MODE — no changes will be made${NC}"
     echo ""
     log "=== Setup started at $(date) ==="
+
+    # Detect container environment
+    detect_container
+    if [ -n "$IN_CONTAINER" ]; then
+        log "Container detected: $IN_CONTAINER"
+    fi
 
     # Detect OS
     if [ -f /etc/os-release ]; then
@@ -210,6 +260,7 @@ preflight() {
     echo -e "  OS:       $OS_PRETTY ($ARCH_LABEL)"
     echo -e "  RAM:      ${TOTAL_RAM_GB}GB  |  Disk free: ${FREE_DISK_GB}GB"
     echo -e "  Package:  $PKG_MGR"
+    [ -n "$IN_CONTAINER" ] && echo -e "  Container: ${YELLOW}$IN_CONTAINER${NC} (swap & systemd disabled)"
     echo ""
 
     # Existing software
@@ -221,7 +272,7 @@ preflight() {
     [ "$HAS_SWAP" = "yes" ]     && echo -e "  Swap:       ${GREEN}active${NC}" || echo -e "  Swap:       ${DIM}none${NC}"
     echo ""
 
-    log "OS=$OS_PRETTY ARCH=$ARCH_LABEL RAM=${TOTAL_RAM_GB}GB DISK=${FREE_DISK_GB}GB PKG=$PKG_MGR"
+    log "OS=$OS_PRETTY ARCH=$ARCH_LABEL RAM=${TOTAL_RAM_GB}GB DISK=${FREE_DISK_GB}GB PKG=$PKG_MGR CONTAINER=$IN_CONTAINER"
     log "Node=$HAS_NODE GH=$HAS_GH Chromium=$HAS_CHROMIUM Clawdbot=$HAS_CLAWDBOT Swap=$HAS_SWAP"
 
     # Validate environment
@@ -335,6 +386,9 @@ install_swap() {
     fi
     if [ "$TOTAL_RAM_MB" -ge 8192 ]; then
         return
+    fi
+    if [ -n "$IN_CONTAINER" ]; then
+        return  # Swap is managed by the host, not the container
     fi
 
     step "Swap space"
@@ -683,17 +737,357 @@ config_wizard() {
 install_gateway() {
     step "Gateway service"
 
-    if require_cmd clawdbot; then
-        if run_cmd "install gateway service" clawdbot gateway install >> "$LOG_FILE" 2>&1; then
-            ok "Gateway service installed (auto-starts on boot)"
-            info "Start: systemctl --user start clawdbot-gateway"
-            info "Logs:  journalctl --user -u clawdbot-gateway -f"
+    if ! require_cmd clawdbot; then
+        warn "Clawdbot not found — install it first, then run 'clawdbot gateway install'"
+        return
+    fi
+
+    # Containers usually lack systemd — start gateway directly instead
+    if [ -n "$IN_CONTAINER" ]; then
+        info "Container detected — systemd service not available"
+        info "Start manually: clawdbot gateway start"
+        info "Or add to your container entrypoint / supervisor config"
+        ok "Gateway ready (manual start required in containers)"
+        return
+    fi
+
+    if run_cmd "install gateway service" clawdbot gateway install >> "$LOG_FILE" 2>&1; then
+        ok "Gateway service installed (auto-starts on boot)"
+        info "Start: systemctl --user start clawdbot-gateway"
+        info "Logs:  journalctl --user -u clawdbot-gateway -f"
+    else
+        warn "Gateway service install failed — run 'clawdbot gateway install' after filling in config"
+    fi
+}
+
+# ============================================================
+# Post-install health check
+# ============================================================
+
+health_check() {
+    step "Post-install health check"
+
+    local pass=0 fail=0
+
+    # Node.js
+    if require_cmd node && node -e "process.exit(0)" 2>/dev/null; then
+        ok "Node.js works ($(node -v))"
+        pass=$((pass + 1))
+    else
+        warn "Node.js not functional"
+        fail=$((fail + 1))
+    fi
+
+    # npm
+    if require_cmd npm && npm --version &>/dev/null; then
+        ok "npm works (v$(npm --version 2>/dev/null))"
+        pass=$((pass + 1))
+    else
+        warn "npm not functional"
+        fail=$((fail + 1))
+    fi
+
+    # Clawdbot
+    if require_cmd clawdbot && clawdbot --version &>/dev/null; then
+        ok "Clawdbot works ($(clawdbot --version 2>/dev/null))"
+        pass=$((pass + 1))
+    else
+        warn "Clawdbot not functional"
+        fail=$((fail + 1))
+    fi
+
+    # Config file valid JSON
+    local config_file="$CONFIG_DIR/clawdbot.json"
+    if [ -f "$config_file" ]; then
+        if node -e "JSON.parse(require('fs').readFileSync('$config_file','utf8'))" 2>/dev/null; then
+            ok "Config JSON is valid"
+            pass=$((pass + 1))
         else
-            warn "Gateway service install failed — run 'clawdbot gateway install' after filling in config"
+            warn "Config JSON has syntax errors — run: node -e \"JSON.parse(require('fs').readFileSync('$config_file','utf8'))\""
+            fail=$((fail + 1))
         fi
     else
-        warn "Clawdbot not found — install it first, then run 'clawdbot gateway install'"
+        warn "Config file not found at $config_file"
+        fail=$((fail + 1))
     fi
+
+    # Workspace files
+    local expected_files=("SOUL.md" "IDENTITY.md" "USER.md" "AGENTS.md")
+    local ws_ok=0 ws_miss=0
+    for f in "${expected_files[@]}"; do
+        if [ -f "$WORKSPACE/$f" ]; then
+            ws_ok=$((ws_ok + 1))
+        else
+            ws_miss=$((ws_miss + 1))
+        fi
+    done
+    if [ "$ws_miss" -eq 0 ]; then
+        ok "Workspace files present (${ws_ok}/${#expected_files[@]})"
+        pass=$((pass + 1))
+    else
+        warn "Missing workspace files ($ws_miss/${#expected_files[@]})"
+        fail=$((fail + 1))
+    fi
+
+    # Chromium (optional)
+    if require_cmd chromium-browser || require_cmd chromium; then
+        ok "Chromium available (browser automation ready)"
+        pass=$((pass + 1))
+    else
+        info "Chromium not found (browser automation unavailable — optional)"
+    fi
+
+    # GitHub CLI (optional)
+    if require_cmd gh; then
+        if gh auth status &>/dev/null 2>&1; then
+            ok "GitHub CLI authenticated"
+        else
+            info "GitHub CLI installed but not authenticated (run: gh auth login)"
+        fi
+        pass=$((pass + 1))
+    else
+        info "GitHub CLI not found (optional)"
+    fi
+
+    echo ""
+    if [ "$fail" -eq 0 ]; then
+        echo -e "  ${GREEN}${BOLD}Health check: $pass/$pass passed ✓${NC}"
+    else
+        echo -e "  ${YELLOW}${BOLD}Health check: $pass passed, $fail failed${NC}"
+        echo -e "  ${DIM}Fix the warnings above, then re-run: bash setup.sh --check${NC}"
+    fi
+    log "Health check: pass=$pass fail=$fail"
+}
+
+# ============================================================
+# Upgrade mode — update existing installation
+# ============================================================
+
+do_upgrade() {
+    echo ""
+    echo -e "${BLUE}${BOLD}╔══════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}${BOLD}║   🔄 Become CEO — Upgrade v2.2      ║${NC}"
+    echo -e "${BLUE}${BOLD}╚══════════════════════════════════════╝${NC}"
+    echo ""
+    log "=== Upgrade started at $(date) ==="
+
+    STEP_TOTAL=4
+    require_root_or_sudo
+
+    # Step 1: Backup existing config
+    step "Backup existing configuration"
+    backup_config
+
+    # Step 2: Update Clawdbot
+    step "Update Clawdbot to latest"
+    if require_cmd clawdbot; then
+        local old_ver
+        old_ver=$(clawdbot --version 2>/dev/null || echo "unknown")
+        run_cmd "npm update clawdbot" $SUDO npm update -g clawdbot --loglevel=error >> "$LOG_FILE" 2>&1
+        local new_ver
+        new_ver=$(clawdbot --version 2>/dev/null || echo "unknown")
+        if [ "$old_ver" = "$new_ver" ]; then
+            ok "Clawdbot already at latest ($new_ver)"
+        else
+            ok "Clawdbot updated: $old_ver → $new_ver"
+        fi
+    else
+        warn "Clawdbot not installed — run setup without --upgrade first"
+    fi
+
+    # Step 3: Re-download reference templates (without overwriting existing)
+    step "Update reference templates"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd 2>/dev/null || echo "")"
+    LOCAL_REF="${SCRIPT_DIR:+$SCRIPT_DIR/../references}"
+    [ -n "$LOCAL_REF" ] && [ ! -d "$LOCAL_REF" ] && LOCAL_REF=""
+
+    # Download to a .new file, let user diff if different
+    local ref_dir="$WORKSPACE/.reference-updates"
+    mkdir -p "$ref_dir"
+    for f in SOUL.md IDENTITY.md USER.md AGENTS.md; do
+        local dest="$ref_dir/$f"
+        if [ -n "${LOCAL_REF:-}" ] && [ -f "$LOCAL_REF/$f" ]; then
+            cp "$LOCAL_REF/$f" "$dest"
+        else
+            curl -fsSL "$REPO_RAW/$f" -o "$dest" 2>> "$LOG_FILE" || continue
+        fi
+
+        if [ -f "$WORKSPACE/$f" ]; then
+            if diff -q "$WORKSPACE/$f" "$dest" &>/dev/null; then
+                skip "$f (unchanged)"
+            else
+                ok "$f has updates → saved to .reference-updates/$f"
+                info "Compare: diff $WORKSPACE/$f $ref_dir/$f"
+            fi
+        else
+            cp "$dest" "$WORKSPACE/$f"
+            ok "$f created"
+        fi
+    done
+
+    # Step 4: Health check
+    health_check
+
+    echo ""
+    echo -e "${GREEN}${BOLD}╔══════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}${BOLD}║      ✅ Upgrade Complete! (v2.2)     ║${NC}"
+    echo -e "${GREEN}${BOLD}╚══════════════════════════════════════╝${NC}"
+    echo ""
+    if [ -d "$ref_dir" ] && ls "$ref_dir"/*.md &>/dev/null 2>&1; then
+        echo -e "  ${YELLOW}Review template updates:${NC}"
+        echo -e "  ${CYAN}ls $ref_dir/${NC}"
+        echo ""
+    fi
+    echo -e "  Restart gateway: ${CYAN}systemctl --user restart clawdbot-gateway${NC}"
+    echo ""
+}
+
+# ============================================================
+# Uninstall mode — clean removal
+# ============================================================
+
+do_uninstall() {
+    echo ""
+    echo -e "${RED}${BOLD}╔══════════════════════════════════════╗${NC}"
+    echo -e "${RED}${BOLD}║   🗑️  Become CEO — Uninstall         ║${NC}"
+    echo -e "${RED}${BOLD}╚══════════════════════════════════════╝${NC}"
+    echo ""
+    log "=== Uninstall started at $(date) ==="
+
+    echo -e "${BOLD}This will remove:${NC}"
+    echo -e "  • Clawdbot global package"
+    echo -e "  • Gateway systemd service"
+    echo -e "  • Config directory: ${CYAN}$CONFIG_DIR${NC}"
+    echo ""
+    echo -e "${YELLOW}This will NOT remove:${NC}"
+    echo -e "  • Your workspace: ${CYAN}$WORKSPACE${NC} (your data is safe)"
+    echo -e "  • Node.js, GitHub CLI, Chromium (shared system packages)"
+    echo ""
+
+    if [ -z "$SKIP_INTERACTIVE" ]; then
+        echo -e "${RED}${BOLD}Are you sure? Type 'yes' to confirm:${NC} "
+        read -r confirm
+        if [ "$confirm" != "yes" ]; then
+            echo "Uninstall cancelled."
+            exit 0
+        fi
+    fi
+
+    require_root_or_sudo
+    STEP_TOTAL=3
+
+    # Step 1: Stop and remove gateway service
+    step "Stop gateway service"
+    if [ -z "$IN_CONTAINER" ]; then
+        systemctl --user stop clawdbot-gateway 2>/dev/null && ok "Gateway stopped" || skip "Gateway not running"
+        systemctl --user disable clawdbot-gateway 2>/dev/null && ok "Gateway disabled" || skip "Gateway not enabled"
+        local service_file="$HOME/.config/systemd/user/clawdbot-gateway.service"
+        if [ -f "$service_file" ]; then
+            rm -f "$service_file"
+            systemctl --user daemon-reload 2>/dev/null
+            ok "Service file removed"
+        else
+            skip "No service file found"
+        fi
+    else
+        info "Container mode — no systemd service to remove"
+    fi
+
+    # Step 2: Remove Clawdbot package
+    step "Remove Clawdbot"
+    if require_cmd clawdbot; then
+        run_cmd "uninstall clawdbot" $SUDO npm uninstall -g clawdbot >> "$LOG_FILE" 2>&1
+        ok "Clawdbot uninstalled"
+    else
+        skip "Clawdbot not installed"
+    fi
+
+    # Step 3: Backup and remove config
+    step "Remove configuration"
+    if [ -d "$CONFIG_DIR" ]; then
+        backup_config
+        local backup_dir="$CONFIG_DIR/backups"
+        if [ -d "$backup_dir" ] && ls "$backup_dir"/*.bak &>/dev/null 2>&1; then
+            mkdir -p "$HOME/.clawdbot-backups"
+            cp "$backup_dir"/*.bak "$HOME/.clawdbot-backups/" 2>/dev/null || true
+            ok "Backups preserved at ~/.clawdbot-backups/"
+        fi
+        rm -rf "$CONFIG_DIR"
+        ok "Config directory removed"
+    else
+        skip "Config directory not found"
+    fi
+
+    echo ""
+    echo -e "${GREEN}${BOLD}Uninstall complete.${NC}"
+    echo ""
+    echo -e "  Your workspace is preserved at: ${CYAN}$WORKSPACE${NC}"
+    echo -e "  Config backups saved to: ${CYAN}$HOME/.clawdbot-backups/${NC}"
+    echo ""
+    echo -e "  To reinstall: ${CYAN}bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)${NC}"
+    echo ""
+}
+
+# ============================================================
+# Reset mode — factory reset config without uninstalling
+# ============================================================
+
+do_reset() {
+    echo ""
+    echo -e "${YELLOW}${BOLD}╔══════════════════════════════════════╗${NC}"
+    echo -e "${YELLOW}${BOLD}║   🔄 Become CEO — Reset Config      ║${NC}"
+    echo -e "${YELLOW}${BOLD}╚══════════════════════════════════════╝${NC}"
+    echo ""
+    log "=== Reset started at $(date) ==="
+
+    echo -e "${BOLD}This will:${NC}"
+    echo -e "  • Back up your current config"
+    echo -e "  • Replace config with a fresh template"
+    echo -e "  • Re-run the configuration wizard"
+    echo ""
+    echo -e "${YELLOW}Your workspace files (SOUL.md, AGENTS.md, etc.) will NOT be touched.${NC}"
+    echo ""
+
+    if [ -z "$SKIP_INTERACTIVE" ]; then
+        echo -e "${BOLD}Continue? [Y/n]${NC} "
+        read -r confirm
+        if [[ "${confirm:-Y}" =~ ^[Nn] ]]; then
+            echo "Reset cancelled."
+            exit 0
+        fi
+    fi
+
+    STEP_TOTAL=3
+
+    # Step 1: Backup
+    step "Backup current configuration"
+    backup_config
+
+    # Step 2: Fresh config
+    step "Download fresh config template"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd 2>/dev/null || echo "")"
+    LOCAL_REF="${SCRIPT_DIR:+$SCRIPT_DIR/../references}"
+    [ -n "$LOCAL_REF" ] && [ ! -d "$LOCAL_REF" ] && LOCAL_REF=""
+
+    local config_file="$CONFIG_DIR/clawdbot.json"
+    mkdir -p "$CONFIG_DIR"
+
+    if [ -n "${LOCAL_REF:-}" ] && [ -f "$LOCAL_REF/clawdbot-template.json" ]; then
+        cp "$LOCAL_REF/clawdbot-template.json" "$config_file"
+    else
+        curl -fsSL "$REPO_RAW/clawdbot-template.json" -o "$config_file" 2>> "$LOG_FILE"
+    fi
+    sed -i "s|\$HOME|$HOME|g" "$config_file"
+    ok "Fresh config template applied"
+    info "Previous config backed up to $CONFIG_DIR/backups/"
+
+    # Step 3: Re-run wizard
+    config_wizard
+
+    echo ""
+    echo -e "${GREEN}${BOLD}Reset complete.${NC}"
+    echo -e "  Restart gateway: ${CYAN}systemctl --user restart clawdbot-gateway${NC}"
+    echo ""
 }
 
 # ============================================================
@@ -704,7 +1098,7 @@ print_summary() {
     echo ""
     if [ -n "$DRY_RUN" ]; then
         echo -e "${YELLOW}${BOLD}╔══════════════════════════════════════╗${NC}"
-        echo -e "${YELLOW}${BOLD}║     ⚡ Dry-Run Complete (v2.1)       ║${NC}"
+        echo -e "${YELLOW}${BOLD}║     ⚡ Dry-Run Complete (v2.2)       ║${NC}"
         echo -e "${YELLOW}${BOLD}╚══════════════════════════════════════╝${NC}"
         echo ""
         echo -e "  ${DIM}No changes were made. Run without --dry-run to install.${NC}"
@@ -712,7 +1106,7 @@ print_summary() {
     fi
 
     echo -e "${GREEN}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}${BOLD}║      ✅ Setup Complete! (v2.1)       ║${NC}"
+    echo -e "${GREEN}${BOLD}║      ✅ Setup Complete! (v2.2)       ║${NC}"
     echo -e "${GREEN}${BOLD}╚══════════════════════════════════════╝${NC}"
     echo ""
 
@@ -743,6 +1137,15 @@ print_summary() {
     echo ""
 
     # Check if config still has placeholders
+    local start_cmd="systemctl --user start clawdbot-gateway"
+    local verify_cmd="systemctl --user status clawdbot-gateway"
+    local logs_cmd="journalctl --user -u clawdbot-gateway -f"
+    if [ -n "$IN_CONTAINER" ]; then
+        start_cmd="clawdbot gateway start"
+        verify_cmd="clawdbot gateway status"
+        logs_cmd="clawdbot gateway logs"
+    fi
+
     if grep -q '\$LLM_API_KEY\|\$LLM_PROVIDER\|\$DISCORD' "$CONFIG_DIR/clawdbot.json" 2>/dev/null; then
         echo -e "  ${YELLOW}1.${NC} Fill in your keys:"
         echo -e "     ${CYAN}nano $CONFIG_DIR/clawdbot.json${NC}"
@@ -752,18 +1155,18 @@ print_summary() {
         echo -e "                            ${BOLD}Server Members Intent${NC} ✓"
         echo ""
         echo -e "  ${YELLOW}3.${NC} Start your team:"
-        echo -e "     ${CYAN}systemctl --user start clawdbot-gateway${NC}"
+        echo -e "     ${CYAN}$start_cmd${NC}"
     else
         echo -e "  ${YELLOW}1.${NC} Enable Discord bot intents (if not done):"
         echo -e "     Developer Portal → Bot → ${BOLD}Message Content Intent${NC} ✓"
         echo ""
         echo -e "  ${YELLOW}2.${NC} Start your team:"
-        echo -e "     ${CYAN}systemctl --user start clawdbot-gateway${NC}"
+        echo -e "     ${CYAN}$start_cmd${NC}"
     fi
 
     echo ""
-    echo -e "  ${YELLOW}Verify:${NC} systemctl --user status clawdbot-gateway"
-    echo -e "  ${YELLOW}Logs:${NC}   journalctl --user -u clawdbot-gateway -f"
+    echo -e "  ${YELLOW}Verify:${NC} $verify_cmd"
+    echo -e "  ${YELLOW}Logs:${NC}   $logs_cmd"
     echo ""
     echo -e "  Docs: ${BLUE}https://github.com/wanikua/become-ceo${NC}"
     echo ""
@@ -783,8 +1186,10 @@ main() {
     setup_chromium_env
     install_clawdbot
     setup_workspace
+    backup_config        # Auto-backup before config changes
     config_wizard
     install_gateway
+    health_check
     print_summary
 }
 
@@ -794,6 +1199,12 @@ main() {
 
 show_help() {
     echo "Usage: bash setup.sh [OPTIONS]"
+    echo ""
+    echo "Modes:"
+    echo "  (default)            Full install (first-time setup)"
+    echo "  --upgrade            Update Clawdbot + refresh templates (keeps config)"
+    echo "  --uninstall          Remove Clawdbot + gateway service (keeps workspace)"
+    echo "  --reset              Factory-reset config with fresh template + wizard"
     echo ""
     echo "Options:"
     echo "  --non-interactive    Skip confirmation prompts and config wizard"
@@ -812,6 +1223,9 @@ show_help() {
     echo "  bash setup.sh                          # Interactive install"
     echo "  bash setup.sh --check                  # Check environment only"
     echo "  bash setup.sh --dry-run                # Preview without installing"
+    echo "  bash setup.sh --upgrade                # Update existing installation"
+    echo "  bash setup.sh --reset                  # Reset config (re-run wizard)"
+    echo "  bash setup.sh --uninstall              # Clean removal"
     echo "  bash setup.sh --non-interactive         # CI/Docker (no prompts)"
     echo "  bash setup.sh --workspace /opt/clawd   # Custom workspace path"
     exit 0
@@ -838,6 +1252,18 @@ while [ $# -gt 0 ]; do
             CHECK_ONLY=1
             shift
             ;;
+        --upgrade)
+            UPGRADE_MODE=1
+            shift
+            ;;
+        --uninstall)
+            UNINSTALL_MODE=1
+            shift
+            ;;
+        --reset)
+            RESET_MODE=1
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             echo "Run 'bash setup.sh --help' for usage."
@@ -846,4 +1272,16 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-main
+# Route to the correct mode
+if [ -n "$UNINSTALL_MODE" ]; then
+    detect_container
+    do_uninstall
+elif [ -n "$RESET_MODE" ]; then
+    detect_container
+    do_reset
+elif [ -n "$UPGRADE_MODE" ]; then
+    detect_container
+    do_upgrade
+else
+    main
+fi
