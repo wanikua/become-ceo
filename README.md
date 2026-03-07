@@ -4565,7 +4565,7 @@ The script **auto-detects your environment** and handles everything:
 
 ```
 ╔══════════════════════════════════════╗
-║     🏢 Become CEO — Setup v2.0      ║
+║     🏢 Become CEO — Setup v2.1      ║
 ╚══════════════════════════════════════╝
 
 Environment Detected:
@@ -4580,16 +4580,21 @@ Existing Software:
   Clawdbot:   not found
   Swap:       none
 
+Network:
+  ✓ All required endpoints reachable
+
 Ready to install (9 steps). Continue? [Y/n]
 ```
 
 **What it does:**
 - ✅ **Pre-flight checks** — validates OS, RAM (≥512MB), disk (≥2GB), architecture
+- ✅ **Network check** — verifies connectivity to npm, GitHub, NodeSource before installing
 - ✅ **Smart detection** — skips already-installed components, picks correct swap size
 - ✅ **System setup** — cloud firewall config, dynamic swap (scales with RAM)
 - ✅ **Dependencies** — Node.js 22 + GitHub CLI + Chromium (multi-distro support)
 - ✅ **Clawdbot** — global install + workspace initialization
-- ✅ **Config wizard** — walks you through LLM provider, API key, Discord tokens interactively
+- ✅ **Config wizard** — walks you through LLM provider, API key, Discord tokens, Notion, GitHub interactively
+- ✅ **Key validation** — catches common API key format mistakes before you start
 - ✅ **Gateway service** — auto-starts on boot
 
 **Supported distros:** Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+
@@ -4598,6 +4603,15 @@ Ready to install (9 steps). Continue? [Y/n]
 > **Already have Clawdbot?** Install just the skill:
 > ```bash
 > clawdhub install become-ceo
+> ```
+
+> **Want to preview first?**
+> ```bash
+> # Check your environment without installing anything
+> bash setup.sh --check
+>
+> # See what would happen (no changes made)
+> bash setup.sh --dry-run
 > ```
 
 > **CI/Docker?** Run non-interactively:
@@ -4861,7 +4875,7 @@ Your agents aren't just chatbots — they have tools:
 No. The setup script (v2.0) auto-detects your OS, installs everything, and walks you through an interactive configuration wizard. All interaction is natural language on Discord.
 
 **Q: What if the setup script fails?**
-The script logs everything to `/tmp/become-ceo-setup-*.log`. It's also idempotent — just run it again and it skips already-installed components. Pass `--non-interactive` for CI/Docker environments. See [Troubleshooting](#troubleshooting) for common fixes.
+The script logs everything to `/tmp/become-ceo-setup-*.log`. It's also idempotent — just run it again and it skips already-installed components. Use `--check` to diagnose environment issues or `--dry-run` to preview what would happen. Pass `--non-interactive` for CI/Docker environments. See [Troubleshooting](#troubleshooting) for common fixes.
 
 **Q: Does it work on non-Ubuntu systems?**
 Yes. The setup script supports Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, and Fedora 38+ on both amd64 and arm64. It auto-detects your package manager (apt/dnf/yum) and adjusts accordingly.
@@ -4972,14 +4986,22 @@ The setup script writes detailed logs to `/tmp/become-ceo-setup-*.log`. Check it
 ```bash
 # Find and read the setup log
 cat /tmp/become-ceo-setup-*.log | tail -30
+
+# Run environment check without installing
+bash setup.sh --check
+
+# Preview what setup would do
+bash setup.sh --dry-run
 ```
 
 **Common causes:**
 - **"No supported package manager"** — you're on an unsupported distro. Use Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, or Fedora 38+
 - **"At least 512MB RAM required"** — your server is too small. Oracle Cloud free tier (24GB) is recommended
 - **"At least 2GB free disk"** — clean up disk space or resize your volume
+- **"Cannot reach: ..."** — network connectivity issue. Check firewall, proxy, or DNS settings. Run `bash setup.sh --check` to test connectivity.
 - **Node.js install fails** — check if you can reach `deb.nodesource.com` (corporate firewalls sometimes block it)
 - **snap install hangs** — on minimal Ubuntu, `snapd` may need a restart: `sudo systemctl restart snapd`
+- **API key format warning** — the wizard validates key format but continues anyway. Double-check your provider dashboard if agents don't respond.
 
 **Re-run safely:** The script is idempotent — it skips already-installed components. Just run it again.
 
@@ -5021,7 +5043,7 @@ clawdbot doctor
 
 ```
 become-ceo/
-├── setup.sh                              # One-click setup (v2.0: auto-detect, wizard, multi-distro)
+├── setup.sh                              # One-click setup (v2.1: dry-run, --check, network validation, Notion/GitHub config)
 ├── become-ceo/
 │   ├── SKILL.md                          # Skill definition (ClawdHub package)
 │   └── references/
@@ -5076,4 +5098,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.7
+v5.8

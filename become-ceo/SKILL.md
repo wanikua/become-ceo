@@ -15,7 +15,7 @@ metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot","chromiu
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)
 ```
-The v2.0 setup script auto-detects your OS/architecture, installs all dependencies, and runs an interactive configuration wizard for LLM provider, API key, and Discord bot tokens. Supports Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+ on amd64/arm64.
+The v2.1 setup script auto-detects your OS/architecture, validates network connectivity, installs all dependencies, and runs an interactive configuration wizard for LLM provider, API key, Discord bot tokens, Notion integration, and GitHub authentication. Use `--check` to verify your environment or `--dry-run` to preview without changes. Supports Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+ on amd64/arm64.
 
 **Manual / existing Clawdbot install:**
 1. Install this skill: `clawdhub install become-ceo`

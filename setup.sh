@@ -29,6 +29,8 @@ STEP_TOTAL=0
 ERRORS=()
 WARNINGS=()
 SKIP_INTERACTIVE="${SKIP_INTERACTIVE:-}"
+DRY_RUN="${DRY_RUN:-}"
+CHECK_ONLY="${CHECK_ONLY:-}"
 
 # ---- Logging ----
 log() { echo "[$(date '+%H:%M:%S')] $*" >> "$LOG_FILE"; }
@@ -60,6 +62,74 @@ warn() { echo -e "  ${YELLOW}⚠${NC} $1"; log "  WARN: $1"; WARNINGS+=("$1"); }
 skip() { echo -e "  ${DIM}→ $1 (skipped)${NC}"; log "  SKIP: $1"; }
 info() { echo -e "  ${DIM}$1${NC}"; }
 
+# ---- Dry-run wrapper ----
+# Use: run_cmd <description> <command...>
+# In dry-run mode, prints what would happen instead of executing.
+run_cmd() {
+    local desc="$1"; shift
+    if [ -n "$DRY_RUN" ]; then
+        echo -e "  ${DIM}[dry-run] would run: $*${NC}"
+        log "[dry-run] $desc: $*"
+        return 0
+    fi
+    "$@"
+}
+
+# ---- Network connectivity check ----
+check_network() {
+    local urls=("https://deb.nodesource.com" "https://github.com" "https://registry.npmjs.org")
+    local failed=()
+
+    for url in "${urls[@]}"; do
+        if ! curl -fsSL --connect-timeout 5 --max-time 10 "$url" -o /dev/null 2>/dev/null; then
+            failed+=("$url")
+        fi
+    done
+
+    if [ ${#failed[@]} -gt 0 ]; then
+        warn "Cannot reach: ${failed[*]}"
+        warn "Some downloads may fail. Check firewall/proxy settings."
+        return 1
+    fi
+    return 0
+}
+
+# ---- API key format validation ----
+validate_api_key() {
+    local key="$1" provider="$2"
+    [ -z "$key" ] && return 0  # Empty is OK (user skipped)
+
+    case "$provider" in
+        anthropic)
+            if [[ ! "$key" =~ ^sk-ant- ]]; then
+                echo -e "  ${YELLOW}⚠ Key doesn't look like an Anthropic key (expected sk-ant-...).${NC}"
+                echo -e "  ${DIM}  Continuing anyway — double-check in your provider dashboard.${NC}"
+                return 1
+            fi
+            ;;
+        openai)
+            if [[ ! "$key" =~ ^sk- ]]; then
+                echo -e "  ${YELLOW}⚠ Key doesn't look like an OpenAI key (expected sk-...).${NC}"
+                echo -e "  ${DIM}  Continuing anyway — double-check in your provider dashboard.${NC}"
+                return 1
+            fi
+            ;;
+    esac
+    return 0
+}
+
+# ---- Notion token format validation ----
+validate_notion_token() {
+    local token="$1"
+    [ -z "$token" ] && return 0
+    if [[ ! "$token" =~ ^(ntn_|secret_) ]]; then
+        echo -e "  ${YELLOW}⚠ Token doesn't look like a Notion token (expected ntn_... or secret_...).${NC}"
+        echo -e "  ${DIM}  Continuing anyway — check notion.so/my-integrations.${NC}"
+        return 1
+    fi
+    return 0
+}
+
 # ---- Dependency checks ----
 require_cmd() {
     command -v "$1" &>/dev/null || return 1
@@ -83,8 +153,9 @@ require_root_or_sudo() {
 preflight() {
     echo ""
     echo -e "${BLUE}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}${BOLD}║     🏢 Become CEO — Setup v2.0      ║${NC}"
+    echo -e "${BLUE}${BOLD}║     🏢 Become CEO — Setup v2.1      ║${NC}"
     echo -e "${BLUE}${BOLD}╚══════════════════════════════════════╝${NC}"
+    [ -n "$DRY_RUN" ] && echo -e "${YELLOW}${BOLD}  ⚡ DRY-RUN MODE — no changes will be made${NC}"
     echo ""
     log "=== Setup started at $(date) ==="
 
@@ -174,6 +245,15 @@ preflight() {
         warn "Low RAM (${TOTAL_RAM_GB}GB). Setup will create swap, but consider Oracle Cloud free tier (24GB)."
     fi
 
+    # Network connectivity check
+    echo -e "${BOLD}Network:${NC}"
+    if check_network; then
+        echo -e "  ${GREEN}✓${NC} All required endpoints reachable"
+    else
+        echo -e "  ${YELLOW}⚠${NC} Some endpoints unreachable (see warnings above)"
+    fi
+    echo ""
+
     # Count steps based on what needs installation
     STEP_TOTAL=4  # Always: system update, workspace, config wizard, gateway
     [ "$HAS_SWAP" = "no" ] && [ "$TOTAL_RAM_MB" -lt 8192 ] && STEP_TOTAL=$((STEP_TOTAL + 1))
@@ -181,6 +261,18 @@ preflight() {
     [ "$HAS_GH" = "no" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
     [ "$HAS_CHROMIUM" = "no" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
     [ "$HAS_CLAWDBOT" = "no" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
+
+    # --check mode: exit after showing environment info
+    if [ -n "$CHECK_ONLY" ]; then
+        echo -e "${GREEN}${BOLD}Pre-flight check complete.${NC}"
+        if [ ${#WARNINGS[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Warnings: ${#WARNINGS[@]}${NC}"
+            for w in "${WARNINGS[@]}"; do echo -e "  ${YELLOW}⚠${NC} $w"; done
+        else
+            echo -e "${GREEN}✓ No issues found. Ready to install.${NC}"
+        fi
+        exit 0
+    fi
 
     require_root_or_sudo
 
@@ -221,15 +313,15 @@ pkg_install() {
 
 install_system_update() {
     step "System update & firewall"
-    pkg_update
+    run_cmd "package update" pkg_update
     ok "Package lists updated"
 
     # Cloud-specific firewall rules (Oracle Cloud, etc.)
     if $SUDO iptables -L INPUT 2>/dev/null | grep -q "REJECT"; then
-        $SUDO iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
-        $SUDO iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
+        run_cmd "remove REJECT rule (INPUT)" $SUDO iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
+        run_cmd "remove REJECT rule (FORWARD)" $SUDO iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
         if require_cmd netfilter-persistent; then
-            $SUDO netfilter-persistent save >> "$LOG_FILE" 2>&1
+            run_cmd "save firewall rules" $SUDO netfilter-persistent save >> "$LOG_FILE" 2>&1
         fi
         ok "Cloud firewall rules cleaned"
     else
@@ -484,6 +576,7 @@ config_wizard() {
     echo ""
 
     if [ -n "$api_key" ]; then
+        validate_api_key "$api_key" "${provider_name:-}" || true
         # Escape special characters for sed
         local escaped_key
         escaped_key=$(printf '%s\n' "$api_key" | sed 's/[&/\]/\\&/g')
@@ -535,6 +628,49 @@ config_wizard() {
         info "No tokens entered — add them in $config_file"
     fi
 
+    # --- Notion Token (optional) ---
+    echo ""
+    echo -e "  ${BOLD}Notion Integration (optional)${NC}"
+    echo -e "  ${DIM}Create at notion.so/my-integrations. Enables auto-reports, knowledge base.${NC}"
+    read -r -s -p "  Notion token: " notion_token
+    echo ""
+
+    if [ -n "$notion_token" ]; then
+        validate_notion_token "$notion_token" || true
+        # Store in workspace env file for agents to pick up
+        local env_file="$WORKSPACE/.env"
+        if [ -n "$DRY_RUN" ]; then
+            echo -e "  ${DIM}[dry-run] would write NOTION_TOKEN to $env_file${NC}"
+        else
+            mkdir -p "$WORKSPACE"
+            # Append or update NOTION_TOKEN
+            if grep -q '^NOTION_TOKEN=' "$env_file" 2>/dev/null; then
+                sed -i "s|^NOTION_TOKEN=.*|NOTION_TOKEN=$notion_token|" "$env_file"
+            else
+                echo "NOTION_TOKEN=$notion_token" >> "$env_file"
+            fi
+            chmod 600 "$env_file"
+            ok "Notion token saved to $env_file"
+        fi
+    else
+        info "Skipped — add NOTION_TOKEN to $WORKSPACE/.env later"
+    fi
+
+    # --- GitHub CLI Auth (optional) ---
+    echo ""
+    echo -e "  ${BOLD}GitHub CLI (optional)${NC}"
+    echo -e "  ${DIM}Authenticate gh CLI for Issues, PRs, CI/CD automation.${NC}"
+    if require_cmd gh; then
+        if gh auth status &>/dev/null; then
+            ok "GitHub CLI already authenticated"
+        else
+            echo -e "  ${DIM}Run 'gh auth login' after setup to authenticate (requires browser or token).${NC}"
+            info "Skipping — authenticate with: gh auth login"
+        fi
+    else
+        info "gh CLI not installed yet — will be available after setup"
+    fi
+
     echo ""
     info "Config saved to: $config_file"
     info "You can always edit it later: nano $config_file"
@@ -548,7 +684,7 @@ install_gateway() {
     step "Gateway service"
 
     if require_cmd clawdbot; then
-        if clawdbot gateway install >> "$LOG_FILE" 2>&1; then
+        if run_cmd "install gateway service" clawdbot gateway install >> "$LOG_FILE" 2>&1; then
             ok "Gateway service installed (auto-starts on boot)"
             info "Start: systemctl --user start clawdbot-gateway"
             info "Logs:  journalctl --user -u clawdbot-gateway -f"
@@ -566,8 +702,17 @@ install_gateway() {
 
 print_summary() {
     echo ""
+    if [ -n "$DRY_RUN" ]; then
+        echo -e "${YELLOW}${BOLD}╔══════════════════════════════════════╗${NC}"
+        echo -e "${YELLOW}${BOLD}║     ⚡ Dry-Run Complete (v2.1)       ║${NC}"
+        echo -e "${YELLOW}${BOLD}╚══════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "  ${DIM}No changes were made. Run without --dry-run to install.${NC}"
+        return
+    fi
+
     echo -e "${GREEN}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}${BOLD}║        ✅ Setup Complete!            ║${NC}"
+    echo -e "${GREEN}${BOLD}║      ✅ Setup Complete! (v2.1)       ║${NC}"
     echo -e "${GREEN}${BOLD}╚══════════════════════════════════════╝${NC}"
     echo ""
 
@@ -643,27 +788,62 @@ main() {
     print_summary
 }
 
-# Support --help flag
-case "${1:-}" in
-    -h|--help)
-        echo "Usage: bash setup.sh [OPTIONS]"
-        echo ""
-        echo "Options:"
-        echo "  --non-interactive    Skip confirmation prompts and config wizard"
-        echo "  --workspace PATH     Set workspace directory (default: ~/clawd)"
-        echo "  -h, --help           Show this help message"
-        echo ""
-        echo "Environment variables:"
-        echo "  SKIP_INTERACTIVE=1   Same as --non-interactive"
-        echo "  CLAWD_WORKSPACE=     Same as --workspace"
-        exit 0
-        ;;
-    --non-interactive)
-        SKIP_INTERACTIVE=1
-        ;;
-    --workspace)
-        WORKSPACE="${2:-$WORKSPACE}"
-        ;;
-esac
+# ============================================================
+# Argument parsing
+# ============================================================
+
+show_help() {
+    echo "Usage: bash setup.sh [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --non-interactive    Skip confirmation prompts and config wizard"
+    echo "  --workspace PATH     Set workspace directory (default: ~/clawd)"
+    echo "  --dry-run            Show what would happen without making changes"
+    echo "  --check              Run pre-flight checks only (no install)"
+    echo "  -h, --help           Show this help message"
+    echo ""
+    echo "Environment variables:"
+    echo "  SKIP_INTERACTIVE=1   Same as --non-interactive"
+    echo "  CLAWD_WORKSPACE=     Same as --workspace"
+    echo "  DRY_RUN=1            Same as --dry-run"
+    echo "  CHECK_ONLY=1         Same as --check"
+    echo ""
+    echo "Examples:"
+    echo "  bash setup.sh                          # Interactive install"
+    echo "  bash setup.sh --check                  # Check environment only"
+    echo "  bash setup.sh --dry-run                # Preview without installing"
+    echo "  bash setup.sh --non-interactive         # CI/Docker (no prompts)"
+    echo "  bash setup.sh --workspace /opt/clawd   # Custom workspace path"
+    exit 0
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            ;;
+        --non-interactive)
+            SKIP_INTERACTIVE=1
+            shift
+            ;;
+        --workspace)
+            WORKSPACE="${2:?Error: --workspace requires a PATH argument}"
+            shift 2
+            ;;
+        --dry-run)
+            DRY_RUN=1
+            shift
+            ;;
+        --check)
+            CHECK_ONLY=1
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Run 'bash setup.sh --help' for usage."
+            exit 1
+            ;;
+    esac
+done
 
 main
