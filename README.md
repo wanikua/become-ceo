@@ -66,7 +66,7 @@ Everyone:     [Each agent reports in with their status]
 - [Notion Integration](#notion-integration--your-companys-knowledge-base) — Auto-archiving, daily/weekly reports, knowledge graph, relations & rollups, executive dashboard, incident post-mortems, backup & sync
 - [GitHub Integration](#github-integration--your-engineering-pipeline) — Issue triage, PR management, code review, CI/CD automation, repo analytics, branch protection, release automation, multi-repo management, GitHub Projects, workflow templates, security scanning, conventional commits, GitHub Discussions
 - [Browser Automation](#browser-automation--your-eyes-on-the-web) — Web scraping, social media management, screenshot verification, form automation, competitive analysis, multi-step workflows, browser profiles, error recovery, responsive testing, accessibility testing, PDF generation, cron integration, capability matrix, automation recipes
-- [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) — Daily reports, monitoring & alerting, auto-archiving to Notion, cron chains, event-driven cron, self-adjusting schedules, observability, cost management, troubleshooting
+- [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) — Daily reports, monitoring & alerting, auto-archiving to Notion, cron chains, event-driven cron, self-adjusting schedules, observability, cost management, migration guide, dependency graph, full integration map, troubleshooting
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -3004,7 +3004,7 @@ clawdbot cron add --agent devops --cron "0 */6 * * *" \
 
 Once those are running smoothly, add weekly reports, security scans, and specialized monitoring.
 
-For 15 ready-to-use cron recipes covering every scenario above (and more), see [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md).
+For 18 ready-to-use cron recipes covering every scenario above (and more), see [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md).
 
 ### Event-Driven Cron — Wake Jobs On Demand
 
@@ -3202,6 +3202,151 @@ clawdbot cron add \
  3. NEVER auto-disable cron jobs without human approval"
 ```
 
+### From Manual to Automated — Migration Guide
+
+Already running commands manually? Here's how to migrate any repetitive task to cron in 4 steps:
+
+**Step 1: Identify the pattern**
+Ask yourself: "Am I typing this same kind of message more than once a week?"
+
+```
+Manual:         "@Finance what did we spend this week?"
+                (you type this every Monday)
+
+Automated:      clawdbot cron add --agent finance --cron "0 9 * * 1" \
+                --text "Weekly cost review → #billing-alerts → Notion"
+                (Finance reports automatically, forever)
+```
+
+**Step 2: Write the task text**
+Be specific. Include:
+- What to check or produce
+- Where to post the result (Discord channel name)
+- When to stay silent (avoid noise)
+- Where to archive (Notion database, if applicable)
+
+**Step 3: Test before trusting**
+
+```bash
+# Run it once manually
+clawdbot cron run <job-id>
+
+# Check the output — did it post to the right channel?
+# Did it archive to Notion? Did it include enough detail?
+```
+
+**Step 4: Monitor for a week**
+Check `clawdbot cron runs <job-id>` daily for the first week. Adjust the task text based on what the agent produces.
+
+**Common migration examples:**
+
+| Manual Habit | Cron Replacement |
+|---|---|
+| "Check if the site is up" every morning | Uptime monitor (every 6h, silent when healthy) |
+| "What did we ship this week?" on Mondays | Weekly standup + auto-archive to Notion |
+| "Review new GitHub issues" daily | Hourly issue triage (only alerts on new issues) |
+| "Update the team on costs" monthly | Monthly executive summary to Notion |
+| "Screenshot the homepage after deploy" | Visual regression check (daily, silent when fine) |
+| "Check SSL cert expiry" occasionally | Uptime monitor includes SSL check automatically |
+
+> 💡 **Start with 3 cron jobs.** Don't automate everything at once. Get the daily standup, cost alerts, and uptime monitoring running first. Add more as you get comfortable.
+
+### Cron Dependency Graph
+
+Your cron jobs don't run in isolation — they feed into each other. Here's how the full automation graph connects:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│               Cron Dependency Graph                             │
+│                                                                 │
+│  ┌─────────┐    reads     ┌─────────────┐   feeds    ┌───────┐ │
+│  │ Uptime  │───────────→  │ Daily       │──────────→ │Weekly │ │
+│  │ Monitor │              │ Standup     │            │Summary│ │
+│  └─────────┘              └─────────────┘            └───┬───┘ │
+│                                 ↑                        │     │
+│  ┌─────────┐    reads     ┌────┴────────┐   feeds    ┌───▼───┐ │
+│  │ CI/CD   │───────────→  │ Cron Health │──────────→ │Monthly│ │
+│  │ Monitor │              │ Audit       │            │Report │ │
+│  └─────────┘              └─────────────┘            └───────┘ │
+│                                 ↑                        ↑     │
+│  ┌─────────┐    alerts    ┌────┴────────┐   data     ┌───┴───┐ │
+│  │ Cost    │───────────→  │ Issue       │──────────→ │Sprint │ │
+│  │ Monitor │              │ Triage      │            │Tracker│ │
+│  └─────────┘              └─────────────┘            └───────┘ │
+│                                                          ↑     │
+│  ┌─────────┐    triggers  ┌─────────────┐   archives ┌───┴───┐ │
+│  │ Deploy  │───────────→  │ Smoke Test  │──────────→ │Notion │ │
+│  │ (nightly│              │ (event-     │            │Backup │ │
+│  │  cron)  │              │  driven)    │            │       │ │
+│  └─────────┘              └─────────────┘            └───────┘ │
+│                                                                 │
+│  ← arrows show data flow / dependency direction                 │
+│  Each node = a cron job. Failure in one affects downstream.     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Why this matters:** When the uptime monitor detects a failure, it shows up in the daily standup, which feeds into the weekly summary, which feeds into the monthly report. A single alert cascades through your entire reporting chain — automatically.
+
+**Dependency-aware scheduling:** Stagger dependent jobs to ensure data is ready:
+
+```
+08:00  Cron Health Audit     (checks all other jobs first)
+08:15  Security Scan         (independent, but before standup)
+09:00  Daily Standup         (references health audit + security results)
+09:30  Issue Triage          (after standup, catches morning reports)
+```
+
+> 💡 **Rule of thumb:** Schedule upstream jobs at least 15 minutes before downstream jobs that reference their output.
+
+### Cron + All Integrations — The Full Picture
+
+Here's how cron connects to every integration in your stack:
+
+```
+                              ┌──────────────┐
+                              │   CRON JOB   │
+                              │  (scheduler) │
+                              └──────┬───────┘
+                                     │
+            ┌────────────────────────┼────────────────────────┐
+            │                        │                        │
+            ▼                        ▼                        ▼
+   ┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+   │    DISCORD       │    │     NOTION       │    │     GITHUB       │
+   │                  │    │                  │    │                  │
+   │ • Post standup   │    │ • Archive report │    │ • Triage issues  │
+   │ • Alert on fail  │    │ • Create pages   │    │ • Check CI/CD    │
+   │ • Weekly summary │    │ • Query history  │    │ • Scan security  │
+   │ • Cost warnings  │    │ • Update metrics │    │ • Tag releases   │
+   └─────────────────┘    └──────────────────┘    └──────────────────┘
+            │                        │                        │
+            │              ┌─────────┴──────────┐             │
+            │              │                    │             │
+            ▼              ▼                    ▼             ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │                       BROWSER                               │
+   │                                                             │
+   │  • Screenshot verification  • Uptime health checks          │
+   │  • Analytics scraping       • Competitor monitoring         │
+   │  • SEO audit                • PDF export for reports        │
+   └─────────────────────────────────────────────────────────────┘
+```
+
+**Example: The Full Daily Cycle**
+
+| Time | Cron Job | Discord | Notion | GitHub | Browser |
+|---|---|---|---|---|---|
+| 06:00 | Visual regression | ⚠️ Alert if broken | — | — | 📸 Screenshots |
+| 08:00 | Cron health audit | ⚠️ Failed jobs | — | — | — |
+| 08:15 | Security scan | ⚠️ Vulnerabilities | 📝 Incident Log | 🔍 Dependabot | — |
+| 09:00 | Daily standup | 📋 Summary | 📝 Daily Report | 📊 PR/Issue stats | — |
+| 12:00 | Uptime check | ⚠️ Downtime only | — | — | 🌐 Health check |
+| 16:00 | Sprint velocity | 📊 Chart | 📝 Project Archive | 📊 Issue velocity | — |
+| 22:00 | Cost tracking | — | 📝 Financial Record | — | 💰 Billing page |
+| 00:00 | Staging deploy | 🚀 Deploy status | — | ✅ CI check | 🧪 Smoke test |
+
+> Every integration has a role. Cron is the **conductor** that orchestrates them all on a schedule.
+
 ### Cron Troubleshooting
 
 Common cron issues and how to fix them:
@@ -3315,6 +3460,9 @@ Built-in scheduler lets agents run tasks autonomously — see [Cron & Scheduled 
 - Event-driven cron: webhook triggers → instant agent response
 - Self-adjusting schedules: agents adapt frequency based on conditions
 - Cron health auditing: monitor your monitors with meta-cron
+- Dependency-aware scheduling: upstream jobs feed downstream reports
+- Full integration map: cron orchestrates Discord, Notion, GitHub, and Browser together
+- 18 ready-to-use recipes in [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md)
 - Any custom scheduled task you can describe in plain English
 
 ### 👥 Team Collaboration
@@ -3691,13 +3839,16 @@ Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authent
 DevOps can deploy the Secret & SAST Scanning workflow template to any repo from `references/github-workflows.md`. It runs on every PR and weekly on a schedule — catching leaked secrets, vulnerable dependencies, and license conflicts automatically. DevOps notifies Engineering for code fixes and Legal for license issues. See the [Security Scanning](#security-scanning--vulnerability-management) section for details.
 
 **Q: How do I set up scheduled tasks?**
-Use `clawdbot cron add` with an agent, a cron expression, and a plain-English task description. Jobs run autonomously on schedule — no human interaction needed. Start with the three essential jobs (daily standup, cost alerts, uptime monitoring), then expand. Use `clawdbot cron list` to see all jobs and `clawdbot cron run <id>` to test before relying on the schedule. See the [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) section and [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md) for 15 ready-to-use templates.
+Use `clawdbot cron add` with an agent, a cron expression, and a plain-English task description. Jobs run autonomously on schedule — no human interaction needed. Start with the three essential jobs (daily standup, cost alerts, uptime monitoring), then expand. Use `clawdbot cron list` to see all jobs and `clawdbot cron run <id>` to test before relying on the schedule. See the [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) section and [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md) for 18 ready-to-use templates.
 
 **Q: Can cron jobs trigger on events instead of a fixed schedule?**
 Yes. Create a job without `--cron` and use `clawdbot cron wake <job-id>` to trigger it on demand — perfect for webhook-driven workflows like deploy smoke tests or GitHub event responses. Jobs can also have both a regular schedule AND respond to wake events. See [Event-Driven Cron](#event-driven-cron--wake-jobs-on-demand).
 
 **Q: My cron job runs but doesn't post anything. What's wrong?**
 Most likely: the task text doesn't specify which Discord channel to post to, the agent can't find data it needs, or the "stay silent when healthy" condition matched. Test with `clawdbot cron run <job-id>` and check the output. See the [Cron Troubleshooting](#cron-troubleshooting) table for common fixes.
+
+**Q: I'm doing things manually that could be automated. Where do I start?**
+Follow the [Migration Guide](#from-manual-to-automated--migration-guide): identify tasks you repeat weekly, write a specific task description, test with `clawdbot cron run`, then monitor for a week. Start with just 3 jobs (daily standup, cost alerts, uptime). The [Dependency Graph](#cron-dependency-graph) shows how jobs feed into each other as you scale up.
 
 **Q: How does browser automation work?**
 Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, generate PDFs, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. Agents also use the browser for accessibility audits (WCAG compliance checking) and can combine browser tasks with cron for automated monitoring. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
@@ -3774,7 +3925,7 @@ become-ceo/
 │       ├── notion-templates.md           # Ready-to-use Notion database schemas
 │       ├── github-workflows.md           # Ready-to-use GitHub Actions templates
 │       ├── browser-recipes.md            # Ready-to-use browser automation recipes
-│       └── cron-recipes.md               # 15 ready-to-use scheduled task templates
+│       └── cron-recipes.md               # 18 ready-to-use scheduled task templates
 ├── README.md                             # You are here
 ├── README_CN.md                          # 中文说明
 └── LICENSE                               # MIT
@@ -3816,4 +3967,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.1
+v5.3

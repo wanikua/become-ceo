@@ -360,6 +360,100 @@ clawdbot cron add \
 
 ---
 
+## 📋 16. Quarterly OKR Review
+
+**Agent:** Management  
+**Schedule:** 1st of Jan, Apr, Jul, Oct at 10:00 AM  
+**Output:** Discord `#general` + Notion Monthly Reports
+
+```bash
+clawdbot cron add \
+  --agent management \
+  --model "$LLM_PROVIDER/$MODEL_STRONG" \
+  --cron "0 10 1 1,4,7,10 *" --tz "America/New_York" \
+  --text "Quarterly OKR review. Query Notion for:
+         - Last 3 Monthly Reports (trend data)
+         - Financial Records (quarterly totals)
+         - Project Archives (completed vs planned)
+         - Sprint Velocity (average over quarter)
+         Grade each OKR (On Track / At Risk / Missed).
+         Propose next quarter's OKRs based on trends.
+         Post executive summary to #general.
+         Archive full report to Notion Monthly Reports 
+         with tag 'Quarterly Review'."
+```
+
+**Integration notes:**
+- Uses strong model for deep analysis across multiple Notion databases
+- Cross-references GitHub metrics (PRs merged, issues closed per quarter)
+- Generates quarter-over-quarter comparison trends
+- Proposes realistic OKRs based on actual team velocity data
+
+---
+
+## 🚨 17. Incident Auto-Escalation
+
+**Agent:** DevOps  
+**Schedule:** Event-driven (triggered by uptime monitor failure)  
+**Trigger:** Chain from uptime monitor or `clawdbot cron wake <job-id>`  
+**Output:** Discord `#security` + Notion Incident Log
+
+```bash
+clawdbot cron add \
+  --agent devops \
+  --text "Incident detected. Execute escalation protocol:
+         1. Collect diagnostics: which endpoints are down, since when,
+            error codes, last successful deploy hash
+         2. Post initial incident report to #security with severity 
+            (P1/P2/P3) based on: P1=full outage, P2=degraded, P3=single endpoint
+         3. If P1: spawn Engineering sub-agent for immediate diagnosis,
+            spawn Finance sub-agent to estimate revenue impact
+         4. If P1 or P2: create GitHub Issue with label 'incident' 
+            and assign to Engineering
+         5. Create Notion Incident Log entry with: timestamp, severity,
+            affected services, initial diagnostics, assigned team
+         6. If not resolved within 30 minutes, re-alert with update"
+```
+
+**Integration notes:**
+- Event-driven: no fixed schedule, triggered by other monitoring cron jobs
+- P1 incidents spawn parallel sub-agents (Engineering + Finance simultaneously)
+- Creates artifacts in both GitHub (actionable issue) and Notion (historical record)
+- Follow-up alert ensures incidents don't silently stall
+
+---
+
+## 📊 18. Cross-Department Audit
+
+**Agent:** Chief of Staff  
+**Schedule:** Every 2 weeks, Wednesday at 2:00 PM  
+**Output:** Discord `#general` + Notion Daily Reports
+
+```bash
+clawdbot cron add \
+  --agent main \
+  --cron "0 14 1,15 * *" --tz "America/New_York" \
+  --text "Run cross-department audit. Spawn sub-agents to check:
+         - Engineering: open PR count, stale branches, CI pass rate
+         - Finance: budget burn rate, forecast vs actual
+         - Marketing: content pipeline status, engagement trends
+         - DevOps: infrastructure health, pending security patches
+         - Legal: expiring contracts, compliance checklist
+         - Management: project milestone status, blocked items
+         Cross-reference findings: flag misalignments (e.g., Engineering 
+         velocity dropping while Marketing plans a big launch).
+         Post audit summary to #general with action items.
+         Archive to Notion."
+```
+
+**Integration notes:**
+- Biweekly cadence balances thoroughness with cost
+- Cross-references data across departments to catch misalignments
+- Produces actionable recommendations, not just status updates
+- Chief of Staff is the right agent: has delegation permissions to all departments
+
+---
+
 ## 🏗️ Building Your Own Recipes
 
 When designing a new cron job, follow this structure:
