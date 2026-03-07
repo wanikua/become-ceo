@@ -11,13 +11,19 @@ metadata: {"clawdbot":{"emoji":"🏛️","requires":{"bins":["clawdbot","chromiu
 
 ## Quick Start
 
-1. Install Clawdbot: `npm install -g clawdbot`
-2. Install this skill: `clawdhub install become-ceo`
-3. Copy `references/clawdbot-template.json` to `~/.clawdbot/clawdbot.json`
-4. Fill in your LLM API key, model IDs, and Discord bot tokens
-5. Start: `systemctl --user start clawdbot-gateway`
+**One-click setup** (recommended for new servers):
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)
+```
+The v2.0 setup script auto-detects your OS/architecture, installs all dependencies, and runs an interactive configuration wizard for LLM provider, API key, and Discord bot tokens. Supports Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+ on amd64/arm64.
 
-For full server setup, see the [setup guide on GitHub](https://github.com/wanikua/become-ceo).
+**Manual / existing Clawdbot install:**
+1. Install this skill: `clawdhub install become-ceo`
+2. Copy `references/clawdbot-template.json` to `~/.clawdbot/clawdbot.json`
+3. Fill in your LLM API key, model IDs, and Discord bot tokens
+4. Start: `systemctl --user start clawdbot-gateway`
+
+For full details, see the [setup guide on GitHub](https://github.com/wanikua/become-ceo).
 
 ## Your Team
 

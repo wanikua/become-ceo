@@ -4534,7 +4534,7 @@ Before you start, you'll need:
 
 | Requirement | Details |
 |-------------|---------|
-| **Server** | Ubuntu 22.04 or 24.04 (ARM or x86). See below for free options. |
+| **Server** | Linux (Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+). ARM or x86. See below for free options. |
 | **LLM API Key** | From any OpenAI-compatible provider (Anthropic, OpenAI, Google, Mistral, etc.) |
 | **Discord Bots** | 7 bot tokens from [discord.com/developers](https://discord.com/developers/applications) |
 | **Discord Server** | Your own server where you can invite bots |
@@ -4555,34 +4555,63 @@ Before you start, you'll need:
 
 ### Step 1: One-Click Deploy (~5 min)
 
-SSH into your Ubuntu server and run:
+SSH into your server and run:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)
 ```
 
-The script automatically handles:
-- ✅ System update + cloud firewall config
-- ✅ 4GB swap (prevents OOM on free tier)
-- ✅ Node.js 22 + GitHub CLI + Chromium
-- ✅ Clawdbot global install
-- ✅ Workspace initialization (SOUL.md / IDENTITY.md / USER.md / clawdbot.json template)
-- ✅ Gateway systemd service (auto-starts on boot)
+The script **auto-detects your environment** and handles everything:
+
+```
+╔══════════════════════════════════════╗
+║     🏢 Become CEO — Setup v2.0      ║
+╚══════════════════════════════════════╝
+
+Environment Detected:
+  OS:       Ubuntu 24.04 LTS (arm64)
+  RAM:      24.0GB  |  Disk free: 38.2GB
+  Package:  apt
+
+Existing Software:
+  Node.js:    not found
+  GitHub CLI: not found
+  Chromium:   not found
+  Clawdbot:   not found
+  Swap:       none
+
+Ready to install (9 steps). Continue? [Y/n]
+```
+
+**What it does:**
+- ✅ **Pre-flight checks** — validates OS, RAM (≥512MB), disk (≥2GB), architecture
+- ✅ **Smart detection** — skips already-installed components, picks correct swap size
+- ✅ **System setup** — cloud firewall config, dynamic swap (scales with RAM)
+- ✅ **Dependencies** — Node.js 22 + GitHub CLI + Chromium (multi-distro support)
+- ✅ **Clawdbot** — global install + workspace initialization
+- ✅ **Config wizard** — walks you through LLM provider, API key, Discord tokens interactively
+- ✅ **Gateway service** — auto-starts on boot
+
+**Supported distros:** Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+
+**Architectures:** amd64, arm64
 
 > **Already have Clawdbot?** Install just the skill:
 > ```bash
 > clawdhub install become-ceo
 > ```
 
-### Step 2: Fill In Your Keys (~10 min)
+> **CI/Docker?** Run non-interactively:
+> ```bash
+> SKIP_INTERACTIVE=1 bash setup.sh
+> # Or: bash setup.sh --non-interactive
+> ```
 
-You need two things:
+### Step 2: Configure (Built Into Setup!)
 
-1. **LLM API Key** — from your LLM provider's dashboard
-2. **Discord Bot Tokens** — one per team member (7 total) from [discord.com/developers](https://discord.com/developers/applications)
+The setup wizard handles this for you interactively. But if you skipped it or need to edit later:
 
 ```bash
-# Edit config — fill in API keys and bot tokens
+# Edit config — add/change API keys and bot tokens
 nano ~/.clawdbot/clawdbot.json
 
 # Start your team
@@ -4829,7 +4858,13 @@ Your agents aren't just chatbots — they have tools:
 ### Basics
 
 **Q: Do I need to know how to code?**
-No. The one-click script handles installation. The config file just needs a few keys filled in. All interaction is natural language on Discord.
+No. The setup script (v2.0) auto-detects your OS, installs everything, and walks you through an interactive configuration wizard. All interaction is natural language on Discord.
+
+**Q: What if the setup script fails?**
+The script logs everything to `/tmp/become-ceo-setup-*.log`. It's also idempotent — just run it again and it skips already-installed components. Pass `--non-interactive` for CI/Docker environments. See [Troubleshooting](#troubleshooting) for common fixes.
+
+**Q: Does it work on non-Ubuntu systems?**
+Yes. The setup script supports Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, and Fedora 38+ on both amd64 and arm64. It auto-detects your package manager (apt/dnf/yum) and adjusts accordingly.
 
 **Q: Is the server really free?**
 Many cloud providers offer always-free VMs — for example, ARM instances with 4 cores and 24GB RAM. Check your provider's free tier details and usage limits.
@@ -4929,7 +4964,24 @@ clawdbot doctor
 
 ## Troubleshooting
 
-Quick fixes for the most common first-run issues:
+Quick fixes for the most common issues:
+
+### Setup script fails
+
+The setup script writes detailed logs to `/tmp/become-ceo-setup-*.log`. Check it first:
+```bash
+# Find and read the setup log
+cat /tmp/become-ceo-setup-*.log | tail -30
+```
+
+**Common causes:**
+- **"No supported package manager"** — you're on an unsupported distro. Use Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, or Fedora 38+
+- **"At least 512MB RAM required"** — your server is too small. Oracle Cloud free tier (24GB) is recommended
+- **"At least 2GB free disk"** — clean up disk space or resize your volume
+- **Node.js install fails** — check if you can reach `deb.nodesource.com` (corporate firewalls sometimes block it)
+- **snap install hangs** — on minimal Ubuntu, `snapd` may need a restart: `sudo systemctl restart snapd`
+
+**Re-run safely:** The script is idempotent — it skips already-installed components. Just run it again.
 
 ### Gateway won't start
 ```bash
@@ -4944,6 +4996,7 @@ clawdbot doctor
 - Invalid JSON in `clawdbot.json` — run `cat ~/.clawdbot/clawdbot.json | python3 -m json.tool` to find syntax errors
 - Missing or invalid API key — double-check your LLM provider dashboard
 - Bad bot token — regenerate in Discord Developer Portal
+- Placeholder values still in config — the wizard may have skipped some fields; search for `$` in your config: `grep '\$' ~/.clawdbot/clawdbot.json`
 
 ### Bot is online but doesn't respond
 1. **Check intents:** Discord Developer Portal → Bot → enable "Message Content Intent" + "Server Members Intent"
@@ -4968,7 +5021,7 @@ clawdbot doctor
 
 ```
 become-ceo/
-├── setup.sh                              # One-click server setup script
+├── setup.sh                              # One-click setup (v2.0: auto-detect, wizard, multi-distro)
 ├── become-ceo/
 │   ├── SKILL.md                          # Skill definition (ClawdHub package)
 │   └── references/
@@ -5023,4 +5076,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.6
+v5.7
