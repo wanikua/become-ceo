@@ -1,24 +1,31 @@
 #!/bin/bash
 # ============================================================
-# Become CEO — One-Click Setup  v2.2
+# Become CEO — One-Click Setup  v2.3
 # Supports: Ubuntu 22.04/24.04, Debian 12+, Amazon Linux 2023
 # Architecture: amd64, arm64
 # Modes:  install (default), --upgrade, --uninstall, --reset
 # ============================================================
 
+SETUP_VERSION="2.3"
+
 # ---- Strict mode ----
 set -euo pipefail
 trap 'on_error $LINENO' ERR
 
-# ---- Colors & formatting ----
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-DIM='\033[2m'
-NC='\033[0m'
+# ---- Colors & formatting (auto-detect TTY) ----
+if [ -t 1 ] && [ "${NO_COLOR:-}" = "" ]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    CYAN='\033[0;36m'
+    BOLD='\033[1m'
+    DIM='\033[2m'
+    NC='\033[0m'
+else
+    # No colors when piped, redirected, or NO_COLOR is set
+    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' BOLD='' DIM='' NC=''
+fi
 
 # ---- Globals ----
 REPO_RAW="https://raw.githubusercontent.com/wanikua/become-ceo/main/become-ceo/references"
@@ -30,6 +37,7 @@ STEP_TOTAL=0
 ERRORS=()
 WARNINGS=()
 SKIP_INTERACTIVE="${SKIP_INTERACTIVE:-}"
+SKIP_OPTIONAL="${SKIP_OPTIONAL:-}"
 DRY_RUN="${DRY_RUN:-}"
 CHECK_ONLY="${CHECK_ONLY:-}"
 UPGRADE_MODE="${UPGRADE_MODE:-}"
@@ -197,7 +205,7 @@ require_root_or_sudo() {
 preflight() {
     echo ""
     echo -e "${BLUE}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}${BOLD}║     🏢 Become CEO — Setup v2.2      ║${NC}"
+    echo -e "${BLUE}${BOLD}║     🏢 Become CEO — Setup v${SETUP_VERSION}      ║${NC}"
     echo -e "${BLUE}${BOLD}╚══════════════════════════════════════╝${NC}"
     [ -n "$DRY_RUN" ] && echo -e "${YELLOW}${BOLD}  ⚡ DRY-RUN MODE — no changes will be made${NC}"
     echo ""
@@ -306,11 +314,11 @@ preflight() {
     echo ""
 
     # Count steps based on what needs installation
-    STEP_TOTAL=4  # Always: system update, workspace, config wizard, gateway
-    [ "$HAS_SWAP" = "no" ] && [ "$TOTAL_RAM_MB" -lt 8192 ] && STEP_TOTAL=$((STEP_TOTAL + 1))
-    [ "$HAS_NODE" = "no" ] || ! node -v 2>/dev/null | grep -q "^v2[2-9]" && STEP_TOTAL=$((STEP_TOTAL + 1))
-    [ "$HAS_GH" = "no" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
-    [ "$HAS_CHROMIUM" = "no" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
+    STEP_TOTAL=5  # Always: system update, workspace, config wizard, gateway, health check
+    [ "$HAS_SWAP" = "no" ] && [ "$TOTAL_RAM_MB" -lt 8192 ] && [ -z "$IN_CONTAINER" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
+    { [ "$HAS_NODE" = "no" ] || ! node -v 2>/dev/null | grep -q "^v2[2-9]"; } && STEP_TOTAL=$((STEP_TOTAL + 1))
+    [ "$HAS_GH" = "no" ] && [ -z "$SKIP_OPTIONAL" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
+    [ "$HAS_CHROMIUM" = "no" ] && [ -z "$SKIP_OPTIONAL" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
     [ "$HAS_CLAWDBOT" = "no" ] && STEP_TOTAL=$((STEP_TOTAL + 1))
 
     # --check mode: exit after showing environment info
@@ -451,6 +459,10 @@ install_node() {
 
 install_gh() {
     [ "$HAS_GH" = "yes" ] && return
+    if [ -n "$SKIP_OPTIONAL" ]; then
+        skip "GitHub CLI (--skip-optional)"
+        return
+    fi
 
     step "GitHub CLI"
 
@@ -476,6 +488,10 @@ install_gh() {
 
 install_chromium() {
     [ "$HAS_CHROMIUM" = "yes" ] && return
+    if [ -n "$SKIP_OPTIONAL" ]; then
+        skip "Chromium browser (--skip-optional)"
+        return
+    fi
 
     step "Chromium browser"
 
@@ -638,6 +654,55 @@ config_wizard() {
         ok "API key saved"
     else
         info "Skipped — add it later in $config_file"
+    fi
+
+    # --- Model Selection ---
+    echo ""
+    echo -e "  ${BOLD}Model Selection${NC}"
+    echo -e "  ${DIM}Which model should your agents use?${NC}"
+    echo ""
+    case "${provider_name:-anthropic}" in
+        anthropic)
+            echo -e "  ${DIM}Popular Anthropic models:${NC}"
+            echo -e "    1) \$STRONG_MODEL  (best quality — recommended for most agents)"
+            echo -e "    2) \$FAST_MODEL    (faster & cheaper — good for Chief of Staff)"
+            echo -e "    3) Custom         (enter a model name)"
+            read -r -p "  Default model [1]: " model_choice
+            model_choice="${model_choice:-1}"
+            case "$model_choice" in
+                1) CHOSEN_MODEL="\$STRONG_MODEL" ;;
+                2) CHOSEN_MODEL="\$FAST_MODEL" ;;
+                3)
+                    read -r -p "  Model name: " CHOSEN_MODEL
+                    ;;
+                *) CHOSEN_MODEL="\$STRONG_MODEL" ;;
+            esac
+            ;;
+        openai)
+            echo -e "  ${DIM}Popular OpenAI models:${NC}"
+            echo -e "    1) \$STRONG_MODEL  (best quality)"
+            echo -e "    2) \$FAST_MODEL    (faster & cheaper)"
+            echo -e "    3) Custom         (enter a model name)"
+            read -r -p "  Default model [1]: " model_choice
+            model_choice="${model_choice:-1}"
+            case "$model_choice" in
+                1) CHOSEN_MODEL="\$STRONG_MODEL" ;;
+                2) CHOSEN_MODEL="\$FAST_MODEL" ;;
+                3)
+                    read -r -p "  Model name: " CHOSEN_MODEL
+                    ;;
+                *) CHOSEN_MODEL="\$STRONG_MODEL" ;;
+            esac
+            ;;
+        *)
+            read -r -p "  Default model name: " CHOSEN_MODEL
+            ;;
+    esac
+
+    if [ -n "${CHOSEN_MODEL:-}" ]; then
+        sed -i "s|\\\$DEFAULT_MODEL|$CHOSEN_MODEL|g" "$config_file"
+        ok "Default model: $CHOSEN_MODEL"
+        info "Tip: Change per-agent models later in $config_file (use cheaper models for simple tasks)"
     fi
 
     # --- Discord Guild ID ---
@@ -866,7 +931,7 @@ health_check() {
 do_upgrade() {
     echo ""
     echo -e "${BLUE}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}${BOLD}║   🔄 Become CEO — Upgrade v2.2      ║${NC}"
+    echo -e "${BLUE}${BOLD}║   🔄 Become CEO — Upgrade v${SETUP_VERSION}      ║${NC}"
     echo -e "${BLUE}${BOLD}╚══════════════════════════════════════╝${NC}"
     echo ""
     log "=== Upgrade started at $(date) ==="
@@ -930,7 +995,7 @@ do_upgrade() {
 
     echo ""
     echo -e "${GREEN}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}${BOLD}║      ✅ Upgrade Complete! (v2.2)     ║${NC}"
+    echo -e "${GREEN}${BOLD}║      ✅ Upgrade Complete! (v${SETUP_VERSION})     ║${NC}"
     echo -e "${GREEN}${BOLD}╚══════════════════════════════════════╝${NC}"
     echo ""
     if [ -d "$ref_dir" ] && ls "$ref_dir"/*.md &>/dev/null 2>&1; then
@@ -1091,6 +1156,67 @@ do_reset() {
 }
 
 # ============================================================
+# Auto-start gateway (with smoke test)
+# ============================================================
+
+autostart_gateway() {
+    # Skip if dry-run or config still has placeholders
+    [ -n "$DRY_RUN" ] && return
+    local config_file="$CONFIG_DIR/clawdbot.json"
+    if grep -q '\$LLM_API_KEY\|\$LLM_PROVIDER' "$config_file" 2>/dev/null; then
+        info "Config has unfilled placeholders — skipping auto-start"
+        info "Fill in $config_file, then start manually"
+        return
+    fi
+
+    if [ -n "$IN_CONTAINER" ]; then
+        # In containers, offer a quick test start
+        if [ -z "$SKIP_INTERACTIVE" ]; then
+            echo ""
+            echo -e "  ${BOLD}Start the gateway now? [Y/n]${NC}"
+            read -r start_confirm
+            if [[ "${start_confirm:-Y}" =~ ^[Nn] ]]; then
+                info "Skipped — start later with: clawdbot gateway start"
+                return
+            fi
+        fi
+        if clawdbot gateway start >> "$LOG_FILE" 2>&1; then
+            sleep 2
+            if clawdbot gateway status 2>/dev/null | grep -qi "running\|online\|active"; then
+                ok "Gateway is running! 🎉"
+            else
+                ok "Gateway started (check: clawdbot gateway status)"
+            fi
+        else
+            warn "Gateway failed to start — check config and logs"
+        fi
+    else
+        # systemd: start the service
+        if systemctl --user is-enabled clawdbot-gateway &>/dev/null; then
+            if [ -z "$SKIP_INTERACTIVE" ]; then
+                echo ""
+                echo -e "  ${BOLD}Start the gateway now? [Y/n]${NC}"
+                read -r start_confirm
+                if [[ "${start_confirm:-Y}" =~ ^[Nn] ]]; then
+                    info "Skipped — start later with: systemctl --user start clawdbot-gateway"
+                    return
+                fi
+            fi
+            if systemctl --user start clawdbot-gateway 2>/dev/null; then
+                sleep 3
+                if systemctl --user is-active clawdbot-gateway &>/dev/null; then
+                    ok "Gateway is running! 🎉 Your AI team is online."
+                else
+                    warn "Gateway started but may not be active yet — check: systemctl --user status clawdbot-gateway"
+                fi
+            else
+                warn "Gateway failed to start — check: journalctl --user -u clawdbot-gateway -n 20"
+            fi
+        fi
+    fi
+}
+
+# ============================================================
 # Summary
 # ============================================================
 
@@ -1098,7 +1224,7 @@ print_summary() {
     echo ""
     if [ -n "$DRY_RUN" ]; then
         echo -e "${YELLOW}${BOLD}╔══════════════════════════════════════╗${NC}"
-        echo -e "${YELLOW}${BOLD}║     ⚡ Dry-Run Complete (v2.2)       ║${NC}"
+        echo -e "${YELLOW}${BOLD}║     ⚡ Dry-Run Complete (v${SETUP_VERSION})       ║${NC}"
         echo -e "${YELLOW}${BOLD}╚══════════════════════════════════════╝${NC}"
         echo ""
         echo -e "  ${DIM}No changes were made. Run without --dry-run to install.${NC}"
@@ -1106,7 +1232,7 @@ print_summary() {
     fi
 
     echo -e "${GREEN}${BOLD}╔══════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}${BOLD}║      ✅ Setup Complete! (v2.2)       ║${NC}"
+    echo -e "${GREEN}${BOLD}║      ✅ Setup Complete! (v${SETUP_VERSION})       ║${NC}"
     echo -e "${GREEN}${BOLD}╚══════════════════════════════════════╝${NC}"
     echo ""
 
@@ -1190,6 +1316,7 @@ main() {
     config_wizard
     install_gateway
     health_check
+    autostart_gateway
     print_summary
 }
 
@@ -1198,6 +1325,8 @@ main() {
 # ============================================================
 
 show_help() {
+    echo "Become CEO — One-Click Setup v${SETUP_VERSION}"
+    echo ""
     echo "Usage: bash setup.sh [OPTIONS]"
     echo ""
     echo "Modes:"
@@ -1208,26 +1337,32 @@ show_help() {
     echo ""
     echo "Options:"
     echo "  --non-interactive    Skip confirmation prompts and config wizard"
+    echo "  --skip-optional      Skip optional components (GitHub CLI, Chromium)"
     echo "  --workspace PATH     Set workspace directory (default: ~/clawd)"
     echo "  --dry-run            Show what would happen without making changes"
     echo "  --check              Run pre-flight checks only (no install)"
+    echo "  --version            Show version and exit"
     echo "  -h, --help           Show this help message"
     echo ""
     echo "Environment variables:"
     echo "  SKIP_INTERACTIVE=1   Same as --non-interactive"
+    echo "  SKIP_OPTIONAL=1      Same as --skip-optional"
     echo "  CLAWD_WORKSPACE=     Same as --workspace"
     echo "  DRY_RUN=1            Same as --dry-run"
     echo "  CHECK_ONLY=1         Same as --check"
+    echo "  NO_COLOR=1           Disable colored output"
     echo ""
     echo "Examples:"
     echo "  bash setup.sh                          # Interactive install"
     echo "  bash setup.sh --check                  # Check environment only"
     echo "  bash setup.sh --dry-run                # Preview without installing"
+    echo "  bash setup.sh --skip-optional           # Minimal install (no Chromium/gh)"
     echo "  bash setup.sh --upgrade                # Update existing installation"
     echo "  bash setup.sh --reset                  # Reset config (re-run wizard)"
     echo "  bash setup.sh --uninstall              # Clean removal"
     echo "  bash setup.sh --non-interactive         # CI/Docker (no prompts)"
     echo "  bash setup.sh --workspace /opt/clawd   # Custom workspace path"
+    echo "  bash setup.sh 2>&1 | tee setup.log     # Save output (colors auto-disabled)"
     exit 0
 }
 
@@ -1236,8 +1371,16 @@ while [ $# -gt 0 ]; do
         -h|--help)
             show_help
             ;;
+        -v|--version)
+            echo "Become CEO Setup v${SETUP_VERSION}"
+            exit 0
+            ;;
         --non-interactive)
             SKIP_INTERACTIVE=1
+            shift
+            ;;
+        --skip-optional)
+            SKIP_OPTIONAL=1
             shift
             ;;
         --workspace)

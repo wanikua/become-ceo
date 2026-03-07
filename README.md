@@ -4565,7 +4565,7 @@ The script **auto-detects your environment** and handles everything:
 
 ```
 ╔══════════════════════════════════════╗
-║     🏢 Become CEO — Setup v2.2      ║
+║     🏢 Become CEO — Setup v2.3      ║
 ╚══════════════════════════════════════╝
 
 Environment Detected:
@@ -4594,11 +4594,15 @@ Ready to install (9 steps). Continue? [Y/n]
 - ✅ **System setup** — cloud firewall config, dynamic swap (scales with RAM)
 - ✅ **Dependencies** — Node.js 22 + GitHub CLI + Chromium (multi-distro support)
 - ✅ **Clawdbot** — global install + workspace initialization
-- ✅ **Config wizard** — walks you through LLM provider, API key, Discord tokens, Notion, GitHub interactively
+- ✅ **Config wizard** — walks you through LLM provider, API key, model selection, Discord tokens, Notion, GitHub interactively
+- ✅ **Model selection** — helps you pick the right model tier per provider (strong/fast/custom)
 - ✅ **Key validation** — catches common API key format mistakes before you start
 - ✅ **Auto-backup** — backs up existing config before any changes (keeps last 5)
 - ✅ **Health check** — verifies all components work after installation
+- ✅ **Auto-start** — offers to start the gateway immediately after install (with smoke test)
 - ✅ **Gateway service** — auto-starts on boot (or manual start guidance in containers)
+- ✅ **Color auto-detection** — disables colors when piped/redirected (`NO_COLOR` supported)
+- ✅ **`--skip-optional`** — minimal install without GitHub CLI and Chromium
 
 **Supported distros:** Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+
 **Architectures:** amd64, arm64
@@ -4615,6 +4619,15 @@ Ready to install (9 steps). Continue? [Y/n]
 >
 > # See what would happen (no changes made)
 > bash setup.sh --dry-run
+>
+> # Show version
+> bash setup.sh --version
+> ```
+
+> **Minimal install?** Skip optional components (GitHub CLI, Chromium):
+> ```bash
+> bash setup.sh --skip-optional
+> # Only installs Node.js + Clawdbot (add GitHub/Chromium later if needed)
 > ```
 
 > **CI/Docker?** Run non-interactively (auto-detects containers):
@@ -4622,6 +4635,7 @@ Ready to install (9 steps). Continue? [Y/n]
 > SKIP_INTERACTIVE=1 bash setup.sh
 > # Or: bash setup.sh --non-interactive
 > # In Docker: swap & systemd auto-disabled, start commands adjusted
+> # Save output: bash setup.sh 2>&1 | tee setup.log (colors auto-disabled)
 > ```
 
 > **Already installed? Manage your setup:**
@@ -4888,10 +4902,10 @@ Your agents aren't just chatbots — they have tools:
 ### Basics
 
 **Q: Do I need to know how to code?**
-No. The setup script (v2.0) auto-detects your OS, installs everything, and walks you through an interactive configuration wizard. All interaction is natural language on Discord.
+No. The setup script (v2.3) auto-detects your OS, installs everything, guides you through model selection, and walks you through an interactive configuration wizard. All interaction is natural language on Discord. Use `--skip-optional` if you only need the core install without GitHub CLI and Chromium.
 
 **Q: What if the setup script fails?**
-The script logs everything to `/tmp/become-ceo-setup-*.log`. It's also idempotent — just run it again and it skips already-installed components. Use `--check` to diagnose environment issues or `--dry-run` to preview what would happen. Pass `--non-interactive` for CI/Docker environments. See [Troubleshooting](#troubleshooting) for common fixes.
+The script logs everything to `/tmp/become-ceo-setup-*.log`. It's also idempotent — just run it again and it skips already-installed components. Use `--check` to diagnose environment issues, `--dry-run` to preview what would happen, or `--version` to verify script version. Colors auto-disable when piping to a file (`bash setup.sh 2>&1 | tee log.txt`). Pass `--non-interactive` for CI/Docker environments. See [Troubleshooting](#troubleshooting) for common fixes.
 
 **Q: Does it work on non-Ubuntu systems?**
 Yes. The setup script supports Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, and Fedora 38+ on both amd64 and arm64. It auto-detects your package manager (apt/dnf/yum) and adjusts accordingly.
@@ -5013,6 +5027,8 @@ bash setup.sh --dry-run
 **Common causes:**
 - **"No supported package manager"** — you're on an unsupported distro. Use Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, or Fedora 38+
 - **"At least 512MB RAM required"** — your server is too small. Oracle Cloud free tier (24GB) is recommended
+- **Network issues** — run `bash setup.sh --check` to test connectivity before installing
+- **Want minimal install?** — use `bash setup.sh --skip-optional` to skip Chromium and GitHub CLI
 - **"At least 2GB free disk"** — clean up disk space or resize your volume
 - **"Cannot reach: ..."** — network connectivity issue. Check firewall, proxy, or DNS settings. Run `bash setup.sh --check` to test connectivity.
 - **Node.js install fails** — check if you can reach `deb.nodesource.com` (corporate firewalls sometimes block it)
@@ -5066,7 +5082,7 @@ clawdbot doctor
 
 ```
 become-ceo/
-├── setup.sh                              # One-click setup (v2.2: upgrade/uninstall/reset, Docker detection, health checks)
+├── setup.sh                              # One-click setup (v2.3: model selection, auto-start, --skip-optional, color detection)
 ├── become-ceo/
 │   ├── SKILL.md                          # Skill definition (ClawdHub package)
 │   └── references/
@@ -5121,4 +5137,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v5.9
+v6.0
