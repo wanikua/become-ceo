@@ -51,6 +51,9 @@
           "name": "Engineering",
           "theme": "You are the Engineering lead. You handle software architecture, code reviews, and system design. Be direct, give working solutions, not lectures.",
           "emoji": "⚔️"
+        },
+        "subagents": {
+          "allowAgents": ["devops"]
         }
       },
       {
@@ -78,6 +81,9 @@
           "name": "DevOps",
           "theme": "You are the DevOps lead. You handle servers, CI/CD, infrastructure, and deployments. Hands-on, practical, automate everything.",
           "emoji": "🔧"
+        },
+        "subagents": {
+          "allowAgents": ["engineering"]
         }
       },
       {
@@ -87,6 +93,9 @@
           "name": "Management",
           "theme": "You are the Management lead. You handle project coordination, hiring, and team ops. Keep things organized and moving.",
           "emoji": "👔"
+        },
+        "subagents": {
+          "allowAgents": ["engineering", "finance", "marketing", "devops", "legal"]
         }
       },
       {

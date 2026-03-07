@@ -62,6 +62,7 @@ Everyone:     [Each agent reports in with their status]
 ## Table of Contents
 
 - [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture, voice control, TTS config, bot setup
+- [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) — Sub-agent delegation, permissions, supervisor patterns
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -311,6 +312,163 @@ Repeat 7 times. Yes, it's tedious. But you only do it once.
 > 💡 **Naming tip:** Name each application exactly like its role (Engineering, Finance, etc.) so you can tell them apart in the Developer Portal. Upload a unique avatar for each bot to make your Discord server feel alive.
 
 > ⚠️ **Common mistake:** Forgetting to enable **Message Content Intent**. Without it, your bot connects to Discord but receives empty messages — it looks online but never responds. This is Discord's privacy restriction, not a Clawdbot bug.
+
+---
+
+## Multi-Agent Collaboration Deep-Dive
+
+Your agents aren't just individual bots — they can **delegate work to each other**. This is the core mechanism that turns 7 independent agents into a coordinated team.
+
+### How Sub-Agent Delegation Works
+
+When an agent needs help from another specialist, it uses `sessions_spawn` to create a **background task** assigned to that specialist. The spawned agent works independently and reports back when done.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  You: @Chief of Staff "Launch the new product page"          │
+└──────────────┬───────────────────────────────────────────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  Chief of Staff (orchestrator)       │
+│  Breaks task into sub-tasks:         │
+│                                      │
+│  sessions_spawn → Engineering        │
+│    "Build landing page with Next.js" │
+│                                      │
+│  sessions_spawn → Marketing          │
+│    "Write hero copy + CTA text"      │
+│                                      │
+│  sessions_spawn → DevOps             │
+│    "Set up Vercel deployment"        │
+└──────┬───────────┬───────────┬───────┘
+       ▼           ▼           ▼
+   ┌────────┐ ┌────────┐ ┌────────┐
+   │  Eng   │ │  Mktg  │ │ DevOps │    ← work in parallel
+   │ (Code) │ │ (Copy) │ │(Deploy)│
+   └───┬────┘ └───┬────┘ └───┬────┘
+       └───────────┴───────────┘
+               ▼
+┌──────────────────────────────────────┐
+│  Chief of Staff collects results     │
+│  Posts combined update to Discord    │
+└──────────────────────────────────────┘
+```
+
+Each spawned sub-agent runs in its own **isolated session** — they don't interfere with each other, and each has full access to the skill layer (GitHub, Notion, browser, etc.).
+
+### Configuring Sub-Agent Permissions
+
+Not every agent should be able to spawn every other agent. Use `subagents.allowAgents` to define who can delegate to whom:
+
+```json
+{
+  "id": "main",
+  "identity": { "name": "Chief of Staff", "emoji": "⚡" },
+  "subagents": {
+    "allowAgents": ["engineering", "finance", "marketing", "devops", "management", "legal"],
+    "maxConcurrent": 8
+  }
+}
+```
+
+| Config Key | What It Does |
+|------------|-------------|
+| `allowAgents` | Whitelist of agent IDs this agent can spawn tasks for |
+| `maxConcurrent` | Max number of sub-agent sessions running at the same time |
+
+**Recommended permission structure:**
+
+| Agent | Can Delegate To | Why |
+|-------|----------------|-----|
+| **Chief of Staff** | Everyone | Central coordinator — needs full access |
+| **Engineering** | DevOps | Needs to trigger deployments after code changes |
+| **Finance** | — | Doesn't need to spawn others |
+| **Marketing** | — | Works independently |
+| **DevOps** | Engineering | May need code fixes for infra issues |
+| **Management** | Everyone | Project coordination requires cross-team access |
+| **Legal** | — | Works independently |
+
+To give Engineering delegation access to DevOps, add:
+
+```json
+{
+  "id": "engineering",
+  "subagents": {
+    "allowAgents": ["devops"]
+  }
+}
+```
+
+### Real Example: Chain of Delegation
+
+Here's what happens when you ask Chief of Staff to handle a complex, cross-functional task:
+
+```
+You:             @Chief of Staff We got a security vulnerability report.
+                 Handle it end to end.
+
+Chief of Staff:  Understood. Triaging now. Here's the plan:
+
+                 → Spawning Engineering: review the CVE, patch the affected
+                   code, write tests
+                 → Spawning Legal: assess disclosure obligations and timeline
+                 → Spawning DevOps: prepare hotfix deployment pipeline
+
+[Engineering works in background — reads the codebase, writes patch, pushes PR]
+[Legal works in background — checks compliance requirements]
+[DevOps works in background — sets up fast-track deploy]
+
+Chief of Staff:  ✅ All teams reported back:
+                 • Engineering: patch merged (PR #87), tests passing
+                 • Legal: no mandatory disclosure required for this severity,
+                   but recommends a changelog entry
+                 • DevOps: hotfix deployed to production, rollback ready
+
+                 Shall I have Marketing draft a security update blog post?
+```
+
+The CEO gave **one command**. Three agents worked in parallel. Chief of Staff orchestrated everything and reported a unified result.
+
+### Direct Agent-to-Agent Messaging
+
+Beyond spawning sub-tasks, agents can also **send messages to each other's active sessions** using `sessions_send`. This is useful for real-time coordination:
+
+```
+# Engineering finishes a feature and notifies DevOps directly
+Engineering → sessions_send(agentId: "devops"):
+  "Feature branch `auth-v2` is ready. Please deploy to staging."
+
+DevOps:  "Deploying auth-v2 to staging... Done. Staging URL:
+          https://staging.example.com — running smoke tests now."
+```
+
+The difference:
+- **`sessions_spawn`** — creates a new isolated session for a specific task (fire-and-forget)
+- **`sessions_send`** — sends a message into an existing session (real-time coordination)
+
+### Supervisor / Watchdog Pattern
+
+You can configure an agent to act as a **supervisor** that monitors other agents' work. Add a cron job that periodically checks on active sessions:
+
+```bash
+# Every 2 hours, Management reviews what everyone is working on
+clawdbot cron add \
+  --name "team-check-in" --agent management \
+  --cron "0 */2 * * *" \
+  --message "Check all active agent sessions. Report: who's working on what, anything stuck or idle for >1 hour, any tasks that need escalation." \
+  --session isolated --token <your-token>
+```
+
+Management becomes a **project oversight layer** — catching stuck tasks, flagging blockers, and keeping you informed without you having to ask.
+
+### Anti-Patterns to Avoid
+
+| ❌ Don't | ✅ Do Instead |
+|----------|--------------|
+| Let every agent spawn every other agent | Use `allowAgents` to restrict — prevent circular delegation |
+| Spawn sub-agents for trivial tasks | Only delegate when the task genuinely requires another specialist |
+| Chain 5+ levels of delegation | Keep delegation to 2 levels max (CEO → Chief of Staff → Specialist) |
+| Let agents spawn themselves | This creates infinite loops — `allowAgents` should never include the agent's own ID |
 
 ---
 
@@ -737,7 +895,7 @@ In the Discord Developer Portal, each bot needs **Message Content Intent** and *
 No. Clawdbot maintains separate sessions for each user × agent combination. Multiple people can talk to Engineering simultaneously without interference.
 
 **Q: Can agents call each other?**
-Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `sessions_send` to message another agent's session. For example, Chief of Staff can delegate a coding task to Engineering programmatically.
+Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `sessions_send` to message another agent's session. For example, Chief of Staff can delegate a coding task to Engineering programmatically. See the [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) section for detailed examples, permission configuration, and best practices.
 
 **Q: Sandbox mode — agent says "permission denied"?**
 `sandbox.mode: "all"` runs agents in Docker containers with a read-only filesystem and no network by default. Fix it with:
@@ -867,4 +1025,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v3.9
+v4.0
