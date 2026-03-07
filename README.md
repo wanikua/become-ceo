@@ -61,6 +61,7 @@ Everyone:     [Each agent reports in with their status]
 
 ## Table of Contents
 
+- [Discord as Your Company HQ](#discord-as-your-company-hq) — Channel architecture + voice control
 - [Architecture](#architecture) — How it works under the hood
 - [Your Team](#your-team) — The 7 agents and their roles
 - [Core Capabilities](#core-capabilities) — What makes this different
@@ -71,6 +72,105 @@ Everyone:     [Each agent reports in with their status]
 - [Growing Your Team](#growing-your-team) — Add new specialists
 - [FAQ](#faq) — Common questions answered
 - [Troubleshooting](#troubleshooting) — Fix common issues fast
+
+---
+
+## Discord as Your Company HQ
+
+Your Discord server isn't just a chat room — it's your **entire company headquarters**. Here's how to structure it:
+
+### Recommended Channel Layout
+
+```
+🏢 YOUR COMPANY
+├── 📋 GENERAL
+│   ├── #lobby              — casual chat, ask anyone anything
+│   ├── #announcements       — company-wide updates
+│   └── #standup             — daily automated standups (cron → here)
+│
+├── ⚔️ ENGINEERING
+│   ├── #dev-general         — architecture discussions, code questions
+│   ├── #code-review         — @Engineering reviews PRs here
+│   ├── #bugs                — bug reports, @Engineering triages
+│   └── #deployments         — release notes, deploy status
+│
+├── 💰 FINANCE
+│   ├── #budget              — cost tracking, spend reports
+│   └── #billing-alerts      — automated cost spike notifications
+│
+├── 🎭 MARKETING
+│   ├── #content             — blog drafts, social media posts
+│   ├── #brand               — design feedback, brand guidelines
+│   └── #analytics           — engagement metrics, campaign results
+│
+├── 🔧 DEVOPS
+│   ├── #infrastructure      — server status, scaling decisions
+│   ├── #monitoring          — automated alerts, uptime checks
+│   └── #incidents           — postmortems, incident response
+│
+├── 👔 MANAGEMENT
+│   ├── #projects            — project tracking, milestones
+│   ├── #hiring              — job descriptions, candidate pipeline
+│   └── #meetings            — meeting notes, agendas
+│
+├── ⚖️ LEGAL
+│   ├── #compliance          — policy reviews, regulatory updates
+│   └── #contracts           — contract drafts, NDA tracking
+│
+└── 🤖 META
+    ├── #bot-logs            — agent activity logs
+    └── #bot-config          — configuration discussions
+```
+
+### Why This Structure Works
+
+- **Department isolation** — Engineering discussions don't clutter Finance's view
+- **Focused context** — when you `@Engineering` in `#code-review`, the agent has channel context about what's being reviewed
+- **Auto-threading** — complex tasks spawn threads automatically, keeping channels clean
+- **Cron targeting** — schedule daily standups to post in `#standup`, cost alerts to `#billing-alerts`
+- **Onboarding** — new team members instantly see the org structure and know where to go
+
+### Channel Permissions Tip
+
+Restrict each bot's write permissions to relevant channels only. Engineering doesn't need to post in `#compliance`. This keeps things organized and prevents cross-talk:
+
+```
+#code-review  →  @Engineering bot: Send Messages ✅
+#budget       →  @Finance bot:     Send Messages ✅
+#content      →  @Marketing bot:   Send Messages ✅
+```
+
+> 💡 **All bots should have Read access everywhere** so they understand company context when asked cross-functional questions. Just restrict **write** access to keep channels focused.
+
+### Voice Channels — Command Your Team by Voice
+
+Discord voice channels open up a powerful workflow: **talk to your AI team instead of typing**.
+
+```
+🏢 YOUR COMPANY
+├── 🔊 VOICE
+│   ├── 🔊 war-room          — voice-to-text → all agents listen
+│   ├── 🔊 engineering-sync  — voice standup with Engineering
+│   └── 🔊 brainstorm        — creative sessions with Marketing
+```
+
+**How it works:**
+1. Join a voice channel and speak
+2. Discord's built-in voice-to-text transcribes your speech
+3. The transcription appears as a text message → agents pick it up and respond
+4. Agents can respond with **TTS (text-to-speech)** for a full voice conversation
+
+```
+You (voice):     "Engineering, what's the status on the API refactor?"
+Engineering:     🔊 "Three endpoints done, two remaining. The auth middleware
+                 is the bottleneck — should be wrapped up by end of day."
+
+You (voice):     "Finance, are we still under budget this month?"
+Finance:         🔊 "Yes, $38 spent against a $50 budget. Engineering's
+                 strong model usage is 60% of that."
+```
+
+> 💡 **TTS is a built-in Clawdbot skill** — agents can respond with voice automatically. Configure it in your agent's identity to enable voice responses in voice channels.
 
 ---
 
@@ -627,4 +727,4 @@ MIT — see [LICENSE](./LICENSE)
 
 ---
 
-v3.6
+v3.7
