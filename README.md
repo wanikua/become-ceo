@@ -5128,7 +5128,7 @@ Depends on usage intensity. Light use: $10–15/month. Moderate: $20–30/month.
 In the Discord Developer Portal, each bot needs **Message Content Intent** and **Server Members Intent** enabled. The bot's role in the server needs **View Channels** permission. OpenClaw treats `@everyone` as an explicit mention for every bot.
 
 **Q: Messages silently disappear?**
-`groupPolicy: "open"` must be set on **each individual account** in the config. The global setting does NOT cascade. [See the config section above.](#%EF%B8%8F-the-grouppolicy-gotcha) This is the #1 gotcha — everyone hits it.
+`groupPolicy: "open"` must be set on **each individual account** in the config. The global setting does NOT cascade. [See the config section above.](#-the-grouppolicy-gotcha) This is the #1 gotcha — everyone hits it.
 
 **Q: Multiple people `@` the same agent — do they conflict?**
 No. OpenClaw maintains separate sessions for each user × agent combination. Multiple people can talk to Engineering simultaneously without interference.
