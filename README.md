@@ -2,11 +2,11 @@
 
 # 🏢 Become CEO — Your AI Executive Team on Discord
 
-> One free server + [Clawdbot](https://github.com/clawdbot/clawdbot) = a 7-person team that works 24/7
+> One free server + [OpenClaw](https://github.com/openclaw/openclaw) = a 7-person team that works 24/7
 
 [![GitHub Stars](https://img.shields.io/github/stars/wanikua/become-ceo?style=flat&logo=github&label=Stars)](https://github.com/wanikua/become-ceo)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Built on Clawdbot](https://img.shields.io/badge/built%20on-Clawdbot-8A2BE2)](https://github.com/clawdbot/clawdbot)
+[![Built on OpenClaw](https://img.shields.io/badge/built%20on-OpenClaw-8A2BE2)](https://github.com/openclaw/openclaw)
 [![Discord](https://img.shields.io/badge/interface-Discord-5865F2?logo=discord&logoColor=white)](https://discord.com)
 [![One-Click Setup](https://img.shields.io/badge/setup-5%20minutes-brightgreen)](https://github.com/wanikua/become-ceo#quick-start)
 [![Skills](https://img.shields.io/badge/skills-60%2B%20%2B%20ClawdHub-orange)](https://github.com/wanikua/become-ceo#built-in-skills-60)
@@ -181,7 +181,7 @@ Finance:         🔊 "Yes, $38 spent against a $50 budget. Engineering's
                  strong model usage is 60% of that."
 ```
 
-> 💡 **TTS is a built-in Clawdbot skill** — agents can respond with voice automatically. Configure it in your agent's identity to enable voice responses in voice channels.
+> 💡 **TTS is a built-in OpenClaw skill** — agents can respond with voice automatically. Configure it in your agent's identity to enable voice responses in voice channels.
 
 ### Running a Team Meeting by Voice
 
@@ -262,11 +262,11 @@ To make an agent respond with voice, enable TTS in their identity configuration:
 
 Each agent can have a different voice — give Engineering a deep, authoritative tone and Marketing something more upbeat. Your team literally sounds different, making it easy to know who's talking in a voice channel.
 
-> 💡 Clawdbot's built-in `tts` skill converts text to speech on the fly. For advanced voice options (custom voices, multilingual), check out the ElevenLabs TTS integration on [ClawdHub](https://clawdhub.com).
+> 💡 OpenClaw's built-in `tts` skill converts text to speech on the fly. For advanced voice options (custom voices, multilingual), check out the ElevenLabs TTS integration on [ClawdHub](https://clawdhub.com).
 
 ### Discord Bot Threads — Auto-Organized Work
 
-When an agent works on a complex task, Clawdbot automatically creates a **Discord thread** to keep the main channel clean:
+When an agent works on a complex task, OpenClaw automatically creates a **Discord thread** to keep the main channel clean:
 
 ```
 #dev-general
@@ -311,7 +311,7 @@ This is the most time-consuming part of setup (~10 minutes). Here's the exact pr
 4. Under **Privileged Gateway Intents**, enable:
    - ✅ **Message Content Intent** (required — bot can't read messages without this)
    - ✅ **Server Members Intent** (required for `@everyone` to work)
-5. Click **"Reset Token"** → copy the token → paste into `clawdbot.json`
+5. Click **"Reset Token"** → copy the token → paste into `openclaw.json`
 6. Go to **OAuth2** → **URL Generator**:
    - Scopes: `bot`, `applications.commands`
    - Bot Permissions: `Send Messages`, `Read Message History`, `View Channels`, `Create Public Threads`, `Send Messages in Threads`, `Use Slash Commands`
@@ -321,7 +321,7 @@ Repeat 7 times. Yes, it's tedious. But you only do it once.
 
 > 💡 **Naming tip:** Name each application exactly like its role (Engineering, Finance, etc.) so you can tell them apart in the Developer Portal. Upload a unique avatar for each bot to make your Discord server feel alive.
 
-> ⚠️ **Common mistake:** Forgetting to enable **Message Content Intent**. Without it, your bot connects to Discord but receives empty messages — it looks online but never responds. This is Discord's privacy restriction, not a Clawdbot bug.
+> ⚠️ **Common mistake:** Forgetting to enable **Message Content Intent**. Without it, your bot connects to Discord but receives empty messages — it looks online but never responds. This is Discord's privacy restriction, not an OpenClaw bug.
 
 ---
 
@@ -462,7 +462,7 @@ You can configure an agent to act as a **supervisor** that monitors other agents
 
 ```bash
 # Every 2 hours, Management reviews what everyone is working on
-clawdbot cron add \
+openclaw cron add \
   --name "team-check-in" --agent management \
   --cron "0 */2 * * *" \
   --message "Check all active agent sessions. Report: who's working on what, anything stuck or idle for >1 hour, any tasks that need escalation." \
@@ -491,7 +491,7 @@ Chief of Staff:
 | Failure | What Happens | Recovery |
 |---------|-------------|----------|
 | **Timeout** | Task is killed, spawner gets a timeout notification | Retry with simpler scope, or escalate to CEO |
-| **API error** | Clawdbot retries automatically (3×) | If persistent, the agent reports the failure back |
+| **API error** | OpenClaw retries automatically (3×) | If persistent, the agent reports the failure back |
 | **Bad output** | Spawner receives the result and can judge quality | Re-spawn with more specific instructions |
 | **Agent unavailable** | Spawn fails immediately | Spawner falls back or reports to CEO |
 
@@ -510,12 +510,12 @@ Chief of Staff:
 
 ### Monitoring Multi-Agent Work
 
-When you have 7 agents working, you need visibility. Clawdbot provides built-in tools to see what's happening:
+When you have 7 agents working, you need visibility. OpenClaw provides built-in tools to see what's happening:
 
 **List active sessions:**
 ```bash
 # See all running sessions — who's working on what
-clawdbot sessions list --active
+openclaw sessions list --active
 ```
 
 ```
@@ -528,7 +528,7 @@ Active Sessions:
 **Check a specific agent's work:**
 ```bash
 # Pull the last 10 messages from Engineering's session
-clawdbot sessions history --session session_abc --limit 10
+openclaw sessions history --session session_abc --limit 10
 ```
 
 **In Discord — ask Chief of Staff to monitor:**
@@ -740,7 +740,7 @@ Set up your Notion workspace to mirror your company departments:
 NOTION_TOKEN=ntn_your_token_here
 ```
 
-> 💡 Clawdbot's built-in **Notion skill** handles all API calls — agents can create pages, query databases, and update records using natural language. No code required.
+> 💡 OpenClaw's built-in **Notion skill** handles all API calls — agents can create pages, query databases, and update records using natural language. No code required.
 
 ### Auto-Archiving Daily Reports to Notion
 
@@ -748,7 +748,7 @@ The killer workflow: your Chief of Staff generates a daily standup and **automat
 
 ```bash
 # Daily at 10 PM — generate report and save to Notion
-clawdbot cron add \
+openclaw cron add \
   --name "daily-notion-report" --agent main \
   --cron "0 22 * * *" --tz "America/New_York" \
   --message "Generate today's standup report. Include: what each agent worked on, key decisions made, blockers. Post to Discord #standup AND create a new page in the Daily Reports Notion database." \
@@ -798,14 +798,14 @@ Scale the same pattern for longer-term reports:
 
 ```bash
 # Weekly — every Monday at 9 AM
-clawdbot cron add \
+openclaw cron add \
   --name "weekly-notion-summary" --agent main \
   --cron "0 9 * * 1" --tz "America/New_York" \
   --message "Create a weekly summary in the Weekly Reports Notion database. Review the past 7 daily reports, synthesize trends, highlight wins, flag risks. Include cost trends from Finance." \
   --session isolated --token <your-token>
 
 # Monthly — 1st of each month at 9 AM
-clawdbot cron add \
+openclaw cron add \
   --name "monthly-notion-review" --agent main \
   --cron "0 9 1 * *" --tz "America/New_York" \
   --message "Create a monthly review in Notion. Aggregate weekly summaries, show month-over-month trends, project ROI analysis, team performance metrics." \
@@ -1091,7 +1091,7 @@ Discord conversations vanish into scroll-back. Notion could go down. Your worksp
 
 ```bash
 # Weekly — back up critical Notion data to workspace files
-clawdbot cron add \
+openclaw cron add \
   --name "notion-backup" --agent main \
   --cron "0 3 * * 0" --tz "America/New_York" \
   --message "Export the last 7 days of Notion data to workspace. Query Daily Reports, Financial Records, and Incident Log databases. Write summaries to memory/notion-backup/YYYY-MM-DD.md. This is our disaster recovery copy." \
@@ -1148,7 +1148,7 @@ Your AI team doesn't just talk about code — it **manages your entire GitHub wo
 
 ### Why GitHub Integration Matters
 
-Discord is where you give orders. Notion is where knowledge persists. **GitHub is where the work actually ships.** With Clawdbot's built-in GitHub skill, your agents can:
+Discord is where you give orders. Notion is where knowledge persists. **GitHub is where the work actually ships.** With OpenClaw's built-in GitHub skill, your agents can:
 
 - 🐛 **Triage issues** — auto-label, assign, and prioritize incoming bug reports
 - 🔀 **Manage PRs** — create, review, approve, merge, and close pull requests
@@ -1202,7 +1202,7 @@ Engineering:     Investigating. Creating a GitHub issue to track this.
 
 ```bash
 # Every hour, Engineering checks for new untriaged issues
-clawdbot cron add \
+openclaw cron add \
   --name "issue-triage" --agent engineering \
   --cron "0 * * * *" \
   --message "Check for new GitHub issues in wanikua/myapp without labels. For each: read the issue, add appropriate labels (bug/feature/docs/question), set priority (critical/high/medium/low), and post a comment with your initial assessment. If it's critical, notify Chief of Staff." \
@@ -1347,7 +1347,7 @@ DevOps:          Re-running workflow on wanikua/api-gateway...
 
 ```bash
 # Auto-deploy to staging every day at midnight (if tests pass)
-clawdbot cron add \
+openclaw cron add \
   --name "nightly-staging-deploy" --agent devops \
   --cron "0 0 * * *" \
   --message "Check if there are new merged PRs on wanikua/myapp since last deploy. If yes: trigger the deploy-staging workflow, wait for completion, run smoke tests, and report results. If anything fails, notify Engineering and Chief of Staff." \
@@ -1558,7 +1558,7 @@ DevOps:          Preparing release v2.1.0...
 
 ```bash
 # Every Friday at 4 PM — create a release from the week's work
-clawdbot cron add \
+openclaw cron add \
   --name "weekly-release" --agent devops \
   --cron "0 16 * * 5" --tz "America/New_York" \
   --message "Check if there are unreleased commits on wanikua/myapp since the last tag. If yes: bump the patch version, generate a changelog from merged PRs, create a GitHub release, and notify Engineering + Chief of Staff. If nothing new, skip." \
@@ -1675,7 +1675,7 @@ Management:      Created GitHub Project: "v3 Launch Roadmap"
 
 ```bash
 # Every 4 hours, Management syncs the project board
-clawdbot cron add \
+openclaw cron add \
   --name "project-board-sync" --agent management \
   --cron "0 */4 * * *" \
   --message "Sync the v3 Launch Roadmap GitHub Project. Move issues to correct columns based on their status: unassigned→Backlog, assigned→In Progress, has open PR→Review, PR merged→Done. Report any blockers to Chief of Staff." \
@@ -1778,7 +1778,7 @@ DevOps:          🔒 Security Scan Results:
 
 ```bash
 # Weekly Monday security audit across all repos
-clawdbot cron add \
+openclaw cron add \
   --name "security-audit" --agent devops \
   --cron "0 8 * * 1" --tz "America/New_York" \
   --message "Run security audit on all repos: npm audit / pip audit, check for known CVEs, scan for exposed secrets in recent commits (git log --diff-filter=A). Report critical findings immediately to Chief of Staff. Log all results to the Incident Log on Notion tagged 'security-audit'." \
@@ -1939,7 +1939,7 @@ Not everything has an API. Many critical business tasks require interacting with
 
 ### How It Works
 
-Clawdbot includes a built-in browser control layer that agents use to interact with web pages programmatically:
+OpenClaw includes a built-in browser control layer that agents use to interact with web pages programmatically:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -1957,7 +1957,7 @@ Clawdbot includes a built-in browser control layer that agents use to interact w
 └──────────────────────────────────────┘
 ```
 
-Under the hood, Clawdbot manages a headless Chromium instance. Agents interact with it through high-level actions: navigate, click, type, snapshot, screenshot — no Puppeteer or Selenium code required.
+Under the hood, OpenClaw manages a headless Chromium instance. Agents interact with it through high-level actions: navigate, click, type, snapshot, screenshot — no Puppeteer or Selenium code required.
 
 ```
 ┌───────────────────────────────────────────────────────────┐
@@ -1980,7 +1980,7 @@ Under the hood, Clawdbot manages a headless Chromium instance. Agents interact w
 │  │  • upload(ref, file) — upload files to forms        │  │
 │  └─────────────────────────────────────────────────────┘  │
 │       ↓                                                   │
-│  Headless Chromium (managed by Clawdbot)                  │
+│  Headless Chromium (managed by OpenClaw)                  │
 │       ↓                                                   │
 │  🌐 Any Website                                          │
 └───────────────────────────────────────────────────────────┘
@@ -2147,7 +2147,7 @@ DevOps:          Taking screenshots of key pages...
 
 ```bash
 # Daily at 6 AM — check production pages for visual regressions
-clawdbot cron add \
+openclaw cron add \
   --name "visual-qa" --agent devops \
   --cron "0 6 * * *" \
   --message "Take screenshots of the top 5 pages on production (homepage, login, dashboard, pricing, docs). Compare against yesterday's screenshots. Flag any visual differences or broken layouts. Only alert if something looks wrong." \
@@ -2243,7 +2243,7 @@ Browser automation is powerful but requires care. Follow these guidelines:
 
 ```
 # Add delays between page loads to avoid detection/blocking
-# Clawdbot handles this automatically — but be mindful of:
+# OpenClaw handles this automatically — but be mindful of:
 # - Respect robots.txt when scraping
 # - Add 2-3 second delays between rapid page navigations
 # - Rotate user agents for large scraping jobs
@@ -2348,14 +2348,14 @@ Marketing:       Starting multi-step browser workflow...
 
 ### Browser Profiles — Isolating Sessions
 
-Different tasks may need different browser contexts. Clawdbot supports browser profiles to isolate sessions:
+Different tasks may need different browser contexts. OpenClaw supports browser profiles to isolate sessions:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Browser Profiles                                           │
 │                                                             │
 │  profile="clawd" (default)                                  │
-│  └── Isolated, headless Chromium managed by Clawdbot        │
+│  └── Isolated, headless Chromium managed by OpenClaw        │
 │  └── Clean session each time — no leftover cookies          │
 │  └── Best for: scraping, screenshots, form filling          │
 │                                                             │
@@ -2544,7 +2544,7 @@ Engineering:     Auditing app.example.com for a11y issues...
 **Scheduled a11y monitoring:**
 ```bash
 # Monthly accessibility regression check
-clawdbot cron add \
+openclaw cron add \
   --name "a11y-audit" --agent engineering \
   --cron "0 10 1 * *" \
   --message "Run an accessibility audit on our top 5 pages. Check: alt text, form labels, color contrast, keyboard navigation, ARIA attributes, heading hierarchy, and focus management. Compare with last month's results. Flag any regressions. Save report to Engineering Wiki on Notion and post summary to #engineering." \
@@ -2620,7 +2620,7 @@ Combine browser automation with cron scheduling for powerful hands-off monitorin
 **Content freshness checker:**
 ```bash
 # Weekly — check your own site for stale or outdated content
-clawdbot cron add \
+openclaw cron add \
   --name "content-freshness" --agent marketing \
   --cron "0 11 * * 3" \
   --message "Browse our website's blog and docs pages. Identify any content that references outdated versions, deprecated features, or dates older than 6 months. List pages that need updating with the specific outdated references found. Save findings to Marketing Hub on Notion." \
@@ -2725,7 +2725,7 @@ Without cron, you're the bottleneck — every report, every deploy, every check 
 
 ### Cron vs Heartbeat — When to Use Each
 
-Clawdbot has two automation systems. Choosing the right one matters:
+OpenClaw has two automation systems. Choosing the right one matters:
 
 | | **Cron** | **Heartbeat** |
 |---|---|---|
@@ -2743,7 +2743,7 @@ Clawdbot has two automation systems. Choosing the right one matters:
 Every cron job needs three things: **who** (agent), **when** (schedule), and **what** (task):
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent finance \
   --cron "0 9 * * 1" --tz "America/New_York" \
   --text "Run weekly cost review. Check LLM API spend, compute costs, 
@@ -2783,7 +2783,7 @@ The most valuable cron pattern: **automated daily reports that archive themselve
 ```
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 9 * * *" --tz "America/New_York" \
   --text "Run daily standup. Spawn sub-agents to ask each department 
@@ -2797,7 +2797,7 @@ clawdbot cron add \
 
 ```bash
 # Weekly summary — every Monday morning
-clawdbot cron add \
+openclaw cron add \
   --agent management \
   --cron "0 9 * * 1" --tz "America/New_York" \
   --text "Generate weekly summary. Pull from Notion: Daily Reports 
@@ -2806,7 +2806,7 @@ clawdbot cron add \
          #weekly-reports. Archive to Notion Weekly Reports."
 
 # Monthly executive report — 1st of every month
-clawdbot cron add \
+openclaw cron add \
   --agent management \
   --cron "0 10 1 * *" --tz "America/New_York" \
   --text "Generate monthly executive summary. Query all Notion databases.
@@ -2822,7 +2822,7 @@ Cron turns your agents into a **24/7 monitoring system**. The key principle: **o
 **Cost threshold alerting:**
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent finance \
   --cron "0 */4 * * *" \
   --text "Check current daily LLM API spend. If over $20, alert 
@@ -2834,7 +2834,7 @@ clawdbot cron add \
 **Uptime monitoring (silent when healthy):**
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "0 */6 * * *" \
   --text "Health check all production endpoints: app, API, docs, 
@@ -2846,7 +2846,7 @@ clawdbot cron add \
 **CI/CD pipeline monitoring:**
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "*/30 * * * *" \
   --text "Check GitHub Actions for failed workflow runs across all repos.
@@ -2863,7 +2863,7 @@ Cron + Notion = **institutional memory that builds itself**:
 
 ```bash
 # Archive daily metrics to Notion
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 23 * * *" --tz "America/New_York" \
   --text "End-of-day archiving. Query today's activity:
@@ -2875,7 +2875,7 @@ clawdbot cron add \
          Link to any relevant Incident Log or ADR entries."
 
 # Weekly Notion backup to local files
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 3 * * 0" --tz "America/New_York" \
   --text "Export critical Notion databases to memory/notion-backup/:
@@ -2908,7 +2908,7 @@ Real power comes from **chaining cron jobs** where one job's output feeds the ne
 
 ```bash
 # Step 1: Run tests
-clawdbot cron add \
+openclaw cron add \
   --agent engineering \
   --cron "0 14 * * 5" --tz "America/New_York" \
   --text "Run full test suite on main branch. Post results to 
@@ -2917,7 +2917,7 @@ clawdbot cron add \
          and list failures."
 
 # Step 2: Tag release (checks gate)
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "0 15 * * 5" --tz "America/New_York" \
   --text "Check memory/release-gate.md. If TESTS_PASSED, bump version,
@@ -2946,28 +2946,28 @@ clawdbot cron add \
 
 ```bash
 # List all scheduled jobs
-clawdbot cron list
+openclaw cron list
 
 # Add a new job
-clawdbot cron add --agent <id> --cron "<expr>" --tz "<tz>" --text "<task>"
+openclaw cron add --agent <id> --cron "<expr>" --tz "<tz>" --text "<task>"
 
 # Run a job immediately (for testing)
-clawdbot cron run <job-id>
+openclaw cron run <job-id>
 
 # Disable a job without deleting it
-clawdbot cron disable <job-id>
+openclaw cron disable <job-id>
 
 # Re-enable a disabled job
-clawdbot cron enable <job-id>
+openclaw cron enable <job-id>
 
 # Update a job's schedule
-clawdbot cron update <job-id> --cron "<new-expr>"
+openclaw cron update <job-id> --cron "<new-expr>"
 
 # View run history for a job
-clawdbot cron runs <job-id>
+openclaw cron runs <job-id>
 
 # Delete a job permanently
-clawdbot cron remove <job-id>
+openclaw cron remove <job-id>
 ```
 
 ### Agent Cron Responsibilities
@@ -2998,13 +2998,13 @@ Don't set up all 12+ cron jobs at once. Start with these three and expand as nee
 
 ```bash
 # The essential three — copy and run
-clawdbot cron add --agent main --cron "0 9 * * *" --tz "America/New_York" \
+openclaw cron add --agent main --cron "0 9 * * *" --tz "America/New_York" \
   --text "Daily standup: collect status from all departments, post to #standup, archive to Notion."
 
-clawdbot cron add --agent finance --cron "0 */4 * * *" \
+openclaw cron add --agent finance --cron "0 */4 * * *" \
   --text "Check daily LLM spend. Alert #billing-alerts only if over $20."
 
-clawdbot cron add --agent devops --cron "0 */6 * * *" \
+openclaw cron add --agent devops --cron "0 */6 * * *" \
   --text "Health check all production endpoints. Alert #deployments only if something is down."
 ```
 
@@ -3022,7 +3022,7 @@ Not everything runs on a fixed schedule. Sometimes you need a cron job that **sl
 │                                                              │
 │  External Event (webhook, CI, alert)                         │
 │    ↓                                                         │
-│  clawdbot cron wake <job-id>                                 │
+│  openclaw cron wake <job-id>                                 │
 │    ↓                                                         │
 │  Agent wakes up, handles event, goes back to sleep           │
 │                                                              │
@@ -3034,21 +3034,21 @@ Not everything runs on a fixed schedule. Sometimes you need a cron job that **sl
 
 ```bash
 # Create a cron job with no schedule (event-driven only)
-clawdbot cron add \
+openclaw cron add \
   --agent engineering \
   --text "New GitHub issue received. Read the issue details from 
          the trigger context. Label, assign priority, and post 
          triage summary to #bugs."
 
 # Your CI webhook or GitHub Action calls:
-clawdbot cron wake <job-id>
+openclaw cron wake <job-id>
 ```
 
 **Deploy notification → smoke test:**
 
 ```bash
 # Fires when a deploy webhook hits your server
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --text "Production deploy detected. Run smoke tests on all 
          critical endpoints. If any fail, roll back and alert 
@@ -3058,13 +3058,13 @@ clawdbot cron add \
 **Combine scheduled + event-driven:** A job can have both a regular schedule AND respond to wake events. The uptime monitor runs every 6 hours, but can also be woken immediately when an external alert fires:
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "0 */6 * * *" \
   --text "Health check all endpoints. Alert if anything is down."
 
 # External monitoring service detects anomaly → wake immediately
-clawdbot cron wake <job-id>
+openclaw cron wake <job-id>
 ```
 
 ### Self-Adjusting Schedules
@@ -3078,10 +3078,10 @@ When DevOps detects an issue, it can temporarily increase monitoring frequency:
 ```bash
 # Normal: every 6 hours
 # During incident: agent updates itself to every 15 minutes
-clawdbot cron update <uptime-job-id> --cron "*/15 * * * *"
+openclaw cron update <uptime-job-id> --cron "*/15 * * * *"
 
 # After resolution: agent restores normal schedule
-clawdbot cron update <uptime-job-id> --cron "0 */6 * * *"
+openclaw cron update <uptime-job-id> --cron "0 */6 * * *"
 ```
 
 Encode this behavior in the agent's theme:
@@ -3110,11 +3110,11 @@ Some tasks only matter during business hours. Use separate jobs instead of compl
 
 ```bash
 # Weekday issue triage — every hour
-clawdbot cron add --agent engineering --cron "0 * * * 1-5" \
+openclaw cron add --agent engineering --cron "0 * * * 1-5" \
   --text "Check for new untriaged issues. Weekday mode: assign and label."
 
 # Weekend — just once a day
-clawdbot cron add --agent engineering --cron "0 10 * * 0,6" \
+openclaw cron add --agent engineering --cron "0 10 * * 0,6" \
   --text "Weekend issue check. Only flag critical/security issues. 
          Everything else waits until Monday."
 ```
@@ -3126,11 +3126,11 @@ Your cron jobs are running your company. Who's monitoring **them**?
 **Cron health check (meta-cron):**
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 8 * * *" --tz "America/New_York" \
-  --text "Audit all cron jobs. Run 'clawdbot cron list' and 
-         'clawdbot cron runs <id>' for each job. Report:
+  --text "Audit all cron jobs. Run 'openclaw cron list' and 
+         'openclaw cron runs <id>' for each job. Report:
          1. Jobs that failed in the last 24h (with error details)
          2. Jobs that didn't run when expected
          3. Jobs that took abnormally long (>5 min for simple checks)
@@ -3142,7 +3142,7 @@ clawdbot cron add \
 
 ```bash
 # Check run history for a specific job
-clawdbot cron runs <job-id>
+openclaw cron runs <job-id>
 
 # Expected output:
 # Run ID    | Status  | Duration | Time
@@ -3154,7 +3154,7 @@ clawdbot cron runs <job-id>
 **Failure alerting pattern:** Add failure detection to your standup cron:
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 9 * * *" --tz "America/New_York" \
   --text "Daily standup. BEFORE collecting department status, 
@@ -3171,14 +3171,14 @@ Cron jobs run automatically — which means costs can sneak up on you. Here's ho
 
 ```bash
 # Simple health check — use the cheapest model
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --model "$LLM_PROVIDER/$MODEL_FAST" \
   --cron "0 */6 * * *" \
   --text "Ping production endpoints. Report failures only."
 
 # Complex analysis — worth the cost
-clawdbot cron add \
+openclaw cron add \
   --agent management \
   --model "$LLM_PROVIDER/$MODEL_STRONG" \
   --cron "0 10 1 * *" \
@@ -3219,7 +3219,7 @@ Ask yourself: "Am I typing this same kind of message more than once a week?"
 Manual:         "@Finance what did we spend this week?"
                 (you type this every Monday)
 
-Automated:      clawdbot cron add --agent finance --cron "0 9 * * 1" \
+Automated:      openclaw cron add --agent finance --cron "0 9 * * 1" \
                 --text "Weekly cost review → #billing-alerts → Notion"
                 (Finance reports automatically, forever)
 ```
@@ -3235,14 +3235,14 @@ Be specific. Include:
 
 ```bash
 # Run it once manually
-clawdbot cron run <job-id>
+openclaw cron run <job-id>
 
 # Check the output — did it post to the right channel?
 # Did it archive to Notion? Did it include enough detail?
 ```
 
 **Step 4: Monitor for a week**
-Check `clawdbot cron runs <job-id>` daily for the first week. Adjust the task text based on what the agent produces.
+Check `openclaw cron runs <job-id>` daily for the first week. Adjust the task text based on what the agent produces.
 
 **Common migration examples:**
 
@@ -3371,13 +3371,13 @@ Common cron issues and how to fix them:
 
 ```bash
 # 1. Check if the job exists and is enabled
-clawdbot cron list
+openclaw cron list
 
 # 2. Run it manually to see output
-clawdbot cron run <job-id>
+openclaw cron run <job-id>
 
 # 3. Check recent run history for errors
-clawdbot cron runs <job-id>
+openclaw cron runs <job-id>
 
 # 4. Verify the agent can handle the task
 #    (test the same prompt in a direct message)
@@ -3440,7 +3440,7 @@ Chief of Staff:  📧 Email Summary (14 unread):
 **Best cron pattern:** Daily morning email digest before your standup:
 
 ```bash
-clawdbot cron add --agent main \
+openclaw cron add --agent main \
   --cron "0 8 * * 1-5" --tz "America/New_York" \
   --text "Check email. Summarize urgent and actionable items. 
          Post digest to Discord DM. Archive to Notion Daily Reports."
@@ -3481,13 +3481,13 @@ Chief of Staff:  📅 Today's Schedule — March 7, 2026:
 
 ```bash
 # Morning briefing
-clawdbot cron add --agent main \
+openclaw cron add --agent main \
   --cron "0 8 * * *" --tz "America/New_York" \
   --text "Pull today's calendar. List all events with times and locations.
          Flag any conflicts. Mention prep needed for important meetings."
 
 # Meeting reminder — every 30 min, check for upcoming meetings
-clawdbot cron add --agent main \
+openclaw cron add --agent main \
   --cron "*/30 * * * *" \
   --text "Check calendar for events starting in the next 30 minutes.
          If any upcoming, remind me with event name, time, and join link.
@@ -3504,7 +3504,7 @@ clawdbot cron add --agent main \
 
 **Skill:** `weather` (built-in)
 
-Already included with Clawdbot — no install needed. Useful for morning briefings:
+Already included with OpenClaw — no install needed. Useful for morning briefings:
 
 ```
 Chief of Staff:  Good morning! Here's your daily brief:
@@ -3519,7 +3519,7 @@ Chief of Staff:  Good morning! Here's your daily brief:
 **Best pattern:** Include weather in your morning standup cron for a complete daily brief:
 
 ```bash
-clawdbot cron add --agent main \
+openclaw cron add --agent main \
   --cron "0 8 * * *" --tz "America/New_York" \
   --text "Morning brief: weather forecast, today's calendar, 
          overnight email digest, yesterday's metrics summary."
@@ -3556,7 +3556,7 @@ Engineering:     🔥 GitHub Trending — This Week:
 **Best cron pattern:** Weekly trending digest to stay informed:
 
 ```bash
-clawdbot cron add --agent engineering \
+openclaw cron add --agent engineering \
   --cron "0 10 * * 1" --tz "America/New_York" \
   --text "Check GitHub trending repos for the past week. Focus on 
          repos relevant to our tech stack. Post top 10 with stars, 
@@ -3646,7 +3646,7 @@ Engineering:     📰 Hacker News — Top Stories Today:
 
                  1. "Show HN: Open-source AI agent framework" (342 pts)
                     → Relevant: similar architecture to what we built
-                    → Key comment: comparison with Clawdbot
+                    → Key comment: comparison with OpenClaw
 
                  2. "PostgreSQL 17 released" (289 pts)
                     → Action: we should evaluate upgrade for our user DB
@@ -3661,7 +3661,7 @@ Engineering:     📰 Hacker News — Top Stories Today:
 **Best cron pattern:** Daily HN digest filtered for relevance:
 
 ```bash
-clawdbot cron add --agent engineering \
+openclaw cron add --agent engineering \
   --cron "0 12 * * 1-5" --tz "America/New_York" \
   --text "Check Hacker News top stories. Filter for topics relevant to 
          our stack: AI agents, LLMs, infrastructure, DevOps, startups.
@@ -3698,7 +3698,7 @@ DevOps:          📡 System Health — vibe-server:
 **Best cron pattern:** Continuous health monitoring with threshold alerts:
 
 ```bash
-clawdbot cron add --agent devops \
+openclaw cron add --agent devops \
   --cron "0 */4 * * *" \
   --text "Check system resources. Alert ONLY if: CPU > 80% sustained,
          memory > 85%, disk > 90%, or load average > 3.0.
@@ -3744,7 +3744,7 @@ Marketing:       📰 Feed Digest — Last 24h:
 **Best cron pattern:** Morning content digest from curated feed list:
 
 ```bash
-clawdbot cron add --agent marketing \
+openclaw cron add --agent marketing \
   --cron "0 9 * * 1-5" --tz "America/New_York" \
   --text "Check RSS feeds: TechCrunch AI, Product Hunt, our competitors' 
          blogs. Summarize anything relevant to AI agents or Discord 
@@ -3851,7 +3851,7 @@ DevOps:          📸 Visual Diff Report — homepage:
 **Best cron pattern:** Post-deploy visual regression check:
 
 ```bash
-clawdbot cron add --agent devops \
+openclaw cron add --agent devops \
   --cron "0 6 * * *" \
   --text "Take screenshots of homepage, pricing, and docs pages.
          Compare against yesterday's baseline. If pixel diff > 5%
@@ -3890,7 +3890,7 @@ Individual skills are useful. **Combining** them is where the magic happens. Her
 One cron job, five skills, zero effort:
 
 ```bash
-clawdbot cron add --agent main \
+openclaw cron add --agent main \
   --cron "0 8 * * *" --tz "America/New_York" \
   --text "Morning briefing — combine all sources:
          1. Weather forecast and commute advisory
@@ -3930,7 +3930,7 @@ Chief of Staff:  ☀️ Good Morning — Friday March 6, 2026
 Complete infrastructure visibility:
 
 ```bash
-clawdbot cron add --agent devops \
+openclaw cron add --agent devops \
   --cron "0 */2 * * *" \
   --text "Full monitoring sweep:
          1. System resources (CPU/mem/disk/network)
@@ -4004,7 +4004,7 @@ clawdhub install ai-image-gen
 clawdhub install screenshot-diff
 
 # Restart gateway to pick up new skills
-systemctl --user restart clawdbot-gateway
+systemctl --user restart openclaw-gateway
 ```
 
 > 💡 **Start small:** Install the core 6 first, get comfortable, then add extended skills as your workflows mature.
@@ -4062,7 +4062,7 @@ clawdhub publish
 clawdhub install my-custom-skill
 ```
 
-> 💡 **Skill creation tip:** Start by documenting what you do manually, then translate those steps into SKILL.md instructions. The agent follows your playbook. See the [Clawdbot docs](https://docs.clawd.bot) for the full skill authoring guide.
+> 💡 **Skill creation tip:** Start by documenting what you do manually, then translate those steps into SKILL.md instructions. The agent follows your playbook. See the [OpenClaw docs](https://docs.openclaw.ai) for the full skill authoring guide.
 
 ### 🔒 Skill Security — Trust but Verify
 
@@ -4103,7 +4103,7 @@ Use API key `sk-abc123` to authenticate.
 Use the API key from $EMAIL_API_KEY to authenticate.
 ```
 
-In your `clawdbot.json`, pass credentials via sandbox environment:
+In your `openclaw.json`, pass credentials via sandbox environment:
 
 ```json
 "sandbox": {
@@ -4169,7 +4169,7 @@ clawdhub info email-daily-summary --changelog
 Set up a weekly audit cron to keep your skill library healthy:
 
 ```bash
-clawdbot cron add --agent main \
+openclaw cron add --agent main \
   --cron "0 10 * * 1" --tz "America/New_York" \
   --text "Run 'clawdhub outdated' and report which skills have updates.
          For each outdated skill, check the changelog for breaking changes.
@@ -4262,13 +4262,13 @@ Before publishing, validate your skill works:
 cp -r my-skill/ skills/my-skill/
 
 # 2. Restart gateway
-systemctl --user restart clawdbot-gateway
+systemctl --user restart openclaw-gateway
 
 # 3. Test via Discord
 @Chief of Staff use the my-skill skill to do X
 
 # 4. Check logs
-journalctl --user -u clawdbot-gateway --since "5 min ago" | grep my-skill
+journalctl --user -u openclaw-gateway --since "5 min ago" | grep my-skill
 ```
 
 For skills with scripts, add automated tests:
@@ -4295,7 +4295,7 @@ echo "✅ All tests passed"
 name: my-production-skill
 description: "Clear, specific description — agents match tasks to this"
 homepage: https://github.com/you/my-skill
-metadata: {"clawdbot":{"emoji":"🔧","requires":{"bins":["curl","jq"]},"credentials":["MY_API_KEY"]}}
+metadata: {"openclaw":{"emoji":"🔧","requires":{"bins":["curl","jq"]},"credentials":["MY_API_KEY"]}}
 ---
 
 # My Production Skill
@@ -4430,7 +4430,7 @@ Before running `clawdhub publish`:
 ```
 Discord message
     ↓
-Clawdbot Gateway (Node.js daemon)
+OpenClaw Gateway (Node.js daemon)
     ├── Message routing: @mention → match binding → dispatch to agent
     ├── Session isolation: each agent has independent sessions + workspace
     ├── Auto-threading: big tasks spawn threads, channels stay clean
@@ -4454,7 +4454,7 @@ Each agent is an **independent Discord bot** bound to an independent AI identity
 - **Independent memory** — each agent has its own `memory/` directory, getting smarter over time
 - **Independent model** — heavy work uses strong models, light work uses fast models (save 5×)
 - **Independent sandbox** — agents run in isolation, code execution can't interfere
-- **Identity injection** — Clawdbot auto-assembles SOUL.md + IDENTITY.md + workspace files into the system prompt
+- **Identity injection** — OpenClaw auto-assembles SOUL.md + IDENTITY.md + workspace files into the system prompt
 
 ---
 
@@ -4479,7 +4479,7 @@ Each agent is an **independent Discord bot** bound to an independent AI identity
 ### 🤖 Multi-Agent Collaboration
 Each role is its own Discord bot. `@Engineering` and Engineering answers. `@everyone` and the whole team responds. Large tasks automatically spawn Discord threads to keep your channels clean.
 
-> ⚠️ Want bots to trigger each other (e.g., chain-of-thought discussions, multi-bot brainstorms)? Add `"allowBots": true` in `clawdbot.json` under `channels.discord`. Without it, bots ignore other bots by default. Also set `"groupPolicy": "open"` on each account — otherwise group messages get silently dropped.
+> ⚠️ Want bots to trigger each other (e.g., chain-of-thought discussions, multi-bot brainstorms)? Add `"allowBots": true` in `openclaw.json` under `channels.discord`. Without it, bots ignore other bots by default. Also set `"groupPolicy": "open"` on each account — otherwise group messages get silently dropped.
 
 ### 🧠 Independent Memory
 Each agent has its own workspace and `memory/` directory. Project knowledge from conversations persists to files and survives across sessions. Your Engineering agent remembers your codebase conventions. Your Finance agent remembers last month's budget. They get smarter over time.
@@ -4582,7 +4582,7 @@ Existing Software:
   Node.js:    not found
   GitHub CLI: not found
   Chromium:   not found
-  Clawdbot:   not found
+  OpenClaw:   not found
   Swap:       none
 
 Network:
@@ -4598,7 +4598,7 @@ Ready to install (9 steps). Continue? [Y/n]
 - ✅ **Docker/container aware** — auto-detects Docker/LXC, skips swap & systemd, adjusts start commands
 - ✅ **System setup** — cloud firewall config, dynamic swap (scales with RAM)
 - ✅ **Dependencies** — Node.js 22 + GitHub CLI + Chromium (multi-distro support)
-- ✅ **Clawdbot** — global install + workspace initialization
+- ✅ **OpenClaw** — global install + workspace initialization
 - ✅ **Config wizard** — walks you through LLM provider, API key, model selection, Discord tokens, Notion, GitHub interactively
 - ✅ **Model selection** — helps you pick the right model tier per provider (strong/fast/custom)
 - ✅ **Key validation** — catches common API key format mistakes before you start
@@ -4612,7 +4612,7 @@ Ready to install (9 steps). Continue? [Y/n]
 **Supported distros:** Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+
 **Architectures:** amd64, arm64
 
-> **Already have Clawdbot?** Install just the skill:
+> **Already have OpenClaw?** Install just the skill:
 > ```bash
 > clawdhub install become-ceo
 > ```
@@ -4632,7 +4632,7 @@ Ready to install (9 steps). Continue? [Y/n]
 > **Minimal install?** Skip optional components (GitHub CLI, Chromium):
 > ```bash
 > bash setup.sh --skip-optional
-> # Only installs Node.js + Clawdbot (add GitHub/Chromium later if needed)
+> # Only installs Node.js + OpenClaw (add GitHub/Chromium later if needed)
 > ```
 
 > **CI/Docker?** Run non-interactively (auto-detects containers):
@@ -4645,7 +4645,7 @@ Ready to install (9 steps). Continue? [Y/n]
 
 > **Already installed? Manage your setup:**
 > ```bash
-> # Update Clawdbot + refresh templates (keeps your config)
+> # Update OpenClaw + refresh templates (keeps your config)
 > bash setup.sh --upgrade
 >
 > # Factory-reset config (re-run wizard, backup kept)
@@ -4661,13 +4661,13 @@ The setup wizard handles this for you interactively. But if you skipped it or ne
 
 ```bash
 # Edit config — add/change API keys and bot tokens
-nano ~/.clawdbot/clawdbot.json
+nano ~/.openclaw/openclaw.json
 
 # Start your team
-systemctl --user start clawdbot-gateway
+systemctl --user start openclaw-gateway
 
 # Verify it's running
-systemctl --user status clawdbot-gateway
+systemctl --user status openclaw-gateway
 ```
 
 > ⚠️ **Discord bot setup:** For each of the 7 bots, go to the Discord Developer Portal → Bot → enable **Message Content Intent** and **Server Members Intent**. Then invite each bot to your server with the bot + applications.commands scope.
@@ -4741,10 +4741,10 @@ Chief of Staff: ✅ All tasks complete:
 ### Setting up automated reports
 ```bash
 # Get your gateway token
-clawdbot gateway token
+openclaw gateway token
 
 # Daily report at 10 PM
-clawdbot cron add \
+openclaw cron add \
   --name "daily-report" --agent main \
   --cron "0 22 * * *" --tz "America/New_York" \
   --message "Generate today's standup report and post it to Discord" \
@@ -4754,7 +4754,7 @@ clawdbot cron add \
 ### Weekly cost review (automated via cron)
 ```bash
 # Every Monday at 9 AM — Finance reviews API spend
-clawdbot cron add \
+openclaw cron add \
   --name "weekly-cost-review" --agent finance \
   --cron "0 9 * * 1" --tz "America/New_York" \
   --message "Review this week's API costs. Compare to last week. Flag any anomalies. Post summary to Discord." \
@@ -4765,7 +4765,7 @@ clawdbot cron add \
 
 ## Config Deep-Dive
 
-Your entire team is defined in `~/.clawdbot/clawdbot.json`. Here's how it's structured:
+Your entire team is defined in `~/.openclaw/openclaw.json`. Here's how it's structured:
 
 ### Models — Define your LLM providers
 
@@ -4848,7 +4848,7 @@ This is the #1 thing people miss. The top-level `groupPolicy: "open"` does **not
 
 Without this, group messages (including `@everyone`) will be silently dropped. Every single person hits this.
 
-> 📄 Full template: [`become-ceo/references/clawdbot-template.json`](./become-ceo/references/clawdbot-template.json)
+> 📄 Full template: [`become-ceo/references/openclaw-template.json`](./become-ceo/references/openclaw-template.json)
 
 ---
 
@@ -4880,7 +4880,7 @@ Create a new bot at [discord.com/developers](https://discord.com/developers/appl
 { "agentId": "data", "match": { "channel": "discord", "accountId": "data" } }
 ```
 
-Restart the gateway (`systemctl --user restart clawdbot-gateway`) and your new team member is live.
+Restart the gateway (`systemctl --user restart openclaw-gateway`) and your new team member is live.
 
 > 💡 **Want bots to talk to each other?** (e.g., Engineering delegates to DevOps) Add `"allowBots": true` to your `channels.discord` config. Without it, bots ignore messages from other bots.
 
@@ -5053,7 +5053,7 @@ nano ~/clawd/TOOLS.md      # List your tools and services
 nano ~/clawd/HEARTBEAT.md  # Uncomment the checks you want
 
 # 3. Restart for changes to take effect
-systemctl --user restart clawdbot-gateway
+systemctl --user restart openclaw-gateway
 ```
 
 > The included templates cover the most common setups. Mix and match sections from different templates — "Startup Mode" SOUL.md with "Technical Lead" USER.md works great for technical founders.
@@ -5098,7 +5098,7 @@ Many cloud providers offer always-free VMs — for example, ARM instances with 4
 ChatGPT is a single generalist that forgets everything when you close the tab. This system is a team of specialists — each agent has its own expertise, persistent memory, and tool access. They can push code to GitHub, write docs to Notion, and run tasks on a schedule while you sleep.
 
 **Q: Can I use other models?**
-Yes. Clawdbot supports any provider with an OpenAI-compatible API — Anthropic, OpenAI, Google, Mistral, local Ollama, and more. Set the `model` field per agent in `clawdbot.json`. Different roles can use different providers.
+Yes. OpenClaw supports any provider with an OpenAI-compatible API — Anthropic, OpenAI, Google, Mistral, local Ollama, and more. Set the `model` field per agent in `openclaw.json`. Different roles can use different providers.
 
 **Q: How much does the API cost per month?**
 Depends on usage intensity. Light use: $10–15/month. Moderate: $20–30/month. Cost tip: use Strong Model only for heavy work (Engineering, Finance), Fast Model for everything else (~5× cheaper). You can also add a Budget Model tier for trivial tasks.
@@ -5106,13 +5106,13 @@ Depends on usage intensity. Light use: $10–15/month. Moderate: $20–30/month.
 ### Technical
 
 **Q: `@everyone` doesn't trigger any agents?**
-In the Discord Developer Portal, each bot needs **Message Content Intent** and **Server Members Intent** enabled. The bot's role in the server needs **View Channels** permission. Clawdbot treats `@everyone` as an explicit mention for every bot.
+In the Discord Developer Portal, each bot needs **Message Content Intent** and **Server Members Intent** enabled. The bot's role in the server needs **View Channels** permission. OpenClaw treats `@everyone` as an explicit mention for every bot.
 
 **Q: Messages silently disappear?**
 `groupPolicy: "open"` must be set on **each individual account** in the config. The global setting does NOT cascade. [See the config section above.](#%EF%B8%8F-the-grouppolicy-gotcha) This is the #1 gotcha — everyone hits it.
 
 **Q: Multiple people `@` the same agent — do they conflict?**
-No. Clawdbot maintains separate sessions for each user × agent combination. Multiple people can talk to Engineering simultaneously without interference.
+No. OpenClaw maintains separate sessions for each user × agent combination. Multiple people can talk to Engineering simultaneously without interference.
 
 **Q: Can agents call each other?**
 Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `sessions_send` to message another agent's session. For example, Chief of Staff can delegate a coding task to Engineering programmatically. See the [Multi-Agent Collaboration Deep-Dive](#multi-agent-collaboration-deep-dive) section for detailed examples, permission configuration, and best practices.
@@ -5136,7 +5136,7 @@ Yes. Agents can use `sessions_spawn` to create sub-tasks for other agents, or `s
 - `docker.env` — pass in API keys (sandbox doesn't inherit host env vars)
 
 **Q: How do I connect Notion?**
-Create an integration at [notion.so/my-integrations](https://www.notion.so/my-integrations), copy the token, share your pages with the integration, and store the token in your workspace. Clawdbot's built-in Notion skill handles all API calls — agents create pages, query databases, and update records via natural language. See the [Notion Integration](#notion-integration--your-companys-knowledge-base) section for setup details and workflow examples.
+Create an integration at [notion.so/my-integrations](https://www.notion.so/my-integrations), copy the token, share your pages with the integration, and store the token in your workspace. OpenClaw's built-in Notion skill handles all API calls — agents create pages, query databases, and update records via natural language. See the [Notion Integration](#notion-integration--your-companys-knowledge-base) section for setup details and workflow examples.
 
 **Q: How does GitHub integration work?**
 Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authenticate once on your server with `gh auth login`, and all agents can create issues, manage PRs, review code, and trigger CI/CD workflows. Engineering handles most GitHub operations, but any agent can read repo data. See the [GitHub Integration](#github-integration--your-engineering-pipeline) section for setup and workflow examples.
@@ -5145,25 +5145,25 @@ Your agents use the `gh` CLI (GitHub CLI) to interact with repositories. Authent
 DevOps can deploy the Secret & SAST Scanning workflow template to any repo from `references/github-workflows.md`. It runs on every PR and weekly on a schedule — catching leaked secrets, vulnerable dependencies, and license conflicts automatically. DevOps notifies Engineering for code fixes and Legal for license issues. See the [Security Scanning](#security-scanning--vulnerability-management) section for details.
 
 **Q: How do I set up scheduled tasks?**
-Use `clawdbot cron add` with an agent, a cron expression, and a plain-English task description. Jobs run autonomously on schedule — no human interaction needed. Start with the three essential jobs (daily standup, cost alerts, uptime monitoring), then expand. Use `clawdbot cron list` to see all jobs and `clawdbot cron run <id>` to test before relying on the schedule. See the [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) section and [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md) for 18 ready-to-use templates.
+Use `openclaw cron add` with an agent, a cron expression, and a plain-English task description. Jobs run autonomously on schedule — no human interaction needed. Start with the three essential jobs (daily standup, cost alerts, uptime monitoring), then expand. Use `openclaw cron list` to see all jobs and `openclaw cron run <id>` to test before relying on the schedule. See the [Cron & Scheduled Tasks](#cron--scheduled-tasks--your-autopilot) section and [`references/cron-recipes.md`](./become-ceo/references/cron-recipes.md) for 18 ready-to-use templates.
 
 **Q: Can cron jobs trigger on events instead of a fixed schedule?**
-Yes. Create a job without `--cron` and use `clawdbot cron wake <job-id>` to trigger it on demand — perfect for webhook-driven workflows like deploy smoke tests or GitHub event responses. Jobs can also have both a regular schedule AND respond to wake events. See [Event-Driven Cron](#event-driven-cron--wake-jobs-on-demand).
+Yes. Create a job without `--cron` and use `openclaw cron wake <job-id>` to trigger it on demand — perfect for webhook-driven workflows like deploy smoke tests or GitHub event responses. Jobs can also have both a regular schedule AND respond to wake events. See [Event-Driven Cron](#event-driven-cron--wake-jobs-on-demand).
 
 **Q: My cron job runs but doesn't post anything. What's wrong?**
-Most likely: the task text doesn't specify which Discord channel to post to, the agent can't find data it needs, or the "stay silent when healthy" condition matched. Test with `clawdbot cron run <job-id>` and check the output. See the [Cron Troubleshooting](#cron-troubleshooting) table for common fixes.
+Most likely: the task text doesn't specify which Discord channel to post to, the agent can't find data it needs, or the "stay silent when healthy" condition matched. Test with `openclaw cron run <job-id>` and check the output. See the [Cron Troubleshooting](#cron-troubleshooting) table for common fixes.
 
 **Q: I'm doing things manually that could be automated. Where do I start?**
-Follow the [Migration Guide](#from-manual-to-automated--migration-guide): identify tasks you repeat weekly, write a specific task description, test with `clawdbot cron run`, then monitor for a week. Start with just 3 jobs (daily standup, cost alerts, uptime). The [Dependency Graph](#cron-dependency-graph) shows how jobs feed into each other as you scale up.
+Follow the [Migration Guide](#from-manual-to-automated--migration-guide): identify tasks you repeat weekly, write a specific task description, test with `openclaw cron run`, then monitor for a week. Start with just 3 jobs (daily standup, cost alerts, uptime). The [Dependency Graph](#cron-dependency-graph) shows how jobs feed into each other as you scale up.
 
 **Q: How does browser automation work?**
-Your agents control a headless Chromium instance managed by Clawdbot. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, generate PDFs, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. Agents also use the browser for accessibility audits (WCAG compliance checking) and can combine browser tasks with cron for automated monitoring. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
+Your agents control a headless Chromium instance managed by OpenClaw. They can navigate to any URL, read page content, take screenshots, click buttons, fill forms, generate PDFs, and extract data — all through natural language commands. Chromium is installed automatically by `setup.sh`. No additional API keys or browser drivers needed. Agents also use the browser for accessibility audits (WCAG compliance checking) and can combine browser tasks with cron for automated monitoring. See the [Browser Automation](#browser-automation--your-eyes-on-the-web) section for setup and examples.
 
 **Q: How do I install skills from ClawdHub?**
 Run `clawdhub install <skill-name>` — for example, `clawdhub install email-daily-summary`. Skills are downloaded to your workspace and available to all agents immediately after a gateway restart. Use `clawdhub search "<keyword>"` to find skills, and `clawdhub update --all` to keep them current. We recommend starting with the core 6 skills, then adding extended skills as your workflows mature. For compound value, combine skills into stacks (morning brief = email + calendar + weather + RSS + HN). See [Recommended Skills](#recommended-skills-from-clawdhub) for 12 curated picks and [Skill Combinations](#-skill-combinations--the-compound-effect) for ready-to-use recipes.
 
 **Q: How do I create custom skills?**
-Clawdbot has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically. Publish to [ClawdHub](https://clawdhub.com) with `clawdhub publish` to share with the community. See [Advanced Skill Development](#-advanced-skill-development) for testing, CI, directory structure, and the publishing checklist.
+OpenClaw has a built-in Skill Creator. Each skill is a directory with `SKILL.md` (instructions) + scripts + assets. Drop it in your workspace's `skills/` directory and agents use it automatically. Publish to [ClawdHub](https://clawdhub.com) with `clawdhub publish` to share with the community. See [Advanced Skill Development](#-advanced-skill-development) for testing, CI, directory structure, and the publishing checklist.
 
 **Q: How do I manage skill versions and updates?**
 Pin production-critical skills to specific versions with `clawdhub install <name>@<version>`. Use `clawdhub outdated` to check for available updates. Set up a weekly skill audit cron (Chief of Staff) to auto-update low-risk skills and flag pinned ones needing review. See [Skill Governance](#-skill-governance--version-management--auditing) for update strategies and the health dashboard pattern.
@@ -5178,15 +5178,15 @@ It depends on your situation. We provide **30 templates across 6 files** plus **
 No. The "Lean Startup" template in IDENTITY.md runs just 3 agents (Chief of Staff, Engineering, Finance) — lower cost, simpler setup, less noise. You can also try "Engineering-Heavy" (5 agents) or "Content & Marketing" (5 agents) depending on your focus. Start small, split departments when you notice an agent handling too many different responsibilities.
 
 **Q: Can I use local models (Ollama, etc.)?**
-Yes. Add an OpenAI-compatible provider in `clawdbot.json` under `models.providers` and point `baseUrl` to your Ollama endpoint. Local models = zero API costs.
+Yes. Add an OpenAI-compatible provider in `openclaw.json` under `models.providers` and point `baseUrl` to your Ollama endpoint. Local models = zero API costs.
 
 **Q: Gateway won't start — how do I debug?**
 ```bash
 # Check logs
-journalctl --user -u clawdbot-gateway --since today --no-pager
+journalctl --user -u openclaw-gateway --since today --no-pager
 
 # Run diagnostics
-clawdbot doctor
+openclaw doctor
 
 # Common causes: missing API key, invalid JSON syntax, bad bot token
 ```
@@ -5226,7 +5226,7 @@ bash setup.sh --dry-run
 
 **Running in Docker?** The script auto-detects Docker/LXC containers and adjusts:
 - Swap creation is skipped (managed by host)
-- Gateway uses `clawdbot gateway start` instead of systemd
+- Gateway uses `openclaw gateway start` instead of systemd
 - All other features work normally
 
 **Want to start over?** Use `bash setup.sh --reset` to factory-reset your config (your workspace is preserved, and the old config is backed up automatically).
@@ -5234,17 +5234,17 @@ bash setup.sh --dry-run
 ### Gateway won't start
 ```bash
 # Check the logs first
-journalctl --user -u clawdbot-gateway --since today --no-pager -n 50
+journalctl --user -u openclaw-gateway --since today --no-pager -n 50
 
 # Run diagnostics
-clawdbot doctor
+openclaw doctor
 ```
 
 **Common causes:**
-- Invalid JSON in `clawdbot.json` — run `cat ~/.clawdbot/clawdbot.json | python3 -m json.tool` to find syntax errors
+- Invalid JSON in `openclaw.json` — run `cat ~/.openclaw/openclaw.json | python3 -m json.tool` to find syntax errors
 - Missing or invalid API key — double-check your LLM provider dashboard
 - Bad bot token — regenerate in Discord Developer Portal
-- Placeholder values still in config — the wizard may have skipped some fields; search for `$` in your config: `grep '\$' ~/.clawdbot/clawdbot.json`
+- Placeholder values still in config — the wizard may have skipped some fields; search for `$` in your config: `grep '\$' ~/.openclaw/openclaw.json`
 
 ### Bot is online but doesn't respond
 1. **Check intents:** Discord Developer Portal → Bot → enable "Message Content Intent" + "Server Members Intent"
@@ -5254,14 +5254,14 @@ clawdbot doctor
 
 ### Agent responds but seems confused
 - Check the workspace has `SOUL.md`, `IDENTITY.md`, `USER.md` — missing files mean missing context
-- Verify `identity.theme` in `clawdbot.json` gives clear role instructions
+- Verify `identity.theme` in `openclaw.json` gives clear role instructions
 - Make sure the correct model is set — complex tasks need a Strong Model, not a Fast Model
 
 ### High API costs
 - Audit which agents use Strong Model vs Fast Model — only Engineering and Finance typically need strong
 - Add a Budget Model tier for trivial tasks (greetings, acknowledgements)
 - Reduce `historyLimit` in Discord config to send fewer past messages as context
-- Use `clawdbot cron` for scheduled tasks instead of keeping sessions alive
+- Use `openclaw cron` for scheduled tasks instead of keeping sessions alive
 
 ---
 
@@ -5274,7 +5274,7 @@ become-ceo/
 │   ├── SKILL.md                          # Skill definition (ClawdHub package)
 │   └── references/
 │       ├── QUICKSTART.md                 # ⭐ One-page cheat sheet — commands, patterns, troubleshooting
-│       ├── clawdbot-template.json        # Full 7-agent config, ready to customize
+│       ├── openclaw-template.json        # Full 7-agent config, ready to customize
 │       ├── SOUL.md                       # Team behavioral norms (5 scenario templates)
 │       ├── IDENTITY.md                   # Org chart and role definitions (5 org structure templates)
 │       ├── USER.md                       # About you, the CEO (5 persona templates)
@@ -5297,8 +5297,8 @@ become-ceo/
 
 | Resource | Link |
 |----------|------|
-| 📖 **Clawdbot Docs** | [docs.clawd.bot](https://docs.clawd.bot) |
-| 💻 **Clawdbot GitHub** | [github.com/clawdbot/clawdbot](https://github.com/clawdbot/clawdbot) |
+| 📖 **OpenClaw Docs** | [docs.openclaw.ai](https://docs.openclaw.ai) |
+| 💻 **OpenClaw GitHub** | [github.com/openclaw/openclaw](https://github.com/openclaw/openclaw) |
 | 🇨🇳 **Chinese Version** — AI Court (Dynasty Theme) | [wanikua/boluobobo-ai-court-tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) |
 | 🇨🇳 **Chinese Skill Package** | [wanikua/ai-court-skill](https://github.com/wanikua/ai-court-skill) |
 | 📦 **ClawdHub Install** | `clawdhub install become-ceo` |

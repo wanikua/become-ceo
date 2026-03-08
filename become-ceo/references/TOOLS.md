@@ -15,7 +15,7 @@
 | Engineering | $STRONG_MODEL | Code, architecture — needs strong reasoning |
 | All cron jobs | $FAST_MODEL | Cost-efficient for scheduled checks |
 
-> Override per-agent in `clawdbot.json` → `agents[].model`
+> Override per-agent in `openclaw.json` → `agents[].model`
 
 ## Messaging Channels
 
@@ -91,7 +91,7 @@ List any ClawdHub skills you've installed and their config notes:
 - CI: GitHub Actions (free tier minutes)
 
 ## Monitoring
-- Uptime: Clawdbot cron every 6h (checks HTTP 200)
+- Uptime: OpenClaw cron every 6h (checks HTTP 200)
 - Costs: manual review weekly
 ```
 

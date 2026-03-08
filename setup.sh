@@ -276,7 +276,7 @@ preflight() {
     [ "$HAS_NODE" = "yes" ]     && echo -e "  Node.js:    ${GREEN}$(node -v)${NC}" || echo -e "  Node.js:    ${DIM}not found${NC}"
     [ "$HAS_GH" = "yes" ]       && echo -e "  GitHub CLI: ${GREEN}$(gh --version 2>/dev/null | head -1)${NC}" || echo -e "  GitHub CLI: ${DIM}not found${NC}"
     [ "$HAS_CHROMIUM" = "yes" ] && echo -e "  Chromium:   ${GREEN}installed${NC}" || echo -e "  Chromium:   ${DIM}not found${NC}"
-    [ "$HAS_CLAWDBOT" = "yes" ] && echo -e "  Clawdbot:   ${GREEN}$(clawdbot --version 2>/dev/null || echo 'installed')${NC}" || echo -e "  Clawdbot:   ${DIM}not found${NC}"
+    [ "$HAS_CLAWDBOT" = "yes" ] && echo -e "  OpenClaw:   ${GREEN}$(clawdbot --version 2>/dev/null || echo 'installed')${NC}" || echo -e "  OpenClaw:   ${DIM}not found${NC}"
     [ "$HAS_SWAP" = "yes" ]     && echo -e "  Swap:       ${GREEN}active${NC}" || echo -e "  Swap:       ${DIM}none${NC}"
     echo ""
 
@@ -533,7 +533,7 @@ install_clawdbot() {
     $SUDO npm install -g clawdbot --loglevel=error >> "$LOG_FILE" 2>&1
 
     if require_cmd clawdbot; then
-        ok "Clawdbot $(clawdbot --version 2>/dev/null || echo '') installed"
+        ok "OpenClaw $(clawdbot --version 2>/dev/null || echo '') installed"
     else
         echo -e "${RED}✗ Clawdbot installation failed. Check $LOG_FILE${NC}"
         exit 1
@@ -570,7 +570,7 @@ setup_workspace() {
     done
 
     if [ ! -f "$CONFIG_DIR/clawdbot.json" ]; then
-        download_ref "clawdbot-template.json" "$CONFIG_DIR/clawdbot.json"
+        download_ref "openclaw-template.json" "$CONFIG_DIR/clawdbot.json"
         sed -i "s|\$HOME|$HOME|g" "$CONFIG_DIR/clawdbot.json"
         ok "Config template created at $CONFIG_DIR/clawdbot.json"
     else
@@ -803,7 +803,7 @@ install_gateway() {
     step "Gateway service"
 
     if ! require_cmd clawdbot; then
-        warn "Clawdbot not found — install it first, then run 'clawdbot gateway install'"
+        warn "OpenClaw/Clawdbot not found — install it first, then run 'clawdbot gateway install'"
         return
     fi
 
@@ -818,8 +818,8 @@ install_gateway() {
 
     if run_cmd "install gateway service" clawdbot gateway install >> "$LOG_FILE" 2>&1; then
         ok "Gateway service installed (auto-starts on boot)"
-        info "Start: systemctl --user start clawdbot-gateway"
-        info "Logs:  journalctl --user -u clawdbot-gateway -f"
+        info "Start: systemctl --user start openclaw-gateway"
+        info "Logs:  journalctl --user -u openclaw-gateway -f"
     else
         warn "Gateway service install failed — run 'clawdbot gateway install' after filling in config"
     fi
@@ -854,7 +854,7 @@ health_check() {
 
     # Clawdbot
     if require_cmd clawdbot && clawdbot --version &>/dev/null; then
-        ok "Clawdbot works ($(clawdbot --version 2>/dev/null))"
+        ok "OpenClaw works ($(clawdbot --version 2>/dev/null))"
         pass=$((pass + 1))
     else
         warn "Clawdbot not functional"
@@ -952,9 +952,9 @@ do_upgrade() {
         local new_ver
         new_ver=$(clawdbot --version 2>/dev/null || echo "unknown")
         if [ "$old_ver" = "$new_ver" ]; then
-            ok "Clawdbot already at latest ($new_ver)"
+            ok "OpenClaw already at latest ($new_ver)"
         else
-            ok "Clawdbot updated: $old_ver → $new_ver"
+            ok "OpenClaw updated: $old_ver → $new_ver"
         fi
     else
         warn "Clawdbot not installed — run setup without --upgrade first"
@@ -1003,7 +1003,7 @@ do_upgrade() {
         echo -e "  ${CYAN}ls $ref_dir/${NC}"
         echo ""
     fi
-    echo -e "  Restart gateway: ${CYAN}systemctl --user restart clawdbot-gateway${NC}"
+    echo -e "  Restart gateway: ${CYAN}systemctl --user restart openclaw-gateway${NC}"
     echo ""
 }
 
@@ -1044,9 +1044,9 @@ do_uninstall() {
     # Step 1: Stop and remove gateway service
     step "Stop gateway service"
     if [ -z "$IN_CONTAINER" ]; then
-        systemctl --user stop clawdbot-gateway 2>/dev/null && ok "Gateway stopped" || skip "Gateway not running"
-        systemctl --user disable clawdbot-gateway 2>/dev/null && ok "Gateway disabled" || skip "Gateway not enabled"
-        local service_file="$HOME/.config/systemd/user/clawdbot-gateway.service"
+        systemctl --user stop openclaw-gateway 2>/dev/null && ok "Gateway stopped" || skip "Gateway not running"
+        systemctl --user disable openclaw-gateway 2>/dev/null && ok "Gateway disabled" || skip "Gateway not enabled"
+        local service_file="$HOME/.config/systemd/user/openclaw-gateway.service"
         if [ -f "$service_file" ]; then
             rm -f "$service_file"
             systemctl --user daemon-reload 2>/dev/null
@@ -1062,7 +1062,7 @@ do_uninstall() {
     step "Remove Clawdbot"
     if require_cmd clawdbot; then
         run_cmd "uninstall clawdbot" $SUDO npm uninstall -g clawdbot >> "$LOG_FILE" 2>&1
-        ok "Clawdbot uninstalled"
+        ok "OpenClaw uninstalled"
     else
         skip "Clawdbot not installed"
     fi
@@ -1137,10 +1137,10 @@ do_reset() {
     local config_file="$CONFIG_DIR/clawdbot.json"
     mkdir -p "$CONFIG_DIR"
 
-    if [ -n "${LOCAL_REF:-}" ] && [ -f "$LOCAL_REF/clawdbot-template.json" ]; then
-        cp "$LOCAL_REF/clawdbot-template.json" "$config_file"
+    if [ -n "${LOCAL_REF:-}" ] && [ -f "$LOCAL_REF/openclaw-template.json" ]; then
+        cp "$LOCAL_REF/openclaw-template.json" "$config_file"
     else
-        curl -fsSL "$REPO_RAW/clawdbot-template.json" -o "$config_file" 2>> "$LOG_FILE"
+        curl -fsSL "$REPO_RAW/openclaw-template.json" -o "$config_file" 2>> "$LOG_FILE"
     fi
     sed -i "s|\$HOME|$HOME|g" "$config_file"
     ok "Fresh config template applied"
@@ -1151,7 +1151,7 @@ do_reset() {
 
     echo ""
     echo -e "${GREEN}${BOLD}Reset complete.${NC}"
-    echo -e "  Restart gateway: ${CYAN}systemctl --user restart clawdbot-gateway${NC}"
+    echo -e "  Restart gateway: ${CYAN}systemctl --user restart openclaw-gateway${NC}"
     echo ""
 }
 
@@ -1192,25 +1192,25 @@ autostart_gateway() {
         fi
     else
         # systemd: start the service
-        if systemctl --user is-enabled clawdbot-gateway &>/dev/null; then
+        if systemctl --user is-enabled openclaw-gateway &>/dev/null; then
             if [ -z "$SKIP_INTERACTIVE" ]; then
                 echo ""
                 echo -e "  ${BOLD}Start the gateway now? [Y/n]${NC}"
                 read -r start_confirm
                 if [[ "${start_confirm:-Y}" =~ ^[Nn] ]]; then
-                    info "Skipped — start later with: systemctl --user start clawdbot-gateway"
+                    info "Skipped — start later with: systemctl --user start openclaw-gateway"
                     return
                 fi
             fi
-            if systemctl --user start clawdbot-gateway 2>/dev/null; then
+            if systemctl --user start openclaw-gateway 2>/dev/null; then
                 sleep 3
-                if systemctl --user is-active clawdbot-gateway &>/dev/null; then
+                if systemctl --user is-active openclaw-gateway &>/dev/null; then
                     ok "Gateway is running! 🎉 Your AI team is online."
                 else
-                    warn "Gateway started but may not be active yet — check: systemctl --user status clawdbot-gateway"
+                    warn "Gateway started but may not be active yet — check: systemctl --user status openclaw-gateway"
                 fi
             else
-                warn "Gateway failed to start — check: journalctl --user -u clawdbot-gateway -n 20"
+                warn "Gateway failed to start — check: journalctl --user -u openclaw-gateway -n 20"
             fi
         fi
     fi
@@ -1263,9 +1263,9 @@ print_summary() {
     echo ""
 
     # Check if config still has placeholders
-    local start_cmd="systemctl --user start clawdbot-gateway"
-    local verify_cmd="systemctl --user status clawdbot-gateway"
-    local logs_cmd="journalctl --user -u clawdbot-gateway -f"
+    local start_cmd="systemctl --user start openclaw-gateway"
+    local verify_cmd="systemctl --user status openclaw-gateway"
+    local logs_cmd="journalctl --user -u openclaw-gateway -f"
     if [ -n "$IN_CONTAINER" ]; then
         start_cmd="clawdbot gateway start"
         verify_cmd="clawdbot gateway status"

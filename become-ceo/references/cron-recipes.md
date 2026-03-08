@@ -34,7 +34,7 @@ Copy these recipes and customize for your team. Each includes the cron command, 
 **Output:** Discord `#standup` + Notion Daily Reports
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 9 * * *" --tz "America/New_York" \
   --text "Run daily standup. Ask each department for status. Post a summary to #standup. Archive to Notion Daily Reports database."
@@ -68,7 +68,7 @@ Legal: ToS update reviewed. No action needed.
 **Output:** Discord `#billing-alerts` + Notion Financial Records
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent finance \
   --cron "0 9 * * 1" --tz "America/New_York" \
   --text "Run weekly cost review. Check LLM API spend, compute costs, and third-party service bills. Compare to last week. Post summary to #billing-alerts. Archive to Notion Financial Records."
@@ -103,7 +103,7 @@ Recommendations:
 **Output:** Discord `#monthly-reports` + Notion Monthly Reports
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent management \
   --cron "0 10 1 * *" --tz "America/New_York" \
   --text "Generate monthly executive summary. Pull data from all Notion databases: Daily Reports (highlights), Financial Records (monthly totals), Engineering Wiki (major ADRs), Marketing Hub (content performance), Incident Log (uptime stats). Create comprehensive report. Post to #monthly-reports. Archive to Notion Monthly Reports."
@@ -124,7 +124,7 @@ clawdbot cron add \
 **Output:** Discord `#bugs` (only when new issues found)
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent engineering \
   --cron "0 * * * *" \
   --text "Check GitHub for new untriaged issues across all repos (gh issue list --state open --label '' --limit 10). Label, assign priority, and post a summary to #bugs. Skip if no new issues."
@@ -144,7 +144,7 @@ clawdbot cron add \
 **Output:** Discord `#deployments`
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "0 0 * * *" --tz "America/New_York" \
   --text "Deploy main branch to staging. Check CI status first — if red, skip and alert #deployments. If green, trigger deploy, run smoke tests, report results."
@@ -164,7 +164,7 @@ clawdbot cron add \
 **Output:** Discord `#security` + Notion Incident Log (if findings)
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "0 8 * * 1" --tz "America/New_York" \
   --text "Run weekly security audit across all repos. Check: dependency vulnerabilities (gh api repos/{owner}/{repo}/dependabot/alerts), secret scanning alerts, license compliance. Post summary to #security. Log critical findings to Notion Incident Log."
@@ -179,7 +179,7 @@ clawdbot cron add \
 **Output:** Discord `#deployments` (only on failures)
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "0 6 * * *" --tz "America/New_York" \
   --text "Screenshot production pages (homepage, dashboard, pricing) across mobile/tablet/desktop viewports. Compare against yesterday's screenshots. Report any visual regressions to #deployments. If everything looks good, stay silent."
@@ -194,7 +194,7 @@ clawdbot cron add \
 **Output:** Discord `#deployments` (only on failures)
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --cron "0 */6 * * *" \
   --text "Health check all production endpoints: main app, API, docs site, status page. Check HTTP status, response time, SSL expiry. Only alert #deployments if something is down or SSL expires within 7 days."
@@ -214,7 +214,7 @@ clawdbot cron add \
 **Output:** Local files in `memory/notion-backup/`
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 3 * * 0" --tz "America/New_York" \
   --text "Export critical Notion databases to local workspace for backup. Query Daily Reports (last 7 days), Financial Records (last 30 days), Engineering Wiki (all), Incident Log (last 30 days). Save as markdown to memory/notion-backup/ with timestamps."
@@ -229,7 +229,7 @@ clawdbot cron add \
 **Output:** Discord `#general` + Notion Project Archives
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent management \
   --cron "0 16 * * 5" --tz "America/New_York" \
   --text "Calculate sprint velocity: count issues closed this week, PRs merged, story points completed. Compare to last 4 sprints. Post velocity chart (text-based) and forecast for next sprint. Archive to Notion Project Archives."
@@ -244,7 +244,7 @@ clawdbot cron add \
 **Output:** Discord `#marketing` + Notion Marketing Hub
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent marketing \
   --cron "0 10 * * 3" --tz "America/New_York" \
   --text "Review content performance. Use browser to check analytics for blog posts, social media engagement, and landing page conversion rates. Compare to last week. Identify top 3 and bottom 3 performers. Post insights to #marketing. Update Notion Marketing Hub with metrics."
@@ -259,7 +259,7 @@ clawdbot cron add \
 **Output:** Local workspace cleanup
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 2 1 * *" --tz "America/New_York" \
   --text "Workspace maintenance: clean up temp files older than 30 days, compress old log files, check disk usage, verify all cron jobs are still relevant. Post maintenance summary to #general."
@@ -288,27 +288,27 @@ clawdbot cron add \
 
 **List all active cron jobs:**
 ```bash
-clawdbot cron list
+openclaw cron list
 ```
 
 **Disable a job temporarily:**
 ```bash
-clawdbot cron disable <job-id>
+openclaw cron disable <job-id>
 ```
 
 **Run a job immediately (testing):**
 ```bash
-clawdbot cron run <job-id>
+openclaw cron run <job-id>
 ```
 
 **Update a job's schedule:**
 ```bash
-clawdbot cron update <job-id> --cron "0 10 * * *"
+openclaw cron update <job-id> --cron "0 10 * * *"
 ```
 
 **View job run history:**
 ```bash
-clawdbot cron runs <job-id>
+openclaw cron runs <job-id>
 ```
 
 ---
@@ -317,11 +317,11 @@ clawdbot cron runs <job-id>
 
 **Agent:** DevOps  
 **Schedule:** Event-driven (no fixed schedule)  
-**Trigger:** `clawdbot cron wake <job-id>` from CI webhook  
+**Trigger:** `openclaw cron wake <job-id>` from CI webhook  
 **Output:** Discord `#deployments`
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --text "Production deploy detected. Run smoke tests: check all 
          critical endpoints (homepage, API /health, dashboard login).
@@ -331,7 +331,7 @@ clawdbot cron add \
 
 **Integration notes:**
 - No `--cron` flag — this job only runs when woken by an event
-- Wire your CI/CD pipeline to call `clawdbot cron wake <job-id>` after deploy
+- Wire your CI/CD pipeline to call `openclaw cron wake <job-id>` after deploy
 - Combines with the nightly staging deploy for full coverage
 
 ---
@@ -343,11 +343,11 @@ clawdbot cron add \
 **Output:** Discord `#general` (only on failures)
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 8 * * *" --tz "America/New_York" \
-  --text "Audit all cron jobs. Run 'clawdbot cron list' and check 
-         'clawdbot cron runs <id>' for each. Report: jobs that failed 
+  --text "Audit all cron jobs. Run 'openclaw cron list' and check 
+         'openclaw cron runs <id>' for each. Report: jobs that failed 
          in the last 24h, jobs that didn't run when expected, jobs 
          taking abnormally long. If all healthy, stay silent."
 ```
@@ -366,7 +366,7 @@ clawdbot cron add \
 **Output:** Discord `#billing-alerts` (only when thresholds exceeded)
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent finance \
   --cron "0 */4 * * *" \
   --text "Check LLM API spend. If over threshold, alert #billing-alerts.
@@ -390,7 +390,7 @@ clawdbot cron add \
 **Output:** Discord `#general` + Notion Monthly Reports
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent management \
   --model "$LLM_PROVIDER/$MODEL_STRONG" \
   --cron "0 10 1 1,4,7,10 *" --tz "America/New_York" \
@@ -418,11 +418,11 @@ clawdbot cron add \
 
 **Agent:** DevOps  
 **Schedule:** Event-driven (triggered by uptime monitor failure)  
-**Trigger:** Chain from uptime monitor or `clawdbot cron wake <job-id>`  
+**Trigger:** Chain from uptime monitor or `openclaw cron wake <job-id>`  
 **Output:** Discord `#security` + Notion Incident Log
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent devops \
   --text "Incident detected. Execute escalation protocol:
          1. Collect diagnostics: which endpoints are down, since when,
@@ -453,7 +453,7 @@ clawdbot cron add \
 **Output:** Discord `#general` + Notion Daily Reports
 
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent main \
   --cron "0 14 1,15 * *" --tz "America/New_York" \
   --text "Run cross-department audit. Spawn sub-agents to check:
@@ -489,7 +489,7 @@ When designing a new cron job, follow this structure:
 
 **Template:**
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --agent <agent-id> \
   --cron "<cron-expression>" --tz "<timezone>" \
   --text "<plain English task description with output destination>"
@@ -500,4 +500,4 @@ clawdbot cron add \
 - Include "only alert if..." conditions to reduce notification noise
 - Specify output format: Discord channel, Notion database, or local file
 - Set appropriate agent: cheap tasks → fast model agents, complex analysis → strong model agents
-- Test with `clawdbot cron run <job-id>` before relying on the schedule
+- Test with `openclaw cron run <job-id>` before relying on the schedule

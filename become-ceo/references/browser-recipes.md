@@ -34,7 +34,7 @@ Ready-to-use workflow templates for common browser automation scenarios. These c
 
 ### Cron Setup
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "seo-audit-weekly" --agent marketing \
   --cron "0 9 * * 1" \
   --message "Run a full SEO audit on our website. Check the homepage, pricing, docs landing, blog index, and about page. For each: verify title tag (50-60 chars), meta description (150-160 chars), H1 presence, image alt text, and Open Graph tags. Report issues only — skip pages that pass all checks. Save the full report to Marketing Hub on Notion." \
@@ -74,7 +74,7 @@ clawdbot cron add \
 
 ### Cron Setup
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "price-monitor" --agent marketing \
   --cron "0 8 * * *" \
   --message "Check competitor pricing pages: [competitor-a.com/pricing], [competitor-b.com/pricing], [competitor-c.com/pricing]. Extract all plan names, prices, and key features. Compare against the last entry in the Competitive Pricing table on Notion. If any price changed or features were added/removed, alert in #marketing with a comparison table. Save today's snapshot to Notion regardless." \
@@ -153,7 +153,7 @@ Marketing:       Published to 3 platforms. Verifying...
 
 ### Cron Setup
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "analytics-extract" --agent marketing \
   --cron "0 9 * * 1" \
   --message "Using the Chrome browser profile, navigate to our analytics dashboard. Set date range to last 7 days. Extract: total visitors, page views, bounce rate, top 5 pages, top 5 referrers, and conversion rate. Format as a weekly traffic report and save to Marketing Hub on Notion. Post a summary to #marketing." \
@@ -185,7 +185,7 @@ Finance:         Extracting from 4 dashboards...
 
 ### Cron Setup
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "site-health-check" --agent devops \
   --cron "0 */6 * * *" \
   --message "Check these URLs and verify they load correctly: [app.example.com] (expect login page), [api.example.com/health] (expect JSON with status:ok), [docs.example.com] (expect docs homepage), [status.example.com] (check for any incidents). Take a screenshot of any page that looks wrong. Only alert in #devops if something is broken — stay silent if everything is fine." \
@@ -235,7 +235,7 @@ DevOps:          ⚠️ Site Health Alert — 1 issue found
 
 ### Cron Setup — Post Publisher
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "social-publish" --agent marketing \
   --cron "0 9 * * 2-4" \
   --message "Check the Social Media Queue in Notion for any posts scheduled for today on LinkedIn. If found, publish via browser and update the Notion entry with the live URL and status='Published'. Post confirmation to #marketing." \
@@ -244,7 +244,7 @@ clawdbot cron add \
 
 ### Cron Setup — Engagement Tracker
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "social-engagement" --agent marketing \
   --cron "0 10 * * *" \
   --message "Check yesterday's social media posts in the Marketing Hub on Notion. For each post marked 'Published' in the last 48 hours, use the browser to visit the post URL and extract engagement metrics (likes, comments, shares, impressions if visible). Update the Notion entry with these metrics. Only post to #marketing if any post exceeded 100 engagements." \
@@ -271,7 +271,7 @@ clawdbot cron add \
 
 ### Cron Setup
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "a11y-monthly-audit" --agent engineering \
   --cron "0 10 1 * *" \
   --message "Run an accessibility audit on these pages: homepage, login, dashboard, pricing, docs landing. For each page: check image alt text, form labels, color contrast (min 4.5:1 for text, 3:1 for large text), heading hierarchy, keyboard navigation, ARIA attributes, and focus management. Score each page out of 100. Compare with last month's audit in the Engineering Wiki. Flag any regressions (score dropped or new critical issues). Save the full report to Notion and post a summary to #engineering. If any page scores below 70, create a GitHub Issue with the specific fixes needed." \
@@ -324,7 +324,7 @@ Page Scores:
 
 ### Cron Setup — Monthly Billing PDF
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "billing-pdf-monthly" --agent finance \
   --cron "0 9 1 * *" \
   --message "Using the Chrome browser profile, navigate to our billing dashboard. Set the date range to last month. Generate a PDF of the full billing summary page (letter size, include background graphics). Attach the PDF to this month's Financial Records entry on Notion. Post the total spend and PDF to #finance." \
@@ -333,7 +333,7 @@ clawdbot cron add \
 
 ### Cron Setup — Weekly Analytics PDF
 ```bash
-clawdbot cron add \
+openclaw cron add \
   --name "analytics-pdf-weekly" --agent marketing \
   --cron "0 9 * * 1" \
   --message "Using the Chrome browser profile, navigate to our analytics dashboard. Set date range to last 7 days. Generate a PDF of the traffic overview page. Also generate a PDF of the conversion funnel page. Attach both PDFs to this week's entry in the Marketing Hub on Notion. Post key metrics (visitors, conversions, top pages) to #marketing." \

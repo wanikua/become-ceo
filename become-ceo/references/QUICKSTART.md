@@ -20,15 +20,15 @@ That's it. The script installs everything, walks you through config, and starts 
 
 | What | Command |
 |------|---------|
-| Start gateway | `systemctl --user start clawdbot-gateway` |
-| Stop gateway | `systemctl --user stop clawdbot-gateway` |
-| Restart gateway | `systemctl --user restart clawdbot-gateway` |
-| Check status | `clawdbot status` |
-| View logs | `journalctl --user -u clawdbot-gateway -f` |
-| Diagnose issues | `clawdbot doctor` |
-| Edit config | `nano ~/.clawdbot/clawdbot.json` |
+| Start gateway | `systemctl --user start openclaw-gateway` |
+| Stop gateway | `systemctl --user stop openclaw-gateway` |
+| Restart gateway | `systemctl --user restart openclaw-gateway` |
+| Check status | `openclaw status` |
+| View logs | `journalctl --user -u openclaw-gateway -f` |
+| Diagnose issues | `openclaw doctor` |
+| Edit config | `nano ~/.openclaw/openclaw.json` |
 
-> **Container/Docker?** Replace `systemctl` commands with `clawdbot gateway start/stop/restart`.
+> **Container/Docker?** Replace `systemctl` commands with `openclaw gateway start/stop/restart`.
 
 ---
 
@@ -47,16 +47,16 @@ That's it. The script installs everything, walks you through config, and starts 
 
 ```bash
 # Add a daily standup at 9 AM
-clawdbot cron add --agent main --cron "0 9 * * *" --text "Run daily standup: collect status from all departments, post summary to #standup, archive to Notion"
+openclaw cron add --agent main --cron "0 9 * * *" --text "Run daily standup: collect status from all departments, post summary to #standup, archive to Notion"
 
 # List all cron jobs
-clawdbot cron list
+openclaw cron list
 
 # Test a job right now
-clawdbot cron run <job-id>
+openclaw cron run <job-id>
 
 # Disable a job
-clawdbot cron disable <job-id>
+openclaw cron disable <job-id>
 ```
 
 ---
@@ -101,7 +101,7 @@ nano ~/clawd/USER.md
 
 ---
 
-## 🏗️ Config Structure (clawdbot.json)
+## 🏗️ Config Structure (openclaw.json)
 
 ```
 models.providers     → LLM credentials (API key, base URL)
@@ -160,8 +160,8 @@ Cron detects downtime → DevOps investigates → spawns Engineering if code iss
 | Messages disappear | Set `groupPolicy: "open"` on **each account** in config |
 | Agent confused | Check workspace has SOUL.md, USER.md, IDENTITY.md |
 | High costs | Switch more agents to Fast model in config |
-| Gateway won't start | `clawdbot doctor` + check logs |
-| Config error | `python3 -m json.tool < ~/.clawdbot/clawdbot.json` |
+| Gateway won't start | `openclaw doctor` + check logs |
+| Config error | `python3 -m json.tool < ~/.openclaw/openclaw.json` |
 
 ---
 
@@ -181,9 +181,9 @@ Cron detects downtime → DevOps investigates → spawns Engineering if code iss
 | What | Where |
 |------|-------|
 | Full README | [README.md](../README.md) |
-| Clawdbot Docs | [docs.clawd.bot](https://docs.clawd.bot) |
+| OpenClaw Docs | [docs.clawd.bot](https://docs.clawd.bot) |
 | Skill Marketplace | [clawdhub.com](https://clawdhub.com) |
-| Config Template | [`clawdbot-template.json`](./clawdbot-template.json) |
+| Config Template | [`openclaw-template.json`](./openclaw-template.json) |
 | Cron Recipes | [`cron-recipes.md`](./cron-recipes.md) (18 templates) |
 | Browser Recipes | [`browser-recipes.md`](./browser-recipes.md) (8 templates) |
 | GitHub Workflows | [`github-workflows.md`](./github-workflows.md) (8 templates) |
