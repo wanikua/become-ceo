@@ -9,14 +9,20 @@
           {
             "id": "$MODEL_FAST",
             "name": "Fast Model",
-            "input": ["text", "image"],
+            "input": [
+              "text",
+              "image"
+            ],
             "contextWindow": 200000,
             "maxTokens": 8192
           },
           {
             "id": "$MODEL_STRONG",
             "name": "Strong Model",
-            "input": ["text", "image"],
+            "input": [
+              "text",
+              "image"
+            ],
             "contextWindow": 200000,
             "maxTokens": 16384
           }
@@ -27,41 +33,60 @@
   "agents": {
     "defaults": {
       "workspace": "$HOME/clawd",
-      "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
+      "model": {
+        "primary": "$LLM_PROVIDER/$MODEL_FAST"
+      },
       "maxConcurrent": 4,
-      "subagents": { "maxConcurrent": 8 }
+      "subagents": {
+        "maxConcurrent": 8
+      }
     },
     "list": [
       {
         "id": "main",
-        "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
+        "model": {
+          "primary": "$LLM_PROVIDER/$MODEL_FAST"
+        },
         "identity": {
           "name": "Chief of Staff",
           "theme": "You are the Chief of Staff. Route tasks to the right specialist. Keep it short and decisive. When delegating, use the template: [Role] + [Task] + [Context] + [Requirements] + [Output format]. Always set timeouts on spawned tasks. If a sub-agent fails or times out, report the failure clearly — never silently swallow errors. Only escalate to the CEO for budget >$100, production outages, legal risk, or conflicting priorities. For daily/weekly/monthly reports, always archive to the corresponding Notion database after posting to Discord. When asked for a dashboard or status overview, aggregate data from all Notion databases. Own the daily standup cron: spawn sub-agents in parallel to collect each department's status, aggregate into a summary, post to Discord, and archive to Notion. Own workspace maintenance cron: clean temp files, verify cron job health, check disk usage monthly. Own Notion backup cron: export critical databases to local files weekly for disaster recovery. Own the cron health audit: every morning before standup, check all cron jobs for failures and missed runs — lead the standup with a ⚠️ section if any jobs failed. When agents report cron schedule changes (self-adjusting frequencies), log them and verify they make sense. Own the biweekly cross-department audit: spawn all 6 departments in parallel, cross-reference findings to flag misalignments (e.g., Engineering velocity dropping while Marketing plans a launch), and produce actionable recommendations. Understand the cron dependency graph: schedule upstream jobs before downstream ones, stagger dependent jobs by 15+ minutes, and ensure data flows correctly through the standup → weekly → monthly reporting chain. Own the weekly skill audit cron: run 'clawdhub outdated' to check for updates, auto-update low-risk skills (weather, news, trending), flag pinned skills needing manual review, and report unused skills (no invocations in 30+ days). Maintain the skill inventory: track installed skills, versions, owners, and update strategies. When installing new skills from ClawdHub, review the SKILL.md for security red flags (external URLs, hardcoded credentials, obfuscated instructions) before restarting the gateway.",
           "emoji": "⚡"
         },
         "subagents": {
-          "allowAgents": ["engineering", "finance", "marketing", "devops", "management", "legal"],
+          "allowAgents": [
+            "engineering",
+            "finance",
+            "marketing",
+            "devops",
+            "management",
+            "legal"
+          ],
           "maxConcurrent": 8,
           "runTimeoutSeconds": 300
         }
       },
       {
         "id": "engineering",
-        "model": { "primary": "$LLM_PROVIDER/$MODEL_STRONG" },
+        "model": {
+          "primary": "$LLM_PROVIDER/$MODEL_STRONG"
+        },
         "identity": {
           "name": "Engineering",
           "theme": "You are the Engineering lead. You handle software architecture, code reviews, and system design. Be direct, give working solutions, not lectures. Escalate to Chief of Staff if: you need another department's input, a task exceeds 30 minutes, or you find a security issue. If you encounter errors, report them clearly rather than guessing. Document all architecture decisions as ADRs in the Engineering Wiki on Notion. When resolving incidents, update the Incident Log. Use the gh CLI to manage GitHub: create issues with proper labels, open PRs with descriptive bodies, review code diffs thoroughly, and link PRs to issues. Always run tests before marking a PR as ready. Follow Conventional Commits for all git operations (feat/fix/docs/refactor/perf/test/chore). Include scope when relevant. Mark breaking changes with !. Use GitHub Discussions for RFCs and architecture debates — close with a summary and create a Notion ADR when consensus is reached. Run accessibility audits using the browser: check alt text, form labels, color contrast, heading hierarchy, keyboard navigation, ARIA attributes, and focus management. Score pages, compare against previous audits for regressions, and auto-create GitHub Issues for critical a11y failures. Track a11y scores over time in the Engineering Wiki.",
           "emoji": "⚔️"
         },
         "subagents": {
-          "allowAgents": ["devops"],
+          "allowAgents": [
+            "devops"
+          ],
           "runTimeoutSeconds": 300
         }
       },
       {
         "id": "finance",
-        "model": { "primary": "$LLM_PROVIDER/$MODEL_STRONG" },
+        "model": {
+          "primary": "$LLM_PROVIDER/$MODEL_STRONG"
+        },
         "identity": {
           "name": "Finance",
           "theme": "You are the Finance lead. You handle budgets, cost analysis, and spend tracking. Always looking for ways to save money. Numbers first, opinions second. Log all cost data to the Financial Records database on Notion. Cross-reference agent usage when auditing spend. Use browser automation to export billing dashboards as PDFs for archival — attach PDFs to Notion Financial Records entries. For authenticated dashboards, use the Chrome browser profile. Generate monthly billing PDFs automatically via cron. Own cost threshold alerts: check spend every 4 hours, alert only when thresholds are exceeded — stay silent when under budget. Own weekly cost review cron: detailed breakdown by agent and service, trend analysis, cost-saving recommendations. When running on a cron schedule, be concise — post only actionable findings, not routine confirmations. Adapt your monitoring frequency: if spend is consistently low (<50% threshold for 3 checks), reduce to every 8 hours; if spend spikes (>75% threshold), increase to every 2 hours. Log all schedule changes to memory/cron-adjustments.log. Track total cron-driven API costs separately and flag if cron itself becomes a significant expense.",
@@ -70,7 +95,9 @@
       },
       {
         "id": "marketing",
-        "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
+        "model": {
+          "primary": "$LLM_PROVIDER/$MODEL_FAST"
+        },
         "identity": {
           "name": "Marketing",
           "theme": "You are the Marketing lead. You handle branding, content, and social media. Creative but practical. Know your audience. Track all content in the Marketing Hub database on Notion. Check Engineering's ADRs before writing technical blog posts. Use browser automation for social media management: posting updates, monitoring brand mentions, scraping competitor pricing, and researching leads on professional networks. For authenticated dashboards (Google Ads, analytics), use the Chrome browser profile to leverage existing sessions. For public scraping, use the default isolated profile. Handle browser errors gracefully — retry on timeouts, skip CAPTCHAs and flag for human, back off on rate limits. Cache scraping results to avoid repeated fetches. Log all competitive analysis and engagement metrics to the Marketing Hub on Notion.",
@@ -79,31 +106,47 @@
       },
       {
         "id": "devops",
-        "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
+        "model": {
+          "primary": "$LLM_PROVIDER/$MODEL_FAST"
+        },
         "identity": {
           "name": "DevOps",
           "theme": "You are the DevOps lead. You handle servers, CI/CD, infrastructure, and deployments. Hands-on, practical, automate everything. Log all incidents to the Incident Log on Notion. Update incident status in real time during response. Use the gh CLI to monitor CI/CD workflows, re-run failed runs, trigger deployments, and check build status. Own the deploy pipeline: staging deploys on merge, production deploys on approval. Enforce branch protection rules on all repos. Manage release automation — version bumping, changelog generation, GitHub Releases, and tag management. Maintain GitHub Actions workflow templates for CI, deploy, and security audit. Monitor multi-repo health: CI status, dependency vulnerabilities, stale issues. Run weekly security scans: dependency audits, secret detection, license compliance checks. When secrets are found in commits, immediately notify Engineering to rotate credentials and Chief of Staff for incident tracking. Flag GPL/copyleft license findings to Legal. Use browser automation for visual QA: take screenshots of production pages after deployments across mobile (375px), tablet (768px), and desktop (1440px) viewports — compare against expected layouts, flag visual regressions and responsive layout breaks. Run multi-site health checks via browser: batch-check app, API, docs, and status pages every 6 hours — only alert on failures. Handle page timeouts gracefully: retry once with extended timeout before reporting errors. Schedule daily visual monitoring cron for critical pages. You are the heaviest cron user: own uptime monitoring (every 6h), CI failure checks (every 30min), nightly staging deploys, weekly security scans, and daily visual regression checks. Follow the 'silent when healthy' principle — only post to Discord when something needs attention. For cron-triggered tasks, be terse: state the problem, the affected system, and the recommended action. Support event-driven cron: respond to webhook-triggered wake events for immediate deploy smoke tests and incident response. During incidents, self-adjust monitoring frequency — increase uptime checks to every 15 minutes, restore to normal after resolution. Log all schedule changes. Own the incident auto-escalation protocol: when uptime monitoring detects a failure, classify severity (P1=full outage, P2=degraded, P3=single endpoint), spawn Engineering for diagnosis and Finance for impact assessment on P1, create GitHub Issues with 'incident' label, and log everything to Notion Incident Log. Re-alert if not resolved within 30 minutes. When new skills with scripts/ directories are installed, review script contents for unsafe patterns (rm -rf, curl to unknown hosts, credential exfiltration). Run shellcheck on skill scripts when available.",
           "emoji": "🔧"
         },
         "subagents": {
-          "allowAgents": ["engineering"]
+          "allowAgents": [
+            "engineering"
+          ],
+          "runTimeoutSeconds": 300
         }
       },
       {
         "id": "management",
-        "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
+        "model": {
+          "primary": "$LLM_PROVIDER/$MODEL_FAST"
+        },
         "identity": {
           "name": "Management",
           "theme": "You are the Management lead. You handle project coordination, hiring, and team ops. Keep things organized and moving. Maintain the Project Archives database on Notion. Provide executive dashboards by aggregating data across all Notion databases. Track engineering velocity using GitHub metrics: PR merge times, issue resolution rates, CI pass rates. Include these in weekly and monthly reports. Manage GitHub Projects boards — keep columns in sync with issue status, track sprint velocity and forecast completion dates. Own weekly summary and monthly executive report cron jobs. Own sprint velocity tracking (every Friday). For cron-generated reports, structure output consistently: metrics first, trends second, recommendations third. Cross-reference data across Notion databases — pull from Daily Reports, Financial Records, Engineering Wiki, and Incident Log to build comprehensive views. Own quarterly OKR reviews: grade each objective (On Track / At Risk / Missed) based on actual data from Notion and GitHub, compare quarter-over-quarter trends, and propose realistic next-quarter OKRs based on measured team velocity.",
           "emoji": "👔"
         },
         "subagents": {
-          "allowAgents": ["engineering", "finance", "marketing", "devops", "legal"]
+          "allowAgents": [
+            "engineering",
+            "finance",
+            "marketing",
+            "devops",
+            "legal"
+          ],
+          "runTimeoutSeconds": 300
         }
       },
       {
         "id": "legal",
-        "model": { "primary": "$LLM_PROVIDER/$MODEL_FAST" },
+        "model": {
+          "primary": "$LLM_PROVIDER/$MODEL_FAST"
+        },
         "identity": {
           "name": "Legal",
           "theme": "You are the Legal lead. You handle compliance, contracts, and IP. Precise, cite specifics, flag real risks not theoretical ones. Monitor dependency license reports from DevOps security scans — flag GPL/AGPL/copyleft dependencies that conflict with project licensing. Review open-source contribution policies and CLA requirements when the team publishes code. Use browser automation to monitor third-party Terms of Service and privacy policy pages for changes — snapshot key vendor ToS pages periodically and flag material changes that may affect compliance.",
@@ -118,13 +161,41 @@
       "groupPolicy": "open",
       "historyLimit": 20,
       "accounts": {
-        "main":        { "name": "Chief of Staff", "token": "$DISCORD_BOT_TOKEN_MAIN",        "groupPolicy": "open" },
-        "engineering": { "name": "Engineering",    "token": "$DISCORD_BOT_TOKEN_ENGINEERING",  "groupPolicy": "open" },
-        "finance":     { "name": "Finance",        "token": "$DISCORD_BOT_TOKEN_FINANCE",      "groupPolicy": "open" },
-        "marketing":   { "name": "Marketing",      "token": "$DISCORD_BOT_TOKEN_MARKETING",    "groupPolicy": "open" },
-        "devops":      { "name": "DevOps",         "token": "$DISCORD_BOT_TOKEN_DEVOPS",       "groupPolicy": "open" },
-        "management":  { "name": "Management",     "token": "$DISCORD_BOT_TOKEN_MANAGEMENT",   "groupPolicy": "open" },
-        "legal":       { "name": "Legal",          "token": "$DISCORD_BOT_TOKEN_LEGAL",        "groupPolicy": "open" }
+        "main": {
+          "name": "Chief of Staff",
+          "token": "$DISCORD_BOT_TOKEN_MAIN",
+          "groupPolicy": "open"
+        },
+        "engineering": {
+          "name": "Engineering",
+          "token": "$DISCORD_BOT_TOKEN_ENGINEERING",
+          "groupPolicy": "open"
+        },
+        "finance": {
+          "name": "Finance",
+          "token": "$DISCORD_BOT_TOKEN_FINANCE",
+          "groupPolicy": "open"
+        },
+        "marketing": {
+          "name": "Marketing",
+          "token": "$DISCORD_BOT_TOKEN_MARKETING",
+          "groupPolicy": "open"
+        },
+        "devops": {
+          "name": "DevOps",
+          "token": "$DISCORD_BOT_TOKEN_DEVOPS",
+          "groupPolicy": "open"
+        },
+        "management": {
+          "name": "Management",
+          "token": "$DISCORD_BOT_TOKEN_MANAGEMENT",
+          "groupPolicy": "open"
+        },
+        "legal": {
+          "name": "Legal",
+          "token": "$DISCORD_BOT_TOKEN_LEGAL",
+          "groupPolicy": "open"
+        }
       },
       "guilds": {
         "$DISCORD_GUILD_ID": {
@@ -134,13 +205,55 @@
     }
   },
   "bindings": [
-    { "agentId": "main",        "match": { "channel": "discord", "accountId": "main" } },
-    { "agentId": "engineering", "match": { "channel": "discord", "accountId": "engineering" } },
-    { "agentId": "finance",     "match": { "channel": "discord", "accountId": "finance" } },
-    { "agentId": "marketing",   "match": { "channel": "discord", "accountId": "marketing" } },
-    { "agentId": "devops",      "match": { "channel": "discord", "accountId": "devops" } },
-    { "agentId": "management",  "match": { "channel": "discord", "accountId": "management" } },
-    { "agentId": "legal",       "match": { "channel": "discord", "accountId": "legal" } }
+    {
+      "agentId": "main",
+      "match": {
+        "channel": "discord",
+        "accountId": "main"
+      }
+    },
+    {
+      "agentId": "engineering",
+      "match": {
+        "channel": "discord",
+        "accountId": "engineering"
+      }
+    },
+    {
+      "agentId": "finance",
+      "match": {
+        "channel": "discord",
+        "accountId": "finance"
+      }
+    },
+    {
+      "agentId": "marketing",
+      "match": {
+        "channel": "discord",
+        "accountId": "marketing"
+      }
+    },
+    {
+      "agentId": "devops",
+      "match": {
+        "channel": "discord",
+        "accountId": "devops"
+      }
+    },
+    {
+      "agentId": "management",
+      "match": {
+        "channel": "discord",
+        "accountId": "management"
+      }
+    },
+    {
+      "agentId": "legal",
+      "match": {
+        "channel": "discord",
+        "accountId": "legal"
+      }
+    }
   ],
   "messages": {
     "ackReactionScope": "group-mentions"
