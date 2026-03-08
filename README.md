@@ -6,7 +6,7 @@
 
 ### 5-Minute Setup · 7 AI Agents · Zero Code · Modern Management × AI Automation
 
-> **One free server + [OpenClaw](https://github.com/openclaw/openclaw) = a 7-person executive team that works 24/7.**
+> **One server + [OpenClaw](https://github.com/openclaw/openclaw) = a 7-person executive team that works 24/7.**
 > You're the CEO. Your AI C-suite handles the rest.
 
 <p align="center">
@@ -22,7 +22,7 @@
 **Ship features. Track spend. Write content. Run standup. Deploy to prod.**
 Type one message in Discord — your team handles the rest.
 
-> **TL;DR** — Run `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)` on any Linux server. 5 minutes later you have 7 AI agents on Discord: Engineering, Finance, Marketing, DevOps, Legal, Management, and a Chief of Staff that coordinates them all. They remember context, use real tools (GitHub, Notion, browser, cron), and work 24/7 on autopilot. Cost: ~$15–30/month in API calls on a free server.
+> **TL;DR** — Run `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)` on any Linux server. 5 minutes later you have 7 AI agents on Discord: Engineering, Finance, Marketing, DevOps, Legal, Management, and a Chief of Staff that coordinates them all. They remember context, use real tools (GitHub, Notion, browser, cron), and work 24/7 on autopilot. Cost: ~$15–30/month in API calls.
 >
 > 🍎 **macOS?** `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/install-mac.sh)` · **Already have OpenClaw?** `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/install-lite.sh)`
 
@@ -4558,11 +4558,11 @@ Before you start, you'll need:
 
 | Provider | Recommended Config | Cost | Notes |
 |----------|-------------------|------|-------|
-| **Oracle Cloud** | ARM 4 cores, 24GB RAM | **Always free** | [Always Free Tier](https://www.oracle.com/cloud/free/) — best free option |
-| **AWS** | t4g.medium (ARM) | Free 12 months | [Free Tier](https://aws.amazon.com/free/) |
-| **GCP** | e2-medium | Free 90 days | [Free Trial](https://cloud.google.com/free) |
-| **Alibaba Cloud** | ECS 2-core 4GB / ARM | Free trial / ~$6/mo | [Free Trial](https://free.aliyun.com/) |
-| **Tencent Cloud** | Lighthouse 2-core 4GB | Free trial / ~$6/mo | [Free Trial](https://cloud.tencent.com/act/free) |
+| **Oracle Cloud** | ARM 4-core, 24GB RAM | **Always free** | [Always Free Tier](https://www.oracle.com/cloud/free/) — best free option |
+| **AWS** | t4g.medium (ARM) | Free tier 12 months | [Free Tier](https://aws.amazon.com/free/) |
+| **GCP** | e2-medium | $300 free credit, 90 days | [Free Trial](https://cloud.google.com/free) |
+| **DigitalOcean** | 2 vCPU, 4GB RAM | $200 free credit, 60 days | [Free Trial](https://www.digitalocean.com/) |
+| **Hetzner** | CAX11 (ARM) | From €3.79/mo | [Cloud](https://www.hetzner.com/cloud/) — great EU option |
 | **Local Mac** | M1/M2/M3/M4 | No server needed | See [install-mac.sh](#step-1-one-click-deploy-5-min) below |
 
 > 💡 **Oracle Cloud's free ARM instance** is the sweet spot — 24GB RAM means you can run all 7 agents comfortably with room to spare. Minimum: ARM + 4GB RAM. If running only the Chief of Staff (single agent), 2GB works.
