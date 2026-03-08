@@ -1,20 +1,30 @@
-[中文说明](./README_CN.md)
+[中文说明](./README_CN.md) | [🏛️ 中文朝廷版 AI Court (Chinese)](https://github.com/wanikua/boluobobo-ai-court-tutorial)
+
+<!-- SEO Keywords: AI agent team, multi-agent collaboration, AI executive team, Discord AI bot, autonomous AI agents, AI CEO, AI CTO, AI CFO, AI team management, OpenClaw, multi-agent orchestration, AI automation, zero-code AI, Discord bot framework, AI assistant team -->
 
 # 🏢 Become CEO — Your AI Executive Team on Discord
 
-> One free server + [OpenClaw](https://github.com/openclaw/openclaw) = a 7-person team that works 24/7
+### 5-Minute Setup · 7 AI Agents · Zero Code · Modern Management × AI Automation
 
-[![GitHub Stars](https://img.shields.io/github/stars/wanikua/become-ceo?style=flat&logo=github&label=Stars)](https://github.com/wanikua/become-ceo)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Built on OpenClaw](https://img.shields.io/badge/built%20on-OpenClaw-8A2BE2)](https://github.com/openclaw/openclaw)
-[![Discord](https://img.shields.io/badge/interface-Discord-5865F2?logo=discord&logoColor=white)](https://discord.com)
-[![One-Click Setup](https://img.shields.io/badge/setup-5%20minutes-brightgreen)](https://github.com/wanikua/become-ceo#quick-start)
-[![Skills](https://img.shields.io/badge/skills-60%2B%20%2B%20ClawdHub-orange)](https://github.com/wanikua/become-ceo#built-in-skills-60)
+> **One free server + [OpenClaw](https://github.com/openclaw/openclaw) = a 7-person executive team that works 24/7.**
+> You're the CEO. Your AI C-suite handles the rest.
+
+<p align="center">
+  <a href="https://github.com/wanikua/become-ceo"><img src="https://img.shields.io/github/stars/wanikua/become-ceo?style=for-the-badge&logo=github&label=Stars" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" /></a>
+  <a href="https://github.com/openclaw/openclaw"><img src="https://img.shields.io/badge/framework-OpenClaw-8A2BE2?style=for-the-badge" /></a>
+  <a href="https://discord.com"><img src="https://img.shields.io/badge/interface-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" /></a>
+  <img src="https://img.shields.io/badge/agents-7+-green?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/skills-60+-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/setup-5%20min-red?style=for-the-badge" />
+</p>
 
 **Ship features. Track spend. Write content. Run standup. Deploy to prod.**
 Type one message in Discord — your team handles the rest.
 
 > **TL;DR** — Run `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/setup.sh)` on any Linux server. 5 minutes later you have 7 AI agents on Discord: Engineering, Finance, Marketing, DevOps, Legal, Management, and a Chief of Staff that coordinates them all. They remember context, use real tools (GitHub, Notion, browser, cron), and work 24/7 on autopilot. Cost: ~$15–30/month in API calls on a free server.
+>
+> 🍎 **macOS?** `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/install-mac.sh)` · **Already have OpenClaw?** `bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/install-lite.sh)`
 
 ### See it in action
 
@@ -4544,15 +4554,18 @@ Before you start, you'll need:
 | **Discord Bots** | 7 bot tokens from [discord.com/developers](https://discord.com/developers/applications) |
 | **Discord Server** | Your own server where you can invite bots |
 
-### Free server options
+### Server Recommendations
 
-| Provider | Specs | Notes |
-|----------|-------|-------|
-| **Oracle Cloud** | 4 ARM cores, 24GB RAM | Always-free tier, best specs |
-| **Google Cloud** | 1 vCPU, 1GB RAM (e2-micro) | Always-free, tight on RAM |
-| **AWS** | 1 vCPU, 1GB RAM (t2.micro) | Free for 12 months |
+| Provider | Recommended Config | Cost | Notes |
+|----------|-------------------|------|-------|
+| **Oracle Cloud** | ARM 4 cores, 24GB RAM | **Always free** | [Always Free Tier](https://www.oracle.com/cloud/free/) — best free option |
+| **AWS** | t4g.medium (ARM) | Free 12 months | [Free Tier](https://aws.amazon.com/free/) |
+| **GCP** | e2-medium | Free 90 days | [Free Trial](https://cloud.google.com/free) |
+| **Alibaba Cloud** | ECS 2-core 4GB / ARM | Free trial / ~$6/mo | [Free Trial](https://free.aliyun.com/) |
+| **Tencent Cloud** | Lighthouse 2-core 4GB | Free trial / ~$6/mo | [Free Trial](https://cloud.tencent.com/act/free) |
+| **Local Mac** | M1/M2/M3/M4 | No server needed | See [install-mac.sh](#step-1-one-click-deploy-5-min) below |
 
-> 💡 **Oracle Cloud's free ARM instance** is the sweet spot — 24GB RAM means you can run all 7 agents comfortably with room to spare.
+> 💡 **Oracle Cloud's free ARM instance** is the sweet spot — 24GB RAM means you can run all 7 agents comfortably with room to spare. Minimum: ARM + 4GB RAM. If running only the Chief of Staff (single agent), 2GB works.
 
 ---
 
@@ -4612,10 +4625,16 @@ Ready to install (9 steps). Continue? [Y/n]
 **Supported distros:** Ubuntu 22.04+, Debian 12+, Amazon Linux 2023, Fedora 38+
 **Architectures:** amd64, arm64
 
-> **Already have OpenClaw?** Install just the skill:
+> **Already have OpenClaw?** Use the lite installer (skips dependencies, only sets up workspace + config):
 > ```bash
-> clawdhub install become-ceo
+> bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/install-lite.sh)
 > ```
+
+> 🍎 **macOS?** Use the Mac-specific script (auto-installs via Homebrew):
+> ```bash
+> bash <(curl -fsSL https://raw.githubusercontent.com/wanikua/become-ceo/main/install-mac.sh)
+> ```
+> Supports Intel and Apple Silicon (M1/M2/M3/M4), auto-detects architecture.
 
 > **Want to preview first?**
 > ```bash
@@ -5293,14 +5312,49 @@ become-ceo/
 
 ---
 
+## 🏛️ Sister Project: AI Court (Chinese Dynasty Version)
+
+This project has a **Chinese-language sister project** that uses the same [OpenClaw](https://github.com/openclaw/openclaw) architecture with ancient Chinese dynasty roles instead of corporate titles:
+
+| Corporate Role (Become CEO) | Dynasty Role (AI Court) | Responsibility |
+|:---:|:---:|:---:|
+| **CEO** (You) | 皇帝 (Emperor) | Ultimate decision-maker |
+| **Chief of Staff** | 司礼监 (Imperial Secretariat) | Daily coordination, task routing |
+| **Engineering / CTO** | 兵部 (Ministry of War) | Software engineering, architecture |
+| **Finance / CFO** | 户部 (Ministry of Revenue) | Financial analysis, cost control |
+| **Marketing / CMO** | 礼部 (Ministry of Rites) | Brand, content, social media |
+| **DevOps / VP Infra** | 工部 (Ministry of Works) | Infrastructure, CI/CD |
+| **Management / VP Product** | 吏部 (Ministry of Personnel) | Project management, team ops |
+| **Legal / General Counsel** | 刑部 (Ministry of Justice) | Legal compliance, contracts |
+
+> 💡 Both projects share the **same OpenClaw framework**, identical architecture, and compatible config format. Choose the flavor you prefer — modern corporate or ancient dynasty!
+
+👉 **[AI 朝廷 — Chinese Dynasty Version](https://github.com/wanikua/boluobobo-ai-court-tutorial)**
+
+---
+
+## Use Cases
+
+| Scenario | Description | Agents Involved |
+|----------|-------------|-----------------|
+| **Solo Developer** | A one-person army — coding + ops + marketing all covered | Engineering + DevOps + Marketing |
+| **Startup Founder** | Low-cost AI team covering product, tech, and ops | All 7 agents |
+| **Student / Researcher** | AI tutors for different subjects, each with memory | Customize per subject |
+| **Content Creator** | Content pipeline + analytics + financial tracking | Marketing + Finance |
+| **Open Source Maintainer** | Issue triage, PR review, release automation | Engineering + DevOps + Management |
+| **Freelance Agency** | Multi-client project management with department isolation | All 7 agents |
+| **Enterprise Team** | AI-augmented departments with audit trail and compliance | All 7 agents + Legal focus |
+
+---
+
 ## Community & Links
 
 | Resource | Link |
 |----------|------|
+| 🔧 **OpenClaw Framework** | [github.com/openclaw/openclaw](https://github.com/openclaw/openclaw) |
 | 📖 **OpenClaw Docs** | [docs.openclaw.ai](https://docs.openclaw.ai) |
-| 💻 **OpenClaw GitHub** | [github.com/openclaw/openclaw](https://github.com/openclaw/openclaw) |
-| 🇨🇳 **Chinese Version** — AI Court (Dynasty Theme) | [wanikua/boluobobo-ai-court-tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) |
-| 🇨🇳 **Chinese Skill Package** | [wanikua/ai-court-skill](https://github.com/wanikua/ai-court-skill) |
+| 🏛️ **Chinese Version** — AI Court (Dynasty Theme) | [wanikua/boluobobo-ai-court-tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) |
+| 🎭 **Chinese Skill Package** | [wanikua/ai-court-skill](https://github.com/wanikua/ai-court-skill) |
 | 📦 **ClawdHub Install** | `clawdhub install become-ceo` |
 
 > This project is the English adaptation of [boluobobo-ai-court-tutorial](https://github.com/wanikua/boluobobo-ai-court-tutorial) — the original implementation of role-based multi-agent AI collaboration (first commit 2026-02-22). The Chinese version uses an ancient dynasty metaphor; this version uses a corporate CEO theme. Same engine, different flavor.
