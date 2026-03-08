@@ -1,9 +1,35 @@
+# OpenClaw / Clawdbot config (contains API keys)
+.openclaw/
 .clawdbot/
+openclaw.json
 clawdbot.json
+
+# Secrets
 *.key
 *.pem
 .env
 .env.local
+.env.production
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Logs
+*.log
+/tmp/
+
+# Build
+dist/
+build/
