@@ -5347,6 +5347,10 @@ This project has a **Chinese-language sister project** that uses the same [OpenC
 
 ---
 
+## 🤝 Sponsors & Partners
+
+- 🎁 [MiniMax Coding Plan](https://platform.minimaxi.com/subscribe/coding-plan?code=CIeSxc2iq2&source=link) — 12% off exclusive deal + Builder perks
+
 ## Community & Links
 
 | Resource | Link |
