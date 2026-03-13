@@ -41,8 +41,11 @@ if command -v brew &>/dev/null; then
 else
     echo -e "  ${CYAN}→ Installing Homebrew...${NC}"
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # Add to PATH for Apple Silicon — check if already present to avoid duplicates
     if [[ "$ARCH" == "arm64" ]]; then
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        if ! grep -q 'brew shellenv' ~/.zprofile 2>/dev/null; then
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        fi
         eval "$(/opt/homebrew/bin/brew shellenv)"
     fi
     echo -e "  ${GREEN}✓ Homebrew installed${NC}"
@@ -50,8 +53,16 @@ fi
 
 # ---- 2. Node.js ----
 echo -e "${YELLOW}[2/5] Checking Node.js...${NC}"
-if command -v node &>/dev/null && [[ "$(node -v | cut -d. -f1)" == "v22" || "$(node -v | cut -d. -f1)" == "v20" ]]; then
-    echo -e "  ${GREEN}✓ Node.js $(node -v) installed${NC}"
+if command -v node &>/dev/null; then
+    NODE_MAJOR=$(node -v | sed 's/v\([0-9]*\).*/\1/')
+    if [ "$NODE_MAJOR" -ge 22 ] 2>/dev/null; then
+        echo -e "  ${GREEN}✓ Node.js $(node -v) installed${NC}"
+    else
+        echo -e "  ${YELLOW}⚠ Node.js $(node -v) too old, upgrading...${NC}"
+        brew install node@22
+        brew link --overwrite node@22 2>/dev/null || true
+        echo -e "  ${GREEN}✓ Node.js $(node -v) installed${NC}"
+    fi
 else
     echo -e "  ${CYAN}→ Installing Node.js 22...${NC}"
     brew install node@22
@@ -77,50 +88,32 @@ elif command -v clawdbot &>/dev/null; then
     echo -e "  ${GREEN}✓ Clawdbot $(clawdbot --version 2>/dev/null) installed${NC}"
 else
     echo -e "  ${CYAN}→ Installing OpenClaw...${NC}"
-    npm install -g openclaw@latest 2>/dev/null || npm install -g clawdbot@latest
+    npm install -g openclaw 2>/dev/null || npm install -g clawdbot 2>/dev/null
     if command -v openclaw &>/dev/null; then
         CLI_CMD="openclaw"
         CONFIG_DIR="$HOME/.openclaw"
         CONFIG_FILE="openclaw.json"
-    else
+    elif command -v clawdbot &>/dev/null; then
         CLI_CMD="clawdbot"
         CONFIG_DIR="$HOME/.clawdbot"
         CONFIG_FILE="clawdbot.json"
+    else
+        echo -e "  ${RED}✗ Installation failed, please run manually: npm install -g openclaw${NC}"
+        exit 1
     fi
     echo -e "  ${GREEN}✓ $CLI_CMD installed${NC}"
 fi
 
-# ---- 4. Optional tools ----
-echo -e "${YELLOW}[4/5] Checking optional tools...${NC}"
-
-# GitHub CLI
-if command -v gh &>/dev/null; then
-    echo -e "  ${GREEN}✓ GitHub CLI $(gh --version | head -1 | awk '{print $3}') installed${NC}"
-else
-    echo -e "  ${CYAN}→ Installing GitHub CLI...${NC}"
-    brew install gh
-    echo -e "  ${GREEN}✓ GitHub CLI installed${NC}"
-fi
-
-# Chromium (for browser automation)
-if command -v chromium &>/dev/null || command -v "/Applications/Chromium.app/Contents/MacOS/Chromium" &>/dev/null || command -v "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" &>/dev/null; then
-    echo -e "  ${GREEN}✓ Browser available for automation${NC}"
-else
-    echo -e "  ${CYAN}→ Installing Chromium...${NC}"
-    brew install --cask chromium 2>/dev/null || echo -e "  ${YELLOW}⚠ Chromium cask not available — Chrome works too${NC}"
-fi
-
-# ---- 5. Workspace + Config ----
-echo -e "${YELLOW}[5/5] Setting up workspace...${NC}"
+# ---- 4. Initialize workspace ----
+echo -e "${YELLOW}[4/5] Initializing workspace...${NC}"
 WORKSPACE="$HOME/clawd"
-mkdir -p "$WORKSPACE"
-mkdir -p "$CONFIG_DIR"
+mkdir -p "$WORKSPACE/memory"
 cd "$WORKSPACE"
 
-# Create workspace files if missing
-if [ ! -f SOUL.md ]; then
-cat > SOUL.md << 'SOUL_EOF'
-# SOUL.md — Team Behavioral Norms
+# SOUL.md
+if [ ! -f "$WORKSPACE/SOUL.md" ]; then
+cat > "$WORKSPACE/SOUL.md" << 'SOUL_EOF'
+# SOUL.md — Team Operating Principles
 
 ## Core Rules
 1. Be concise — lead with conclusions
@@ -130,51 +123,64 @@ cat > SOUL.md << 'SOUL_EOF'
 ## Communication Style
 - English, professional but not stuffy
 - Direct answers first, details on request
+
+## C-Suite Structure
+- Chief of Staff: Daily coordination, task dispatch
+- Strategy Board: Strategic decisions, planning, reviews
+- Audit Office: Code review, quality assurance, monitoring
+- Engineering: Software development, system architecture
+- Finance: Budgets, cost analysis, e-commerce ops
+- Marketing: Brand strategy, content creation
+- Operations: DevOps, server infrastructure
+- HR: Project management, team coordination
+- Legal: Compliance, intellectual property
+- Research: Academic research, knowledge management, documentation
 SOUL_EOF
 echo -e "  ${GREEN}✓ SOUL.md created${NC}"
-else
-echo -e "  ${GREEN}✓ SOUL.md exists${NC}"
 fi
 
-if [ ! -f IDENTITY.md ]; then
-cat > IDENTITY.md << 'ID_EOF'
-# IDENTITY.md — Organization Chart
+# IDENTITY.md
+if [ ! -f "$WORKSPACE/IDENTITY.md" ]; then
+cat > "$WORKSPACE/IDENTITY.md" << 'ID_EOF'
+# IDENTITY.md — Identity
 
-## Team
-- Chief of Staff (main): Task routing, daily standups
-- Engineering: Software architecture, code review
-- Finance: Budget analysis, cost tracking
-- Marketing: Brand, content, social media
-- DevOps: Infrastructure, CI/CD
-- Management: Project coordination
-- Legal: Compliance, contracts
+- **Name:** CEO Agent
+- **Creature:** AI C-Suite Agent Cluster
+- **Vibe:** Loyal, efficient, each role well-defined
+- **Emoji:** 🏢
 ID_EOF
 echo -e "  ${GREEN}✓ IDENTITY.md created${NC}"
-else
-echo -e "  ${GREEN}✓ IDENTITY.md exists${NC}"
 fi
 
-if [ ! -f USER.md ]; then
-cat > USER.md << 'USER_EOF'
+# USER.md
+if [ ! -f "$WORKSPACE/USER.md" ]; then
+cat > "$WORKSPACE/USER.md" << 'USER_EOF'
 # USER.md — About You
 
-- **Name:** (your name)
+- **Name:** Boss
 - **Language:** English
-- **Timezone:** (your timezone)
+- **Style:** Concise and efficient, give solutions directly
 USER_EOF
 echo -e "  ${GREEN}✓ USER.md created${NC}"
-else
-echo -e "  ${GREEN}✓ USER.md exists${NC}"
 fi
 
-mkdir -p memory
+# ---- 5. Generate config ----
+echo -e "${YELLOW}[5/5] Generating config...${NC}"
+mkdir -p "$CONFIG_DIR"
 
-# Generate config
-if [ -f "$CONFIG_DIR/$CONFIG_FILE" ]; then
-    echo -e "  ${YELLOW}⚠ Config exists, backing up to ${CONFIG_FILE}.bak${NC}"
-    cp "$CONFIG_DIR/$CONFIG_FILE" "$CONFIG_DIR/${CONFIG_FILE}.bak"
-fi
+echo ""
+echo -e "${CYAN}Choose deployment mode:${NC}"
+echo "  1) Discord Multi-Bot (full C-Suite team, requires Discord Bots)"
+echo "  2) Feishu / Lark Single-Bot (1 app, sessions_spawn for background dispatch)"
+echo "  3) WebUI Only (no Discord/Feishu needed, browser-based)"
+echo ""
+read -p "Choose [1/2/3] (default 1): " DEPLOY_MODE
+DEPLOY_MODE=${DEPLOY_MODE:-1}
 
+if [ ! -f "$CONFIG_DIR/$CONFIG_FILE" ]; then
+
+if [ "$DEPLOY_MODE" = "3" ]; then
+# ==================== WebUI Only Mode ====================
 cat > "$CONFIG_DIR/$CONFIG_FILE" << CONFIG_EOF
 {
   "models": {
@@ -182,7 +188,47 @@ cat > "$CONFIG_DIR/$CONFIG_FILE" << CONFIG_EOF
       "your-provider": {
         "baseUrl": "https://your-llm-provider-api-url",
         "apiKey": "YOUR_LLM_API_KEY",
-        "api": "your-api-format",
+        "api": "openai",
+        "models": [
+          {
+            "id": "fast-model",
+            "name": "Fast Model",
+            "input": ["text", "image"],
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "$HOME/clawd",
+      "model": { "primary": "your-provider/fast-model" }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "Chief of Staff",
+        "model": { "primary": "your-provider/fast-model" },
+        "identity": { "theme": "You are the Chief of Staff. Handle daily tasks, delegate to specialists. Be concise and decisive. Answer in English." }
+      }
+    ]
+  }
+}
+CONFIG_EOF
+echo -e "  ${GREEN}✓ WebUI mode config generated${NC}"
+
+elif [ "$DEPLOY_MODE" = "2" ]; then
+# ==================== Feishu/Lark Single-Bot Mode ====================
+cat > "$CONFIG_DIR/$CONFIG_FILE" << FEISHU_EOF
+{
+  "models": {
+    "providers": {
+      "your-provider": {
+        "baseUrl": "https://your-llm-provider-api-url",
+        "apiKey": "YOUR_LLM_API_KEY",
+        "api": "openai",
         "models": [
           {
             "id": "fast-model",
@@ -213,58 +259,153 @@ cat > "$CONFIG_DIR/$CONFIG_FILE" << CONFIG_EOF
         "id": "main",
         "name": "Chief of Staff",
         "model": { "primary": "your-provider/fast-model" },
-        "identity": { "theme": "You are the Chief of Staff. Route tasks to specialists. Be concise and decisive." },
+        "identity": { "theme": "You are the Chief of Staff for the CEO's AI C-Suite. Your role is to PLAN and DISPATCH — not execute directly. Be concise.\n\n[Core Principle] Beyond casual chat and simple Q&A, ALL work tasks must be dispatched via sessions_spawn to the appropriate department. You are the commander, not the grunt.\n\n[Department Roles] strategy=Strategic decisions, audit=Code review & QA, engineering=Development, finance=Financial analysis, marketing=Branding, operations=DevOps, hr=Project management, legal=Compliance, research=Research & docs.\n\n[When to answer yourself] Only: casual chat, confirming info, progress updates, clarifying questions. Everything else gets delegated." },
         "sandbox": { "mode": "off" },
         "subagents": {
-          "allowAgents": ["engineering", "finance", "marketing", "devops", "management", "legal"],
-          "maxConcurrent": 8
-        },
-        "runTimeoutSeconds": 600
+          "allowAgents": ["strategy", "audit", "engineering", "finance", "marketing", "operations", "hr", "legal", "research"]
+        }
+      },
+      { "id": "strategy", "name": "Strategy Board", "model": { "primary": "your-provider/strong-model" }, "identity": { "theme": "You are the Chief Strategy Officer. Strategic decisions and planning. Answer in English." }, "sandbox": { "mode": "off" } },
+      { "id": "audit", "name": "Audit Office", "model": { "primary": "your-provider/strong-model" }, "identity": { "theme": "You are the Chief Audit Officer. Code review and quality assurance. Answer in English." }, "sandbox": { "mode": "all", "scope": "agent" } },
+      { "id": "engineering", "name": "Engineering", "model": { "primary": "your-provider/strong-model" }, "identity": { "theme": "You are the VP of Engineering. Software development and architecture. Answer in English." }, "sandbox": { "mode": "all", "scope": "agent" } },
+      { "id": "finance", "name": "Finance", "model": { "primary": "your-provider/strong-model" }, "identity": { "theme": "You are the CFO. Financial analysis and cost management. Answer in English." }, "sandbox": { "mode": "off" } },
+      { "id": "marketing", "name": "Marketing", "model": { "primary": "your-provider/fast-model" }, "identity": { "theme": "You are the CMO. Brand strategy and content. Answer in English." }, "sandbox": { "mode": "off" } },
+      { "id": "operations", "name": "Operations", "model": { "primary": "your-provider/fast-model" }, "identity": { "theme": "You are the COO. DevOps and infrastructure. Answer in English." }, "sandbox": { "mode": "off" } },
+      { "id": "hr", "name": "HR", "model": { "primary": "your-provider/fast-model" }, "identity": { "theme": "You are the VP of HR. Project management and coordination. Answer in English." }, "sandbox": { "mode": "off" } },
+      { "id": "legal", "name": "Legal", "model": { "primary": "your-provider/fast-model" }, "identity": { "theme": "You are the General Counsel. Compliance and IP. Answer in English." }, "sandbox": { "mode": "off" } },
+      { "id": "research", "name": "Research", "model": { "primary": "your-provider/strong-model" }, "identity": { "theme": "You are the Chief Research Officer. Research and documentation. Answer in English." }, "sandbox": { "mode": "off" } }
+    ]
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "dmPolicy": "open",
+      "groupPolicy": "open",
+      "accounts": {
+        "main": {
+          "appId": "YOUR_FEISHU_APP_ID",
+          "appSecret": "YOUR_FEISHU_APP_SECRET",
+          "botName": "Chief of Staff",
+          "groupPolicy": "open"
+        }
+      }
+    }
+  },
+  "bindings": [
+    { "agentId": "main", "match": { "channel": "feishu", "accountId": "main" } }
+  ]
+}
+FEISHU_EOF
+echo -e "  ${GREEN}✓ Feishu/Lark single-bot config generated${NC}"
+
+else
+# ==================== Discord Multi-Bot Mode (default) ====================
+cat > "$CONFIG_DIR/$CONFIG_FILE" << CONFIG_EOF
+{
+  "models": {
+    "providers": {
+      "your-provider": {
+        "baseUrl": "https://your-llm-provider-api-url",
+        "apiKey": "YOUR_LLM_API_KEY",
+        "api": "openai",
+        "models": [
+          {
+            "id": "fast-model",
+            "name": "Fast Model",
+            "input": ["text", "image"],
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "strong-model",
+            "name": "Strong Model",
+            "input": ["text", "image"],
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "$HOME/clawd",
+      "model": { "primary": "your-provider/fast-model" },
+      "sandbox": { "mode": "non-main" }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "Chief of Staff",
+        "model": { "primary": "your-provider/fast-model" },
+        "identity": { "theme": "You are the Chief of Staff for the CEO's AI C-Suite. Your role is to PLAN and DISPATCH — not execute directly. Be concise and decisive.\n\n[Core Principle] Beyond casual chat and simple Q&A, ALL work tasks must be dispatched by @mentioning the appropriate department bot in the current channel, keeping workflow visible. You are the commander, not the grunt.\n\n[Department Roles] strategy=Strategic decisions, audit=Code review & QA, engineering=Development, finance=Financial analysis, marketing=Branding, operations=DevOps, hr=Project management, legal=Compliance, research=Research & docs.\n\n[Delegation Pattern] Use the message tool to @mention department bots with: [Role] + [Task] + [Context] + [Requirements] + [Output format]. Do NOT use sessions_spawn secretly.\n\n[Approval Flow] Code commits → @audit for review. Major decisions → @strategy for review.\n\n[When to answer yourself] Only: casual chat, confirming info, progress updates, clarifying questions." },
+        "sandbox": { "mode": "off" },
+        "subagents": {
+          "allowAgents": ["strategy", "audit", "engineering", "finance", "marketing", "operations", "hr", "legal", "research"]
+        }
+      },
+      {
+        "id": "strategy",
+        "name": "Strategy Board",
+        "model": { "primary": "your-provider/strong-model" },
+        "identity": { "theme": "You are the Chief Strategy Officer. Strategic decisions, planning, and high-level reviews. Analyze from multiple angles and give clear recommendations. You have veto power over unreasonable proposals." },
+        "sandbox": { "mode": "off" }
+      },
+      {
+        "id": "audit",
+        "name": "Audit Office",
+        "model": { "primary": "your-provider/strong-model" },
+        "identity": { "theme": "You are the Chief Audit Officer. Code review, QA, security assessment. Focus on vulnerabilities, performance, and best practices. Give specific improvement suggestions. Rejections must include reasons and fix suggestions." },
+        "sandbox": { "mode": "all", "scope": "agent" }
       },
       {
         "id": "engineering",
         "name": "Engineering",
         "model": { "primary": "your-provider/strong-model" },
-        "identity": { "theme": "You are the Engineering lead. Direct solutions, not lectures." },
-        "subagents": { "allowAgents": ["devops"] },
-        "runTimeoutSeconds": 300
+        "identity": { "theme": "You are the VP of Engineering. Software development, system architecture. Direct solutions, not lectures. Report results proactively." },
+        "sandbox": { "mode": "all", "scope": "agent" }
       },
       {
         "id": "finance",
         "name": "Finance",
         "model": { "primary": "your-provider/strong-model" },
-        "identity": { "theme": "You are the Finance lead. Numbers first, opinions second." },
-        "runTimeoutSeconds": 300
+        "identity": { "theme": "You are the CFO. Financial analysis, cost management. Numbers first, opinions second. Alert on unusual spending." },
+        "sandbox": { "mode": "off" }
       },
       {
         "id": "marketing",
         "name": "Marketing",
         "model": { "primary": "your-provider/fast-model" },
-        "identity": { "theme": "You are the Marketing lead. Creative but practical." },
-        "runTimeoutSeconds": 300
+        "identity": { "theme": "You are the CMO. Brand strategy, social media, content creation. Creative but practical." },
+        "sandbox": { "mode": "off" }
       },
       {
-        "id": "devops",
-        "name": "DevOps",
+        "id": "operations",
+        "name": "Operations",
         "model": { "primary": "your-provider/fast-model" },
-        "identity": { "theme": "You are the DevOps lead. Automate everything." },
-        "subagents": { "allowAgents": ["engineering"] },
-        "runTimeoutSeconds": 300
+        "identity": { "theme": "You are the COO. DevOps, server infrastructure, CI/CD. Hands-on and practical. Alert on service anomalies." },
+        "sandbox": { "mode": "off" }
       },
       {
-        "id": "management",
-        "name": "Management",
+        "id": "hr",
+        "name": "HR",
         "model": { "primary": "your-provider/fast-model" },
-        "identity": { "theme": "You are the Management lead. Keep things organized." },
-        "subagents": { "allowAgents": ["engineering", "finance", "marketing", "devops", "legal"] },
-        "runTimeoutSeconds": 300
+        "identity": { "theme": "You are the VP of HR. Project management, team coordination. Well-organized and clear." },
+        "sandbox": { "mode": "off" }
       },
       {
         "id": "legal",
         "name": "Legal",
         "model": { "primary": "your-provider/fast-model" },
-        "identity": { "theme": "You are the Legal lead. Precise, flag real risks." },
-        "runTimeoutSeconds": 300
+        "identity": { "theme": "You are the General Counsel. Compliance, contracts, IP. Precise and professional. Alert on compliance issues." },
+        "sandbox": { "mode": "off" }
+      },
+      {
+        "id": "research",
+        "name": "Research",
+        "model": { "primary": "your-provider/strong-model" },
+        "identity": { "theme": "You are the Chief Research Officer. Research, knowledge management, documentation. Rigorous yet accessible." },
+        "sandbox": { "mode": "off" }
       }
     ]
   },
@@ -274,51 +415,101 @@ cat > "$CONFIG_DIR/$CONFIG_FILE" << CONFIG_EOF
       "groupPolicy": "open",
       "allowBots": true,
       "accounts": {
-        "main":        { "name": "Chief of Staff", "token": "YOUR_MAIN_BOT_TOKEN",        "groupPolicy": "open" },
-        "engineering": { "name": "Engineering",    "token": "YOUR_ENGINEERING_BOT_TOKEN",  "groupPolicy": "open" },
-        "finance":     { "name": "Finance",        "token": "YOUR_FINANCE_BOT_TOKEN",      "groupPolicy": "open" },
-        "marketing":   { "name": "Marketing",      "token": "YOUR_MARKETING_BOT_TOKEN",    "groupPolicy": "open" },
-        "devops":      { "name": "DevOps",         "token": "YOUR_DEVOPS_BOT_TOKEN",       "groupPolicy": "open" },
-        "management":  { "name": "Management",     "token": "YOUR_MANAGEMENT_BOT_TOKEN",   "groupPolicy": "open" },
-        "legal":       { "name": "Legal",          "token": "YOUR_LEGAL_BOT_TOKEN",        "groupPolicy": "open" }
+        "main":        { "botName": "Chief of Staff", "token": "YOUR_MAIN_BOT_TOKEN",        "groupPolicy": "open" },
+        "strategy":    { "botName": "Strategy",       "token": "YOUR_STRATEGY_BOT_TOKEN",     "groupPolicy": "open" },
+        "audit":       { "botName": "Audit",          "token": "YOUR_AUDIT_BOT_TOKEN",        "groupPolicy": "open" },
+        "engineering": { "botName": "Engineering",    "token": "YOUR_ENGINEERING_BOT_TOKEN",  "groupPolicy": "open" },
+        "finance":     { "botName": "Finance",        "token": "YOUR_FINANCE_BOT_TOKEN",      "groupPolicy": "open" },
+        "marketing":   { "botName": "Marketing",      "token": "YOUR_MARKETING_BOT_TOKEN",    "groupPolicy": "open" },
+        "operations":  { "botName": "Operations",     "token": "YOUR_OPERATIONS_BOT_TOKEN",   "groupPolicy": "open" },
+        "hr":          { "botName": "HR",             "token": "YOUR_HR_BOT_TOKEN",           "groupPolicy": "open" },
+        "legal":       { "botName": "Legal",          "token": "YOUR_LEGAL_BOT_TOKEN",        "groupPolicy": "open" },
+        "research":    { "botName": "Research",       "token": "YOUR_RESEARCH_BOT_TOKEN",     "groupPolicy": "open" }
       }
     }
   },
   "bindings": [
     { "agentId": "main",        "match": { "channel": "discord", "accountId": "main" } },
+    { "agentId": "strategy",    "match": { "channel": "discord", "accountId": "strategy" } },
+    { "agentId": "audit",       "match": { "channel": "discord", "accountId": "audit" } },
     { "agentId": "engineering", "match": { "channel": "discord", "accountId": "engineering" } },
     { "agentId": "finance",     "match": { "channel": "discord", "accountId": "finance" } },
     { "agentId": "marketing",   "match": { "channel": "discord", "accountId": "marketing" } },
-    { "agentId": "devops",      "match": { "channel": "discord", "accountId": "devops" } },
-    { "agentId": "management",  "match": { "channel": "discord", "accountId": "management" } },
-    { "agentId": "legal",       "match": { "channel": "discord", "accountId": "legal" } }
+    { "agentId": "operations",  "match": { "channel": "discord", "accountId": "operations" } },
+    { "agentId": "hr",          "match": { "channel": "discord", "accountId": "hr" } },
+    { "agentId": "legal",       "match": { "channel": "discord", "accountId": "legal" } },
+    { "agentId": "research",    "match": { "channel": "discord", "accountId": "research" } }
   ]
 }
 CONFIG_EOF
+echo -e "  ${GREEN}✓ Discord Multi-Bot config generated ($CONFIG_DIR/$CONFIG_FILE)${NC}"
 
-echo -e "  ${GREEN}✓ Config generated${NC}"
+fi # end DEPLOY_MODE
 
-# ---- Done ----
+else
+    echo -e "  ${YELLOW}⚠ Config already exists, skipping ($CONFIG_DIR/$CONFIG_FILE)${NC}"
+fi # end config file exists check
+
 echo ""
 echo "================================"
-echo -e "${GREEN}🎉 Become CEO — macOS setup complete!${NC}"
+echo -e "${GREEN}🎉 macOS setup complete!${NC}"
 echo "================================"
 echo ""
-echo -e "  Workspace:  ${CYAN}$WORKSPACE${NC}"
-echo -e "  Config:     ${CYAN}$CONFIG_DIR/$CONFIG_FILE${NC}"
+echo "Next steps:"
 echo ""
-echo -e "  ${YELLOW}Next steps:${NC}"
+echo -e "  ${YELLOW}1. Configure LLM API Key${NC}"
+echo "     Edit $CONFIG_DIR/$CONFIG_FILE"
+echo "     Replace YOUR_LLM_API_KEY with your actual API Key"
 echo ""
-echo "  1. Edit config, add your LLM API Key:"
-echo "     nano $CONFIG_DIR/$CONFIG_FILE"
+if [ "$DEPLOY_MODE" = "2" ]; then
+echo -e "  ${YELLOW}2. Create Feishu/Lark app (just 1: Chief of Staff)${NC}"
+echo "     a) Go to https://open.feishu.cn/app"
+echo "     b) Create app (e.g. 'CEO-Chief-of-Staff') → copy App ID and App Secret"
+echo "     c) Permissions → add im:message and other required permissions"
+echo "     d) Enable bot capability, add im.message.receive_v1 event"
+echo "     e) Event delivery: choose WebSocket long connection"
+echo "     f) Paste appId/appSecret into the config file under 'main'"
+echo "     g) Create version and publish the app"
 echo ""
-echo "  2. Create Discord Bots (one per agent):"
-echo "     https://discord.com/developers/applications"
-echo "     → Enable Message Content Intent on each bot"
+elif [ "$DEPLOY_MODE" = "3" ]; then
+echo -e "  ${YELLOW}2. No Bot needed${NC}"
+echo "     WebUI mode — just access via browser"
+else
+echo -e "  ${YELLOW}2. Create Discord Bots${NC}"
+echo "     a) Go to https://discord.com/developers/applications"
+echo "     b) Create a Bot for each department → copy Token"
+echo "     c) Paste each token into the config file"
+echo "     d) Enable Message Content Intent on each Bot"
+echo "     e) Invite all Bots to your Discord server"
+fi
 echo ""
-echo "  3. Start the Gateway:"
-echo "     $CLI_CMD gateway --verbose"
+echo -e "  ${YELLOW}3. Start the C-Suite${NC}"
+echo "     $CLI_CMD gateway start"
+echo ""
+echo -e "  ${YELLOW}4. Verify${NC}"
+echo "     $CLI_CMD status"
+if [ "$DEPLOY_MODE" = "2" ]; then
+echo "     Send a message to the Bot in Feishu"
+elif [ "$DEPLOY_MODE" = "3" ]; then
+echo "     Open http://localhost:18789 in your browser"
+else
+echo "     @mention your Bot in Discord"
+fi
+echo ""
+echo -e "  ${YELLOW}5. Background / Auto-start (optional)${NC}"
+echo "     # Use launchd for auto-start on login:"
+echo "     $CLI_CMD gateway install"
+echo "     # Or use tmux/screen to keep running:"
+echo "     tmux new -d -s ceo '$CLI_CMD gateway'"
+echo ""
+echo -e "  ${YELLOW}6. Scheduled tasks (optional)${NC}"
+echo "     $CLI_CMD cron add --name 'Daily Briefing' \\"
+echo "       --agent main --cron '0 9 * * *' --tz America/New_York \\"
+echo "       --message 'Generate today\\'s briefing' --session isolated"
+echo ""
+echo -e "💡 Mac tips:"
+echo "  • Closing the lid causes sleep — disable auto-sleep in System Settings → Battery → Options"
+echo "  • Or use: caffeinate -d  to prevent sleep"
+echo "  • For long-term use, consider a cloud server"
 echo ""
 echo -e "Full guide: ${BLUE}https://github.com/wanikua/become-ceo${NC}"
-echo -e "OpenClaw:   ${BLUE}https://github.com/openclaw/openclaw${NC}"
-echo ""
