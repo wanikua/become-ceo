@@ -1,0 +1,29 @@
+services:
+  ceo:
+    image: wanikua/become-ceo:latest
+    build: .   # Local build fallback (auto-builds when no pre-built image exists)
+    container_name: become-ceo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18789:18789"   # Gateway Dashboard
+      - "127.0.0.1:18795:18795"   # CEO Dashboard (optional)
+    volumes:
+      # Config file (must be mounted)
+      - ./openclaw.json:${OPENCLAW_CONFIG_PATH:-/root/.openclaw/openclaw.json}
+      # Workspace persistence (memory, logs, etc.)
+      - ceo-workspace:${OPENCLAW_WORKSPACE:-/root/clawd}
+      # OpenViking data persistence (optional)
+      - ceo-openviking:/root/.openviking
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - OPENVIKING_CONFIG_FILE=${OPENVIKING_CONFIG_FILE:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  ceo-workspace:
+  ceo-openviking:
